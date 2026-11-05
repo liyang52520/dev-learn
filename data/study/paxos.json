@@ -156,7 +156,7 @@
       "note": "",
       "pages": "p3–3",
       "firstPage": 3,
-      "answer": "<li class='num'>1. Proposer（提案者/提议者）：提议一个值，用于被投票决议。</li><li class='num'>2. Acceptor（附议者/接受者）：对每个提议进行投票。</li><li class='num'>3. Learner（学习者/告知者）：被告知投票的结果，不参与投票过程。</li><figure class='pdf-img zoomable' data-cap='原文配图 · 第 3 页 / 共 14 页'><img loading='lazy' src='/study/topic-20-paxos/assets/img/p3_0.jpg' alt='原文配图'><figcaption>原文配图 · p3</figcaption></figure>",
+      "answer": "<p>1. Proposer（提案者/提议者）：提议一个值，用于被投票决议。</p><p>2. Acceptor（附议者/接受者）：对每个提议进行投票。</p><p>3. Learner（学习者/告知者）：被告知投票的结果，不参与投票过程。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 3 页 / 共 14 页'><img loading='lazy' src='/study/topic-20-paxos/assets/img/p3_0.jpg' alt='原文配图'><figcaption>原文配图 · p3</figcaption></figure>",
       "evidence": [
         {
           "label": "原文出处",

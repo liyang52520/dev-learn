@@ -2,14 +2,17 @@ import Link from 'next/link';
 import type { StudyQuestion, StudyTopic } from '@/lib/study';
 import { questionHref, topicHref } from '@/lib/study';
 import PrefetchLink from '@/components/PrefetchLink';
+import StudyAnswerTools from '@/components/study/StudyAnswerTools';
 import { IconArrow, IconChevron } from '@/components/Icons';
 
 interface Props {
   topic: StudyTopic;
   question: StudyQuestion;
+  /** 已经过 Shiki 高亮处理的答案 HTML（由页面在服务端生成）。 */
+  answerHtml: string;
 }
 
-export default function StudyQuestionContent({ topic, question }: Props) {
+export default function StudyQuestionContent({ topic, question, answerHtml }: Props) {
   const index = topic.questions.findIndex((item) => item.id === question.id);
   const prev = index > 0 ? topic.questions[index - 1] : null;
   const next = index >= 0 && index < topic.questions.length - 1 ? topic.questions[index + 1] : null;
@@ -55,7 +58,8 @@ export default function StudyQuestionContent({ topic, question }: Props) {
 
       {question.note && <div className="question-note">原文备注：{question.note}</div>}
 
-      <div className="prose study-answer" dangerouslySetInnerHTML={{ __html: question.answer }} />
+      <div className="prose study-answer" dangerouslySetInnerHTML={{ __html: answerHtml }} />
+      <StudyAnswerTools />
 
       <nav className="question-pager" aria-label="题目切换">
         {prev ? (

@@ -10,61 +10,8 @@ import rehypeKatex from 'rehype-katex';
 import rehypeShiki from '@shikijs/rehype';
 import rehypeStringify from 'rehype-stringify';
 import GithubSlugger from 'github-slugger';
-import { bundledLanguages } from 'shiki';
+import { COMMON_LANGS, SHIKI_THEMES, validShikiLangs } from '@/lib/shiki';
 import type { TocItem } from '@/lib/types';
-
-/** 与 @shikijs/rehype 的默认主题保持一致；warmupMarkdown() 必须用同一组。 */
-const SHIKI_THEMES = { light: 'vitesse-light', dark: 'vitesse-dark' } as const;
-
-/**
- * 站内实际用到（加上常见）的代码围栏语言。
- * 显式传给 @shikijs/rehype 后，它只加载这些语法，不再把 shiki 自带的两百多种
- * 语言全部载入——首次渲染的冷启动有相当一部分花在这上面。
- * 未列出的语言会被 rehype 插件跳过（保持纯文本代码块），与改前“非内置语言的
- * 优雅降级”行为一致；新增语言时补到这里即可。
- */
-const COMMON_LANGS = [
-  'java',
-  'javascript',
-  'js',
-  'typescript',
-  'ts',
-  'jsx',
-  'tsx',
-  'json',
-  'yaml',
-  'yml',
-  'properties',
-  'ini',
-  'toml',
-  'xml',
-  'html',
-  'css',
-  'scss',
-  'less',
-  'bash',
-  'shell',
-  'sh',
-  'zsh',
-  'powershell',
-  'sql',
-  'nginx',
-  'dockerfile',
-  'diff',
-  'python',
-  'go',
-  'rust',
-  'c',
-  'cpp',
-  'kotlin',
-  'groovy',
-  'markdown',
-  'text',
-  'log',
-  'http',
-  'regex',
-  'mermaid',
-];
 
 /**
  * 扫描 content/posts 与 content/drafts 的代码围栏语言。
@@ -96,19 +43,8 @@ function scanContentLangs(): string[] {
   return [...langs];
 }
 
-/**
- * 只保留 shiki 自带语法包里真实存在的名字（'text' 是特殊语言，允许）。
- * 否则 getSingletonHighlighter() 会直接抛错，整条渲染管线都起不来。
- */
-function validShikiLangs(langs: string[]): string[] {
-  const valid: string[] = [];
-  for (const lang of langs) {
-    if (lang === 'text' || lang in bundledLanguages) valid.push(lang);
-  }
-  return valid;
-}
-
 const SHIKI_LANGS = validShikiLangs(scanContentLangs());
+
 
 interface HastNode {
   type: string;

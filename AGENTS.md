@@ -17,8 +17,6 @@
 
 > **来源**：本文件由两个旧仓库的 `AGENTS.md` 合并改写而来——博客 `/Users/liyang/WebstormProjects/liyang52520.github.io/AGENTS.md`、面试题库 `/Users/liyang/Deepseek/projects/interview/AGENTS.md`。合并时按本仓库的实际代码重写了全部落地细节（Hexo 命令、Python 工具链、上游目录均已改写为当前仓库的做法）。上游文档仍可当历史参考，**以本文件为准**。
 >
-> **规模快照**（合并当时，会变，以现场文件为准）：3 篇已发布 + 19 篇草稿；42 个专题 / 2521 道题 / 4120 页原文 / 8042 张截图。
-
 ---
 
 ## 一、这是一个什么项目
@@ -42,7 +40,6 @@
 
 迁移已完成：上游博客 1 篇已发布 + 21 篇草稿全部迁入（2 篇在本仓库升为已发布）；42 个专题、2521 道题已全部抽取为 JSON。上游的 Hexo 依赖、Butterfly 配置、PDF 原文、Python 工具链**都没有**搬进来，也**不应该**搬进来（见 1.9）。
 
-> 上游绝对路径只在本机成立；其他机器上不存在也不影响本仓库开发，只有「新增 PDF 专题」「重新抽取」「回查上游原文」需要它们。
 
 ### 1.2 技术栈
 
@@ -76,12 +73,13 @@ dev-learn/
 ├── content/
 │   ├── posts/                  # 已发布文章，文件名（去 .md）= slug
 │   └── drafts/                 # 草稿，不出现在站点上
-├── data/study/                 # index.json + 42 个专题 JSON（答案 HTML + 证据分组，约 24 MB）
+├── data/study/                 # index.json + 42 个专题 JSON（答案 HTML + 证据分组）
 ├── public/
 │   ├── images/                 # avatar 与后台上传产物 images/uploads/YYYY/MM/
 │   └── study/                  # 42 个专题的 PDF 截图（约 755 MB，勿手改）
-├── lib/                        # 唯一读写文件的层：posts / study / search / markdown / auth / types
+├── lib/                        # 唯一读写文件的层：posts / study / search / markdown / shiki / auth / types
 ├── scripts/extract-study.cjs   # 从上游静态站抽取题库 JSON（见 3.3）
+├── scripts/enhance-answers/    # 抽取后的答案格式增强：代码行还原 / 模型审阅 / 非代码结构修复 / 自检（见 3.5、3.7）
 ├── instrumentation.ts          # 启动钩子：后台预热 Shiki 高亮器（见 1.8.15）
 ├── middleware.ts               # /admin 与 /api/admin 的登录守卫
 └── next.config.ts / tsconfig.json / package.json
@@ -162,7 +160,8 @@ npm run typecheck  # tsc --noEmit
 12. **代码块/表格在服务端包裹**：`lib/markdown.ts` 的 rehype 管线输出 `<div class="code-block"><div class="code-bar">…<button class="code-copy" data-code-copy>复制</button></div><pre>…</pre></div>` 与 `<div class="table-wrap">…</div>`，`ArticleTools` 只做 `[data-code-copy]` 的事件委托 + 阅读进度条。**不要再在客户端 hydration 后移动/包裹 DOM**——那会让首屏内容二次跳动。包裹插件必须排在 `rehypeShiki` 之前（之后 `<pre>` 会被高亮片段替换，语言类名丢失）。正文 `<img>` 由同一管线补 `loading="lazy"` / `decoding="async"`。
 13. **KaTeX 样式按路由引入**：`katex/dist/katex.min.css` 只在 `/posts/[slug]`、`/admin/preview/*` 与后台编辑器（`PostEditor` 的预览面板）里 import，不放在根布局——题库与首页用不到（约 24 KB CSS）。
 14. **图片宽高必须可预留**：题库证据截图与答案配图的 `width/height` 由 `lib/study.ts` 读文件头（JPEG/PNG）在内存中注入（不写盘、不进 JSON），`getStudyQuestion()` 懒补当前题、带尺寸缓存；新图若手写在 `answer` HTML 里也走这条注入（`src` 必须以 `/study/` 开头）。缺尺寸的图片加载后会把版面顶开，是题目页 CLS 的主因。
-15. **Shiki 语言要登记**：`lib/markdown.ts` 的 `COMMON_LANGS` ∪ `content/**` 扫到的围栏语言 才会交给 Shiki；`@shikijs/rehype` 默认会把全部 200+ 语法装进来（实测 1.7 s）。`instrumentation.ts` 启动后后台预热同一份语言集（首个文章请求的 200 ms 冷启动尾巴因此消失）。新语言写进文章即可被扫描到，但 dev 下需重启 server 才重新扫描。
+15. **Shiki 语言要登记**：`lib/shiki.ts` 的 `COMMON_LANGS`（文章页再并上 `content/**` 扫到的围栏语言）才会交给 Shiki；`@shikijs/rehype` 默认会把全部 200+ 语法装进来（实测 1.7 s）。`instrumentation.ts` 启动后后台预热同一份语言集（首个文章请求的 200 ms 冷启动尾巴因此消失）。新语言写进文章即可被扫描到，但 dev 下需重启 server 才重新扫描。
+16. **题库答案的代码高亮也在服务端做**：`data/study/<id>.json` 的 `answer` 里代码块统一为 `<pre class='code' data-lang='java'><code>逐行代码（HTML 转义）</code></pre>`，`lib/study-highlight.ts` 在题目页渲染时用同一个 Shiki 单例高亮成 `.code-block`（结构与文章页一致），并按答案 sha1 缓存。不要在客户端 hydration 后再高亮/移动 DOM：会让首屏代码二次重排，也拿不到服务端缓存。
 
 ### 1.9 不要做的事
 
@@ -353,7 +352,7 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 | 发布后 URL 变了 / 旧链接 404 | 改了文件名（slug = URL）；或发布时 `posts/` 已有同名文件被追加时间戳 |
 | 站内链接 404 | 旧 permalink `/20xx/…/`（迁移后应为 0，可用 grep 自查）、目标仍在 drafts、路径不是 `/posts/<slug>`；文件名带 `%` 则是 500（`URIError`） |
 | 页面出现两个大标题 | 正文写了 `#`，与 Front Matter 的 `title` 重复；删掉正文 H1 |
-| 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错，或不在 `COMMON_LANGS`/仓库围栏扫描集里（Shiki 静默降级为纯文本，不报错）。补 `lib/markdown.ts` 的 `COMMON_LANGS` 并重启 dev |
+| 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错，或不在 `COMMON_LANGS`/仓库围栏扫描集里（Shiki 静默降级为纯文本，不报错）。补 `lib/shiki.ts` 的 `COMMON_LANGS` 并重启 dev |
 | 文章页代码块没有复制按钮 / 表格横向溢出 | 服务端 rehype 没产出 `.code-block`/`.table-wrap`（检查 `lib/markdown.ts` 的插件顺序是否在 `rehypeShiki` 之前），或客户端 `ArticleTools` 又开始在 hydration 后动 DOM |
 | 题目页滚动时截图"跳版"、CLS 变高 | 证据图 `<img>` 缺 `width/height`（由 `lib/study.ts` 从文件头注入），或 CSS 把图片覆盖成 `height:100%` |
 | 题库页多出 24 KB 无用 CSS / 文章公式样式丢失 | KaTeX 样式必须在文章页与后台预览 import，不能放回根布局（见 1.8.13） |
@@ -384,7 +383,8 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 【本仓库】site/index.html + tools/site.json
   → scripts/extract-study.cjs → data/study/index.json + data/study/<id>.json ×42（只搬数据，不搬图）
   → 手工 rsync site/<slug>/assets/ → public/study/<slug>/assets/
-  → lib/study.ts（fs 读取）→ app/(site)/study/** 三栏页面
+  → scripts/enhance-answers/*（答案格式增强：用上游 lines.json 还原代码行 + 模型审阅 + 非代码结构修复，见 3.5）
+  → lib/study.ts（fs 读取）→ lib/study-highlight.ts（服务端 Shiki 高亮）→ app/(site)/study/** 三栏页面
 ```
 
 - **源与派生物**：题目的源是上游 `questions.p*.json` + PDF；`data/study/*.json` 是抽取产物，手改会在下次抽取时被整体覆盖。
@@ -419,43 +419,12 @@ node scripts/extract-study.cjs   # 每个专题一行 + done: 42 topics
 
 行为：① 大括号配对截出 `const DATA` 再 `JSON.parse`（上游把 `</` 转成 `<\/`，解析会还原；不用 `eval`/整页正则）；② 由 `site.json` 建 `id → slug` 映射，缺失则 `slug = id`；③ 专题字段原样保留、`pdf` 固定 `''`、`count` 重算；④ 路径重写：`answer` 的 `src=`/`href=` 前缀以 `assets/` 结尾时加 `/study/`（`topic-01-jvm/assets/img/p3_0.jpg` → `/study/topic-01-jvm/assets/img/p3_0.jpg`），`evidence[].files[].file` 同加 `/study/`，两种引号都处理、不碰外链（当前答案无外链 `<a href>`）；⑤ `index.json` 的 `meta.title/subtitle` 硬编码、`pages` 取上游 `meta.pages`、`topics/count` 重算，题目只留索引字段但**含 `search`**（故 7.6 MB）；⑥ `JSON.stringify(obj, null, 2)`，中文不转义、键序固定。
 
-幂等：输入不变时逐字节相同，可重跑并用 `git diff` 看上游变化。但脚本**不删除**过期专题文件、**不检查**资产是否存在，必须靠自检兜底。
+幂等：输入不变时逐字节相同；但脚本**不删除**过期专题文件、**不检查**资产是否存在，靠自检兜底。
 
-```bash
-node - <<'NODE'
-const fs = require('fs');
-const path = require('path');
-const index = JSON.parse(fs.readFileSync('data/study/index.json', 'utf8'));
-const slugs = new Set();
-let total = 0;
-for (const t of index.topics) {
-  if (slugs.has(t.slug)) throw new Error(`slug 重复：${t.slug}`);
-  slugs.add(t.slug);
-  const topic = JSON.parse(fs.readFileSync(`data/study/${t.id}.json`, 'utf8'));
-  if (topic.id !== t.id || topic.slug !== t.slug || topic.count !== t.count) throw new Error(`索引与专题不一致：${t.id}`);
-  if (topic.questions.length !== t.count) throw new Error(`题数不符：${t.id}`);
-  topic.questions.forEach((q, i) => {
-    const expected = `q${String(i + 1).padStart(3, '0')}`;
-    if (q.id !== expected || q.key !== `${t.id}/${expected}`) throw new Error(`题号不连续：${q.key}`);
-    if (!q.search) throw new Error(`search 为空：${q.key}`);
-    if (!q.evidence.length) throw new Error(`evidence 为空：${q.key}`);
-    for (const g of q.evidence) for (const f of g.files) {
-      if (!f.file.startsWith('/study/')) throw new Error(`证据路径未重写：${f.file}`);
-      if (!fs.existsSync(path.join('public', f.file))) throw new Error(`截图缺失：${f.file}`);
-    }
-    for (const m of q.answer.matchAll(/src=["']([^"']+)["']/g)) {
-      if (!m[1].startsWith('/study/')) throw new Error(`配图路径异常：${m[1]}`);
-      if (!fs.existsSync(path.join('public', m[1]))) throw new Error(`配图缺失：${m[1]}`);
-    }
-    total += 1;
-  });
-}
-if (total !== index.meta.count) throw new Error(`meta.count 不符：${total} != ${index.meta.count}`);
-console.log(`OK：${index.topics.length} 专题 / ${total} 题 / ${index.meta.pages} 页`);
-NODE
-```
+> ⚠️ 抽取只负责搬上游原样 HTML。代码块换行、PDF 行号、误分类等格式问题在抽取后的「答案格式增强」里处理（见 3.5）；**重抽会覆盖这些增强，必须重跑增强脚本**。
 
-预期 `OK：42 专题 / 2521 题 / 4120 页`；任何报错都不提交。
+
+
 
 ### 3.4 数据契约
 
@@ -501,9 +470,11 @@ NODE
 
 class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得注入 `<script>`/`onclick`：
 
-- `<p>` 段落；`<ul class='pdf-list'><li>…`；`<pre class='code'><code><span class='cl'>…<span class='tk-*'>`；`<table class='pdf-table'>`（首行表头）
+- `<p>` 段落；`<ul class='pdf-list'><li>…`；`<table class='pdf-table'>`（首行表头）
+- 代码块：`<pre class='code' data-lang='java'><code>逐行代码（已 HTML 转义）</code></pre>`；`data-lang` 取 `lib/shiki.ts` 的 `COMMON_LANGS`，判断不了用 `text`。渲染时由 `lib/study-highlight.ts` 用 Shiki 高亮成与文章页一致的 `.code-block`，**不要在 JSON 里塞 `<span class='tk-*'>` 之类的 token 标记**。
 - `<figure class='pdf-img zoomable' data-cap='原文配图 · 第 3 页 / 共 102 页'><img loading='lazy' src='/study/topic-01-jvm/assets/img/p3_0.jpg'><figcaption>…</figcaption></figure>`
 - 图片必须 `/study/…` 站内绝对路径（页面在 `/study/[topic]/[qid]` 两层下）。
+- PDF 编辑器自带的**行号不是正文**，增强时已剔除；`answer` 的文字仍然逐字可核对（见 3.6、3.7）。
 
 #### evidence 结构
 
@@ -536,6 +507,30 @@ class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得�
 
 **推荐：改上游再重抽。** ① `build/topic-XX/dump.txt` 定位题；② 改 `questions.p*.json`（`id` 用下一个 qNNN、`title` 逐字抄、`aliases` 列全、`summary` 3–4 条、`ranges` 用 flow 下标）；③ 依次重跑 `resolve.py`（真正漏段为 `[]`）→ `shots.py`（先删旧 assets）→ `build_site.py`，过上游验收；④ 本仓库 `node scripts/extract-study.cjs` + 自检，并同步截图到 `public/study/<slug>/assets/`。
 
+#### 答案格式增强（抽取之后、写回之前）
+
+上游 `answer` 的代码常被 PDF 版心拆段、混入编辑器行号、正文与代码互相误分类。`scripts/enhance-answers/` 只改结构与空白，不改文字：
+
+| 脚本 | 作用 |
+| --- | --- |
+| `reconstruct.cjs` | 读上游 `lines.json` 还原代码行/缩进、合并被误分类的代码片段、剔除 PDF 行号，代码块统一成 `<pre class='code' data-lang>`；产物写 `.wip-answers/` |
+| 模型审阅 + `validate-op.cjs` | 按 `RULES.md` 给代码块标语言、修残断行/分块；逐题校验「只改空白、不改字」；ops 是临时产物 |
+| `apply.cjs` | 应用 ops 写回 `data/study`，重算 `search` 并同步索引（`--dry-run` 可预览） |
+| `fix-noncode.cjs` | 非代码题结构修复：游离 `li`→`p`、强证据段落/跨元素续写合并；逐题 `visibleText` 校验（删字类只登记） |
+| `sync-search.cjs` | 重算全部 `search` 并同步索引（结构修复后跑） |
+| `verify.cjs` | 结构 / 代码块契约 / 文字保真 / search / 证据截图自检，失败退出码非 0 |
+
+```bash
+node scripts/enhance-answers/reconstruct.cjs     # 需要上游 build/topic-XX/lines.json
+# …按 RULES.md 让模型产出 .wip-answers/ops，逐题 validate-op.cjs 通过…
+node scripts/enhance-answers/apply.cjs
+node scripts/enhance-answers/fix-noncode.cjs --write
+node scripts/enhance-answers/sync-search.cjs
+node scripts/enhance-answers/verify.cjs
+```
+
+> 这套增强是「抽取后处理」：**`node scripts/extract-study.cjs` 会整体覆盖 `data/study`，重抽后必须重跑**。行号剔除、代码行还原属于格式清理（不改变文字）；`verify.cjs` 用重建阶段记录的可见文字哈希兜底。`.wip-answers/` 是临时目录，不提交。
+
 **应急：只在本仓库小修**（补 note/summary/截图；整题增删仍走上游，否则下次抽取全丢）：
 
 1. 改专题 JSON 对应字段；2. 同步改 `index.json` 的索引字段（其中无 `answer`/`evidence`）；3. 新题**只能追加末尾**，`id` 取 `q(count+1)`、`no` 同步，否则 qid 连续性、`key`、截图文件名全错位；4. 新截图放 `public/study/<slug>/assets/ev/`，命名 `qNNN_<rangeIndex>_<page>.jpg`，`file` 写 `/study/…`；5. 重算 `search`；重启 dev（缓存）、硬刷新、跑自检。
@@ -544,21 +539,20 @@ class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得�
 
 ### 3.6 内容取舍约定
 
-1. **逐字还原**：题干、答案、代码、表格、插图照录；不改写、不摘要替代、不重排缩进。
+1. **逐字还原**：题干、答案的文字逐字照录；不改写、不摘要替代。代码/段落的换行与缩进、代码块边界可以在「答案格式增强」里重排（见 3.5），但**非空白字符不得增删改**，用 `verify.cjs` 的可见文字哈希兜底。
 2. **不得臆造**：原文没有的不补；补充知识只能进 `summary`/`note` 并标明。
 3. **截图为证**：每题有对应页截图（红框圈题干），不裁剪、不 P 图；广告/页脚留在截图里正常。
 4. **多出处全保留**：如 `jvm/q005` 3 个出处、`os/q074` 7 个、`bigtech/q001` 32 个出处/22 个别名，答案与证据全给，不写「另见 pXX」。
 5. **原文自身问题照录**：错字、重复段落、只给外链的空壳答案保留，用 `note` 标注。
 6. **答案分层**：`summary`→`answer`→`evidence`→`note`，不跨层搬运。
 7. **消费层不二次清洗**：广告/页脚已在上游剔除，不「补回来」，也不按长度/关键词删正文（「加载」「栈」「}」都是合法内容）。
-8. **不为好看删内容**：不删段落、不合并多题、不为通顺改标题。
+8. **不为好看删内容**：不删段落、不合并多题、不为通顺改标题，也不为了排版把正文塞进代码块。PDF 编辑器行号、页脚等**抽取伪影**可以清理；删字类修改（占位段、重复段、弱证据合并）默认只登记、不批量自动修。
 
 ### 3.7 验收清单
 
 #### 自动校验
 
-- 重抽后跑上面的自检脚本，输出 `OK：42 专题 / 2521 题 / 4120 页`。
-- 检查项：JSON 可解析；`index.json` 与专题 JSON 的 `id/slug/count` 一致；`slug` 唯一；`qid` 连续且 `key = id/qid`；`count = questions.length`；`search` 非空；每题 `evidence` 非空；`evidence[].files[].file` 与 `answer` 内 `<img src>` 都以 `/study/` 开头且文件存在（现有 5762 证据 + 2280 配图，`public/study` 共 8042 张、约 755 MB）；`meta.count` 等于各专题题数之和。
+- 跑 `node scripts/enhance-answers/verify.cjs`：结构与题号、代码块契约（`data-lang` 合法、无 `.cl`/`tk-*`）、逐题可见文字哈希（对照 `scripts/enhance-answers/fidelity.json`，代码题已扣行号）、`search` 与规则重算、证据/配图；必须输出 `OK`。
 - `npm run typecheck && npm run build`（先 `npm ci`）；`git status --short data/study public/study` 确认只有预期变化。
 
 #### 页面手工与视觉验收
@@ -603,13 +597,18 @@ class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得�
 | 题目页图片裂 | 用了相对路径 | `answer` 图片必须 `/study/<slug>/assets/…` |
 | 全量格式化 JSON 产生巨大 diff | `data/study` 约 24 MB、index 7.6 MB | 只改目标字段，保持 2 空格缩进与键序 |
 | 删「未引用」图想减体积 | `topic-01-jvm/assets/img/p102_0.jpg` 无 answer 引用属正常 | 先核对引用，不按「未引用即删」清理 |
+| 代码块被压成一行、没有高亮 | 旧数据只有 token span，而本仓库没有 `.cl`/`.tk-*` 样式 | 统一成 `data-lang` + 服务端 Shiki（见 1.8.16、3.4）；旧格式请跑 3.5 增强 |
+| 代码里夹着 1/2/3 行号 | PDF 代码编辑器截图的行号被当正文抽取 | `reconstruct.cjs` 按坐标/行宽识别并剔除；非空白文字哈希校验兜底 |
+| 答案里的代码被拆成 pre→列表→pre | 中文注释行字体不同，上游按正文/列表抽取 | `reconstruct.cjs` 合并回同一代码块；模型审阅兜底（见 3.5） |
+| 改了 answer 但 search 没变 / 索引旧 | `search` 是预计算字段，index 与专题两份 | 跑 `node scripts/enhance-answers/sync-search.cjs` 重算并同步 |
+| 重抽后代码格式退回旧样 | `extract-study.cjs` 覆盖 data/study | 重跑 3.5 的增强流水线（reconstruct → 模型 ops → apply → verify） |
 
 ### 3.10 硬性禁止
 
 - 不在本仓库运行/移植上游 Python 工具链（`tools/`、`build/`、`.venv_pdf` 都不在）。
 - 不手改 `public/study/**` 的截图内容或文件名（被 JSON 的 `file` 引用）。
 - 不把 `data/study/*.json` 当题库的「源」：源在上游 `questions.p*.json` + PDF。
-- 不改写原文答案、不摘要替代、不删段落、不合并多题、不为排版美化代码/表格。
+- 不改写原文答案、不摘要替代、不删段落、不合并多题。排版/代码块格式规范化走 3.5 的增强脚本（只允许改空白与块结构，`verify.cjs` 校验非空白文字不变），不要手工逐题改答案 HTML。
 - 不伪造证据：无对应页截图不出现该题，不 P 图、不裁掉红框题干。
 - 不跳过自检与页面/视觉验收；批量改题必须走两个只读 agent 审计。
 - 不把不可信 HTML 写进 `answer`（页面用 `dangerouslySetInnerHTML` 渲染）。
@@ -679,6 +678,7 @@ class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得�
 | 从一份新 PDF 加一个专题 | 3.8 新增一个专题的标准动作 |
 | 搞清楚 `data/study/*.json` 的字段 | 3.4 数据契约 |
 | 重新抽取题库 / 同步上游 | 3.3 本仓库的抽取 |
+| 重排答案代码块 / 加高亮 / 修非代码结构 | 3.5 答案格式增强、3.7 验收 |
 | 新增页面、组件、API | 1.3、1.8、4.2 |
 | 改主题色、暗色模式、响应式 | 1.8 代码约定（样式） |
 | 排查「页面 500 / 图片 404 / 内容不更新」 | 2.11、3.9 常见坑 |

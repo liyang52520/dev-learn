@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getStudyQuestion } from '@/lib/study';
+import { highlightStudyAnswer } from '@/lib/study-highlight';
 import StudyQuestionContent from '@/components/study/StudyQuestionContent';
 import EvidencePanel from '@/components/study/EvidencePanel';
 
@@ -28,11 +29,12 @@ export default async function StudyQuestionPage({
   if (!found) notFound();
 
   const { topic, question } = found;
+  const answerHtml = await highlightStudyAnswer(question.answer);
 
   // 外层的 .study-page 与左侧栏由 [topic]/layout.tsx 提供，这里只负责中间与右侧两栏。
   return (
     <>
-      <StudyQuestionContent topic={topic} question={question} />
+      <StudyQuestionContent topic={topic} question={question} answerHtml={answerHtml} />
       <EvidencePanel groups={question.evidence} />
     </>
   );
