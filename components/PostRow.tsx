@@ -1,10 +1,11 @@
-import Link from 'next/link';
+import PrefetchLink from '@/components/PrefetchLink';
 import type { PostMeta } from '@/lib/types';
 import { IconArrow } from '@/components/Icons';
 
 export default function PostRow({ post, index }: { post: PostMeta; index?: number }) {
+  // 列表每页只有 8 篇，视口内直接做完整预取：点进去不用再等服务端渲染。
   return (
-    <Link href={`/posts/${encodeURIComponent(post.slug)}`} className="post-row">
+    <PrefetchLink href={`/posts/${encodeURIComponent(post.slug)}`} prefetch={true} className="post-row">
       <div className="post-row-date">
         <span className="post-row-day">{post.displayDate.slice(8, 10)}</span>
         <span className="post-row-month">{post.displayDate.slice(0, 7)}</span>
@@ -32,6 +33,6 @@ export default function PostRow({ post, index }: { post: PostMeta; index?: numbe
       <span className="post-row-arrow" aria-hidden="true">
         <IconArrow />
       </span>
-    </Link>
+    </PrefetchLink>
   );
 }

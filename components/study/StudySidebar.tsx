@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { UIEvent } from 'react';
 import type { StudyQuestionNav } from '@/lib/study';
+import PrefetchLink, { prefetchIntent } from '@/components/PrefetchLink';
 import { IconSearch } from '@/components/Icons';
 
 // 切题时路由内容整体重建，左侧列表的滚动位置会归零。
@@ -71,7 +72,10 @@ export default function StudySidebar({ topic, topics, questions }: Props) {
   const pendingScrollRef = useRef<number | null>(null);
   const writeFrameRef = useRef<number | null>(null);
 
-  const questionHrefOf = (qid: string) => `/study/${encodeURIComponent(topic.id)}/${encodeURIComponent(qid)}`;
+  const questionHrefOf = useCallback(
+    (qid: string) => `/study/${encodeURIComponent(topic.id)}/${encodeURIComponent(qid)}`,
+    [topic.id],
+  );
   const activeQuestion = questions.find((question) => pathname === questionHrefOf(question.id));
   const activeId = activeQuestion?.id ?? '';
   const activeIndex = activeQuestion ? questions.indexOf(activeQuestion) : -1;
@@ -186,6 +190,36 @@ export default function StudySidebar({ topic, topics, questions }: Props) {
     if (list) revealActive(list);
   }, [activeId, topic.id, revealActive]);
 
+  // 空闲时预取当前题前后各 1–2 题：连续 ↑↓ 或点“上一题/下一题”时内容基本已经就绪。
+  // 只在浏览器空闲时做，且省流模式/2G 下跳过，避免和当前页抢带宽。
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    const targets: string[] = [];
+    for (const delta of [-1, 1, -2, 2]) {
+      const neighbour = questions[activeIndex + delta];
+      if (neighbour) targets.push(questionHrefOf(neighbour.id));
+    }
+    if (targets.length === 0) return;
+
+    const connection = (
+      navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
+    ).connection;
+    if (connection?.saveData) return;
+    if (connection?.effectiveType && /(^|-)2g$/.test(connection.effectiveType)) return;
+
+    const requestIdle: (callback: IdleRequestCallback) => number = window.requestIdleCallback
+      ? window.requestIdleCallback.bind(window)
+      : (callback) => window.setTimeout(() => callback({ didTimeout: true, timeRemaining: () => 0 }), 1200);
+    const cancelIdle: (handle: number) => void = window.cancelIdleCallback
+      ? window.cancelIdleCallback.bind(window)
+      : window.clearTimeout.bind(window);
+
+    const handle = requestIdle(() => {
+      for (const href of targets) prefetchIntent(router, href);
+    });
+    return () => cancelIdle(handle);
+  }, [activeIndex, questions, questionHrefOf, router]);
+
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
@@ -265,17 +299,17 @@ export default function StudySidebar({ topic, topics, questions }: Props) {
 
       <div className="question-list" role="list" ref={attachList} onScroll={handleListScroll}>
         {filtered.map((question) => {
-          const href = `/study/${encodeURIComponent(topic.id)}/${encodeURIComponent(question.id)}`;
+          const href = questionHrefOf(question.id);
           const active = pathname === href;
           return (
-            <Link
+            <PrefetchLink
               key={question.id}
               href={href}
               className={active ? 'question-item active' : 'question-item'}
             >
               <span className="question-no">{String(question.no).padStart(2, '0')}</span>
               <span className="question-title">{question.title}</span>
-            </Link>
+            </PrefetchLink>
           );
         })}
         {filtered.length === 0 && <p className="question-empty">没有匹配的题目</p>}

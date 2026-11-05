@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import '@/app/globals.css';
-import 'katex/dist/katex.min.css';
+// KaTeX 样式只在真正渲染公式的文章页/整页预览里引入（见对应 page.tsx），
+// 不放在根布局：题库与首页用不到，约 24KB 的 CSS 不该进每条路由的首屏。
 
 export const metadata: Metadata = {
   title: {

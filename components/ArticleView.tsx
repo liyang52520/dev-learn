@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import PrefetchLink from '@/components/PrefetchLink';
 import type { Post, PostMeta } from '@/lib/types';
 import Toc from '@/components/Toc';
 import ArticleTools from '@/components/ArticleTools';
@@ -87,19 +88,19 @@ export default function ArticleView({ post, prev, next, preview = false }: Props
         {(prev || next) && (
           <div className="article-pager">
             {prev ? (
-              <Link href={`/posts/${encodeURIComponent(prev.slug)}`} className="pager-link prev">
+              <PrefetchLink href={`/posts/${encodeURIComponent(prev.slug)}`} prefetch={true} className="pager-link prev">
                 <small>上一篇</small>
                 <strong>{prev.title}</strong>
-              </Link>
+              </PrefetchLink>
             ) : (
               <span />
             )}
             {next ? (
-              <Link href={`/posts/${encodeURIComponent(next.slug)}`} className="pager-link next">
+              <PrefetchLink href={`/posts/${encodeURIComponent(next.slug)}`} prefetch={true} className="pager-link next">
                 <small>下一篇</small>
                 <strong>{next.title}</strong>
                 <IconArrow />
-              </Link>
+              </PrefetchLink>
             ) : (
               <span />
             )}

@@ -10,6 +10,9 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import type { PostMeta, PostType } from '@/lib/types';
 import { IconArrow } from '@/components/Icons';
 import { withBasePath } from '@/lib/base-path';
+// 编辑器右侧的「预览」直接渲染 markdown 管线产出的 HTML，公式要有 KaTeX 样式才正确。
+// 根布局已不再全局引入（题库/首页用不到），这里按需引一次。
+import 'katex/dist/katex.min.css';
 
 interface Front {
   title: string;

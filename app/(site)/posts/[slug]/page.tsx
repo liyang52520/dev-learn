@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPost, getPublishedPosts } from '@/lib/posts';
 import ArticleView from '@/components/ArticleView';
+import 'katex/dist/katex.min.css';
 
 export const dynamic = 'force-dynamic';
 

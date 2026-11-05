@@ -69,8 +69,8 @@ dev-learn/
 │   │   └── study/              # 专题总览 / 专题首页 / 单题三栏页
 │   ├── admin/                  # 后台：登录、列表、编辑器、整页预览
 │   ├── api/                    # admin/*（登录/读写/发布/预览/上传）、search
-│   ├── globals.css             # 全站样式（设计变量 + 组件样式，约 2700 行）
-│   ├── layout.tsx              # 根布局：主题初始化、全局 metadata、KaTeX 样式
+│   ├── globals.css             # 全站样式（设计变量 + 组件样式，约 3200 行）
+│   ├── layout.tsx              # 根布局：主题初始化、全局 metadata（KaTeX 样式按路由引入）
 │   └── icon.svg
 ├── components/                 # 展示组件；admin/ 与 study/ 子目录
 ├── content/
@@ -82,6 +82,7 @@ dev-learn/
 │   └── study/                  # 42 个专题的 PDF 截图（约 755 MB，勿手改）
 ├── lib/                        # 唯一读写文件的层：posts / study / search / markdown / auth / types
 ├── scripts/extract-study.cjs   # 从上游静态站抽取题库 JSON（见 3.3）
+├── instrumentation.ts          # 启动钩子：后台预热 Shiki 高亮器（见 1.8.15）
 ├── middleware.ts               # /admin 与 /api/admin 的登录守卫
 └── next.config.ts / tsconfig.json / package.json
 ```
@@ -121,6 +122,7 @@ npm run typecheck  # tsc --noEmit
 
 - 后台：`http://localhost:3000/admin`，密码取 `ADMIN_PASSWORD`，未设置时默认 `yg-admin`。建议本地显式设置：`ADMIN_PASSWORD=xxx npm run dev`。
 - Node 建议 20+（验证版本 v24.15.0，Next 15 要求 ≥ 18.18）。
+- `npm run dev` 用 **Turbopack**（`next dev --turbopack`）：路由首次编译比 webpack 快约一倍（实测 190–350 ms vs 430–565 ms）。若怀疑 Turbopack 引入问题，可临时 `npx next dev` 用 webpack 对照。
 - `npm run dev` 与 `npm run build` 争用 `.next/`：**不要**在 dev 运行时 build；验证完 build 记得重启 dev。
 - 构建通过 ≠ 内容正确，构建只读真实文件，内容仍需人工打开页面看。
 
@@ -146,7 +148,7 @@ npm run typecheck  # tsc --noEmit
 
 ### 1.8 代码约定
 
-1. **服务端优先**：默认 Server Component，只有需要状态/事件/浏览器 API 的组件才加 `'use client'`（当前：`Header`、`Toc`、`SearchDialog`、`ArticleTools`、`StudySidebar`、`StudyTopicBrowser`、`EvidencePanel`、`PostEditor`、`AdminDashboard`、`app/admin/login/page.tsx`）。
+1. **服务端优先**：默认 Server Component，只有需要状态/事件/浏览器 API 的组件才加 `'use client'`（当前：`Header`、`PrefetchLink`、`Toc`、`SearchDialog`、`ArticleTools`、`StudySidebar`、`StudyTopicBrowser`、`EvidencePanel`、`PostEditor`、`AdminDashboard`、`app/admin/login/page.tsx`）。`SearchDialog` 由 `Header` 用 `next/dynamic`（`ssr: false`）拆包，不进首屏关键路径。
 2. **文件读写只在两处**：`lib/*.ts` 与 `app/api/**/route.ts`；页面与组件只调用 lib 函数。
 3. **类型先行**：站点/文章类型在 `lib/types.ts`，题库类型在 `lib/study.ts`；新增字段先改类型，再改读取与 UI。
 4. **样式**：全部集中在 `app/globals.css`，用 `:root` / `html.dark` 的 CSS 变量（`--bg`、`--ink`、`--accent`、`--radius` …）。不引入 Tailwind / 组件库；新增区块按注释分区追加，并同时处理 `< 900px`。
@@ -154,9 +156,13 @@ npm run typecheck  # tsc --noEmit
 6. **中文文案**：读者可见文案、错误提示、后台提示全部中文。
 7. **动态数据页**：构建后仍可能变化的页面（首页、文章、归档、标签、分类）标 `export const dynamic = 'force-dynamic'`；题库页保持默认。
 8. **URL 编码**：slug / tag / category 含中文或空格，构造链接一律 `encodeURIComponent`，读取时 `decodeURIComponent`。
-9. **切换页面要有即时反馈**：每个动态数据路由旁配 `loading.tsx`（骨架统一用 `components/PageSkeleton.tsx`，新增路由时补），客户端路由缓存由 `next.config.ts` 的 `experimental.staleTimes` 控制（`dynamic: 30`，后退/前进 30 秒内不再回服务端）。
+9. **切换页面要有即时反馈**：每个动态数据路由旁配 `loading.tsx`（骨架统一用 `components/PageSkeleton.tsx`，新增路由时补），客户端路由缓存由 `next.config.ts` 的 `experimental.staleTimes` 控制（`dynamic: 30`，后退/前进 30 秒内不再回服务端）。链接预取统一走 `components/PrefetchLink.tsx`：`mouseenter` / `focus` / `touchstart` 时 `router.prefetch()`（Next 的 `<Link>` 默认只预取 loading 边界，`router.prefetch()` 才是完整 RSC 预取）；文章列表行、文章/题目上下篇这种少量链接用 `prefetch={true}` 在视口内直接 FULL 预取，**几十上百条的侧栏与 42 张专题卡片只用意图预取，禁止 `prefetch={true}`**（专题卡片进第一题要新建三栏布局，是「进入题目」最重的一条路径，已在 `StudyTopicCard` 接意图预取）。注意 Next 在 dev 下禁用预取，只有生产构建才看得到效果。
 10. **别把大字段塞进客户端组件 props**：Client Component 的 props 会整份序列化进 RSC payload，每次导航重新下发。题库侧栏这类只需要展示字段的组件用 `questionNav()` 裁到 `id/no/title/aliases`；`answer`、`evidence` 这类大字段只留在 Server Component 里。
-11. **重数据按 mtime 缓存**：`data/study/<id>.json` 单篇最大 2.4 MB，`getStudyTopic()` 已按 mtime + size 缓存最近 6 篇；新增读盘逻辑沿用同一思路，不要每次请求重新 `JSON.parse`。检索类数据优先用 `data/study/index.json` 里预计算的 `search`，不要为一次搜索遍历 42 个专题 JSON。
+11. **重数据按 mtime 缓存**：`data/study/<id>.json` 单篇最大 2.4 MB，`getStudyTopic()` 已按 mtime + size 缓存最近 6 篇；`getPost()` / `getRawPost()` 按文件 stat 缓存（含渲染后的 HTML/TOC，Promise 缓存顺带合并 `generateMetadata` 与页面组件的两次取用），`listPosts()` 按目录指纹缓存；写/删/移文章会主动清空这些缓存。新增读盘逻辑沿用同一思路，不要每次请求重新 `JSON.parse` / 重新渲染 Markdown。检索类数据优先用 `data/study/index.json` 里预计算的 `search`，不要为一次搜索遍历 42 个专题 JSON。
+12. **代码块/表格在服务端包裹**：`lib/markdown.ts` 的 rehype 管线输出 `<div class="code-block"><div class="code-bar">…<button class="code-copy" data-code-copy>复制</button></div><pre>…</pre></div>` 与 `<div class="table-wrap">…</div>`，`ArticleTools` 只做 `[data-code-copy]` 的事件委托 + 阅读进度条。**不要再在客户端 hydration 后移动/包裹 DOM**——那会让首屏内容二次跳动。包裹插件必须排在 `rehypeShiki` 之前（之后 `<pre>` 会被高亮片段替换，语言类名丢失）。正文 `<img>` 由同一管线补 `loading="lazy"` / `decoding="async"`。
+13. **KaTeX 样式按路由引入**：`katex/dist/katex.min.css` 只在 `/posts/[slug]`、`/admin/preview/*` 与后台编辑器（`PostEditor` 的预览面板）里 import，不放在根布局——题库与首页用不到（约 24 KB CSS）。
+14. **图片宽高必须可预留**：题库证据截图与答案配图的 `width/height` 由 `lib/study.ts` 读文件头（JPEG/PNG）在内存中注入（不写盘、不进 JSON），`getStudyQuestion()` 懒补当前题、带尺寸缓存；新图若手写在 `answer` HTML 里也走这条注入（`src` 必须以 `/study/` 开头）。缺尺寸的图片加载后会把版面顶开，是题目页 CLS 的主因。
+15. **Shiki 语言要登记**：`lib/markdown.ts` 的 `COMMON_LANGS` ∪ `content/**` 扫到的围栏语言 才会交给 Shiki；`@shikijs/rehype` 默认会把全部 200+ 语法装进来（实测 1.7 s）。`instrumentation.ts` 启动后后台预热同一份语言集（首个文章请求的 200 ms 冷启动尾巴因此消失）。新语言写进文章即可被扫描到，但 dev 下需重启 server 才重新扫描。
 
 ### 1.9 不要做的事
 
@@ -347,7 +353,11 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 | 发布后 URL 变了 / 旧链接 404 | 改了文件名（slug = URL）；或发布时 `posts/` 已有同名文件被追加时间戳 |
 | 站内链接 404 | 旧 permalink `/20xx/…/`（迁移后应为 0，可用 grep 自查）、目标仍在 drafts、路径不是 `/posts/<slug>`；文件名带 `%` 则是 500（`URIError`） |
 | 页面出现两个大标题 | 正文写了 `#`，与 Front Matter 的 `title` 重复；删掉正文 H1 |
-| 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错（Shiki 静默降级，不报错） |
+| 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错，或不在 `COMMON_LANGS`/仓库围栏扫描集里（Shiki 静默降级为纯文本，不报错）。补 `lib/markdown.ts` 的 `COMMON_LANGS` 并重启 dev |
+| 文章页代码块没有复制按钮 / 表格横向溢出 | 服务端 rehype 没产出 `.code-block`/`.table-wrap`（检查 `lib/markdown.ts` 的插件顺序是否在 `rehypeShiki` 之前），或客户端 `ArticleTools` 又开始在 hydration 后动 DOM |
+| 题目页滚动时截图"跳版"、CLS 变高 | 证据图 `<img>` 缺 `width/height`（由 `lib/study.ts` 从文件头注入），或 CSS 把图片覆盖成 `height:100%` |
+| 题库页多出 24 KB 无用 CSS / 文章公式样式丢失 | KaTeX 样式必须在文章页与后台预览 import，不能放回根布局（见 1.8.13） |
+| 改了 `.md` 页面还是旧的 | dev 下缓存按 mtime+size 失效，正常情况下刷新即可；同一毫秒同尺寸写入会漏判，重启 dev 兜底 |
 | 图片裂图 | 写成 `public/images/…` 或 `source/images/…`，应为 `/images/…`；路径大小写敏感；上传只收 png/jpeg/webp/gif 且 ≤ 20MB |
 | mermaid 变成一段源码 | 本仓库不支持 mermaid；改用 `text` 图形、表格或截图 |
 | 后台保存后 front matter 被重排、注释消失 | `serializePost` 用 js-yaml 重新序列化，正常；未知字段保留但不生效；删除可到 `.trash/<type>/` 找回 |
@@ -504,6 +514,7 @@ class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得�
 
 - 单出处 `label` 为 `原文出处`，多出处为 `出处 1`…`出处 N`（最大 32，见 `bigtech/q001`；`jvm/q005` 3 组、`os/q074` 7 组）。
 - 文件命名 `q<题号>_<rangeIndex>_<page>.jpg`（rangeIndex 0 起）；共 5762 张、0 缺失；每题至少一组。
+- **`files[].width` / `files[].height` 不在 JSON 里**：`lib/study.ts` 的 `getStudyQuestion()` 在内存中按文件头补（同时给 `answer` 里 `/study/` 图片注入 `width/height`），只用于 `<img>` 预留版面。别把它们写进 `data/study/*.json`（抽取会覆盖），也别手动维护。
 
 #### slug、id 与 URL
 
@@ -647,6 +658,7 @@ class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得�
 | 题库 JSON / 截图 | 跑 3.7 的自检脚本；打开 `/study`、`/study/<topic>/<qid>`；截图能放大 |
 | 后台 / API | `/admin/login` → 新建 → 保存 → 预览 → 发布 → 撤回 → 删除，全流程走一遍 |
 | 搜索 | 任意页面按 `/` 或 `⌘K`，中英文关键词各搜一次 |
+| 渲染管线 / 链接预取 / 图片尺寸 | `npm run build && npm run start` 后看：文章页代码块有复制按钮且无跳版、`/study` 进专题首题与侧栏切题无骨架闪烁、题目页证据图加载前后不位移；确认 `/posts/<slug>`、`/study/<topic>/<qid>` 的 RSC 请求体积没有变大 |
 
 **在对话里汇报（不要写进文章/代码注释）**：① 改了什么（文件路径 + 一句话）；② 怎么验证的（命令 + 页面 + 结果）；③ 没验证 / 不确定的部分（如「没在真机上看过」「上游仓库不在这台机器」）；④ 需要用户决策的事（是否发布仍为草稿的文章、是否新增标签/专题）。
 

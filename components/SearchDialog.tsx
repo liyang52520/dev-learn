@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import PrefetchLink from '@/components/PrefetchLink';
 import type { SearchResult } from '@/lib/search';
 import { IconClose, IconSearch } from '@/components/Icons';
 import { withBasePath } from '@/lib/base-path';
@@ -99,14 +99,14 @@ export default function SearchDialog({ open, onClose }: { open: boolean; onClose
             <ul className="search-results">
               {results.map((result) => (
                 <li key={`${result.type}-${result.href}`}>
-                  <Link href={result.href} onClick={onClose} className="search-result">
+                  <PrefetchLink href={result.href} onClick={onClose} className="search-result">
                     <span className={`search-badge ${result.type}`}>{result.badge}</span>
                     <span className="search-result-main">
                       <strong>{result.title}</strong>
                       <small>{result.subtitle}</small>
                       {result.snippet && <em>{result.snippet}</em>}
                     </span>
-                  </Link>
+                  </PrefetchLink>
                 </li>
               ))}
             </ul>

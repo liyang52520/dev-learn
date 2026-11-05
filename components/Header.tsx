@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import SearchDialog from '@/components/SearchDialog';
 import { IconMoon, IconSearch, IconSun } from '@/components/Icons';
+
+// 搜索弹层只在按 / 或 ⌘K 之后才有用，从首屏 hydration 的关键路径里拆出去单独加载。
+const SearchDialog = dynamic(() => import('@/components/SearchDialog'), { ssr: false });
 
 function ThemeToggle() {
   const [dark, setDark] = useState(false);

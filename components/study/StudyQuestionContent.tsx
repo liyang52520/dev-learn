@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { StudyQuestion, StudyTopic } from '@/lib/study';
 import { questionHref, topicHref } from '@/lib/study';
+import PrefetchLink from '@/components/PrefetchLink';
 import { IconArrow, IconChevron } from '@/components/Icons';
 
 interface Props {
@@ -58,19 +59,19 @@ export default function StudyQuestionContent({ topic, question }: Props) {
 
       <nav className="question-pager" aria-label="题目切换">
         {prev ? (
-          <Link href={questionHref(topic.id, prev.id)} className="pager-link prev">
+          <PrefetchLink href={questionHref(topic.id, prev.id)} prefetch={true} className="pager-link prev">
             <small>上一题</small>
             <strong>{prev.title}</strong>
-          </Link>
+          </PrefetchLink>
         ) : (
           <span />
         )}
         {next ? (
-          <Link href={questionHref(topic.id, next.id)} className="pager-link next">
+          <PrefetchLink href={questionHref(topic.id, next.id)} prefetch={true} className="pager-link next">
             <small>下一题</small>
             <strong>{next.title}</strong>
             <IconArrow />
-          </Link>
+          </PrefetchLink>
         ) : (
           <span />
         )}

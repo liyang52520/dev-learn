@@ -56,7 +56,16 @@ export default function EvidencePanel({ groups }: { groups: EvidenceGroup[] }) {
                 className="evidence-shot"
                 onClick={() => setZoom({ src: file.file, page: file.page })}
               >
-                <img src={file.file} alt={`PDF 第 ${file.page} 页`} loading="lazy" />
+                {/* width/height 由 lib/study.ts 从图片文件头补出：浏览器据此在加载前按比例预留空间，
+                    滚动右栏时不会因为图片陆续加载而跳版。缺尺寸时 React 会省略这两个属性。 */}
+                <img
+                  src={file.file}
+                  alt={`PDF 第 ${file.page} 页`}
+                  loading="lazy"
+                  decoding="async"
+                  width={file.width}
+                  height={file.height}
+                />
                 <span>p{file.page}</span>
               </button>
             ))}

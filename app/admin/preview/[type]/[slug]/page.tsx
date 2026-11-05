@@ -3,6 +3,7 @@ import AdminTopbar from '@/components/admin/AdminTopbar';
 import ArticleView from '@/components/ArticleView';
 import { getPost } from '@/lib/posts';
 import type { PostType } from '@/lib/types';
+import 'katex/dist/katex.min.css';
 
 export default async function PreviewPage({
   params,

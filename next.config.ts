@@ -13,6 +13,8 @@ function resolveBasePath(): string | undefined {
 
 const basePath = resolveBasePath();
 
+const STATIC_ASSET_CACHE = 'public, max-age=86400, stale-while-revalidate=604800';
+
 const nextConfig: NextConfig = {
   ...(basePath ? { basePath } : {}),
   images: {
@@ -26,6 +28,23 @@ const nextConfig: NextConfig = {
       dynamic: 30,
       static: 300,
     },
+  },
+  /**
+   * 题库截图（public/study/**）与站点图片都是按内容寻址、几乎不变化的静态资产，
+   * 目前每次导航/切题都重新校验，白白多一轮往返。给它们一天的强缓存 + 一周的
+   * stale-while-revalidate：过期后先返回旧图、后台再刷新，读者无感。
+   */
+  async headers() {
+    return [
+      {
+        source: '/study/:path*/assets/:file*',
+        headers: [{ key: 'Cache-Control', value: STATIC_ASSET_CACHE }],
+      },
+      {
+        source: '/images/:path*',
+        headers: [{ key: 'Cache-Control', value: STATIC_ASSET_CACHE }],
+      },
+    ];
   },
 };
 

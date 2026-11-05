@@ -121,6 +121,12 @@ img {
   max-width: 100%;
 }
 
+/* 带 width/height 属性的图片（PDF 原文截图、正文配图）靠属性里的宽高比由浏览器预留空间，
+   加载完成前后不跳版。别在图片上覆盖 height:100%，那会取消预留。 */
+img[width][height] {
+  height: auto;
+}
+
 h1,
 h2,
 h3,
@@ -2209,7 +2215,6 @@ html.dark .code-block pre code span {
   color: #fff;
   font-family: var(--font-mono);
   font-size: 9px;
-  backdrop-filter: blur(4px);
 }
 
 .evidence-empty {
