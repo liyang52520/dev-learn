@@ -1,0 +1,1375 @@
+{
+  "id": "net",
+  "no": "09",
+  "slug": "topic-09-network-protocols",
+  "title": "网络协议面试题",
+  "label": "网络协议",
+  "subtitle": "Topic-09 · 65 页原文（正文 41 页）",
+  "accent": "#0e7490",
+  "pages": 65,
+  "count": 40,
+  "pdf": "",
+  "questions": [
+    {
+      "key": "net/q001",
+      "no": 1,
+      "id": "q001",
+      "title": "当你用浏览器打开一个链接的时候，计算机做了哪些工作步骤。",
+      "aliases": [],
+      "summary": [
+        "解析域名，得到目标服务器地址。",
+        "发起 TCP 三次握手，建立连接后再发送 HTTP 请求。",
+        "服务器响应请求，浏览器拿到 HTML 后解析并请求 JS、CSS、图片等静态资源。",
+        "浏览器对页面进行渲染。"
+      ],
+      "note": "",
+      "pages": "p9–9",
+      "firstPage": 9,
+      "answer": "<p>（1）、解析域名。</p><p>（2）、发起TCP的3次握手。</p><p>（3）、建立TCP请求后发起HTTP请求。</p><p>（4）、服务器相应HTTP请求。</p><p>（5）、浏览器得到HTML代码，进行解析和处理JSON数据，并请求HTML代码中的静态资源（JS、CSS、图片等）。</p><p>（6）、浏览器对页面进行渲染。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 9,
+          "to": 9,
+          "files": [
+            {
+              "page": 9,
+              "file": "/study/topic-09-network-protocols/assets/ev/q001_0_9.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "当你用浏览器打开一个链接的时候，计算机做了哪些工作步骤。  解析域名，得到目标服务器地址。 发起 TCP 三次握手，建立连接后再发送 HTTP 请求。 服务器响应请求，浏览器拿到 HTML 后解析并请求 JS、CSS、图片等静态资源。 浏览器对页面进行渲染。  （1）、解析域名。 （2）、发起TCP的3次握手。 （3）、建立TCP请求后发起HTTP请求。 （4）、服务器相应HTTP请求。 （5）、浏览器得到HTML代码，进行解析和处理JSON数据，并请求HTML代码中的静态资源（JS、CSS、图片等）。 （6）、浏览器对页面进行渲染。"
+    },
+    {
+      "key": "net/q002",
+      "no": 2,
+      "id": "q002",
+      "title": "HTTP有哪些method。",
+      "aliases": [],
+      "summary": [
+        "GET 获取资源；POST 表单提交。",
+        "HEAD 获取报头信息，不返回响应主体。",
+        "PUT 与 PATCH 更新资源：PUT 提交完整资源对象，PATCH 只提交需要修改的字段。",
+        "DELETE 删除资源；OPTIONS 获取目标资源支持的通信选项，用于探测服务器支持哪些方法。"
+      ],
+      "note": "",
+      "pages": "p10–10",
+      "firstPage": 10,
+      "answer": "<p>★ GET：获取资源。</p><p>★ POST：表单提交。</p><p>★ HEAD：获取报头信息，HEAD 方法与 GET 方法类似，但并不会返回响应主体。</p><p>★ PUT 与PATCH：更新资源，PUT 对后台来说 PUT 方法的参数是一个完整的资源对象，它包含了对象的所有字段，PATCH 对后台来说 PATCH 方法的参数只包含我们需要修改的资源对象的字段。</p><p>★ DELETE：删除资源。</p><p>★ OPTIONS：获取目标资源所支持的通信选项,使用 OPTIONS 方法对服务器发起请求,以检测服务器支持哪些 HTTP 方法。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 10,
+          "to": 10,
+          "files": [
+            {
+              "page": 10,
+              "file": "/study/topic-09-network-protocols/assets/ev/q002_0_10.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTP有哪些method。  GET 获取资源；POST 表单提交。 HEAD 获取报头信息，不返回响应主体。 PUT 与 PATCH 更新资源：PUT 提交完整资源对象，PATCH 只提交需要修改的字段。 DELETE 删除资源；OPTIONS 获取目标资源支持的通信选项，用于探测服务器支持哪些方法。  ★ GET：获取资源。 ★ POST：表单提交。 ★ HEAD：获取报头信息，HEAD 方法与 GET 方法类似，但并不会返回响应主体。 ★ PUT 与PATCH：更新资源，PUT 对后台来说 PUT 方法的参数是一个完整的资源对象，它包含了对象的所有字段，PATCH 对后台来说 PATCH 方法的参数只包含我们需要修改的资源对象的字段。 ★ DELETE：删除资源。 ★ OPTIONS：获取目标资源所支持的通信选项,使用 OPTIONS 方法对服务器发起请求,以检测服务器支持哪些 HTTP 方法。"
+    },
+    {
+      "key": "net/q003",
+      "no": 3,
+      "id": "q003",
+      "title": "HTTPS的加密方式是什么，讲讲整个加密解密流程。",
+      "aliases": [],
+      "summary": [
+        "对称加密：加解密使用相同密钥，速度快、可加密内容大，用于加密会话消息，典型算法 DES、AES、RC5、IDEA、RC4。",
+        "非对称加密：加解密使用不同密钥，速度慢但能提供身份认证，用来加密对称加密的密钥，典型算法 RSA、DSA、DH。",
+        "散列算法：把内容变成固定长度散列值，不可逆，用于验证原文是否被篡改，典型算法 MD5、SHA、BASE64、CRC。"
+      ],
+      "note": "",
+      "pages": "p10–10",
+      "firstPage": 10,
+      "answer": "<p>加密方式： 1）、对称密码算法：指加密和解密使用相同的密钥，速度高，可加密内容较大，用来加密会话过程中的消息。典型算法DES、AES、RC5、IDEA（分组加密）RC4。</p><p>2）、非对称密码算法：又称为公钥加密算法，是指加密和解密使用不同的密钥，加密速度较慢，但能提供更好的身份认证技术，用来加密对称加密的密钥（公开的密钥用于加密，私有的密钥用于解密）典型的算法RSA、DSA、DH。</p><p>3）、散列算法：将文件内容通过此算法加密变成固定长度的值（散列值），这个过程可以使用密钥也可以不使用。这种散列变化是不可逆的，也就是说不能从散列值编程原文，因此散列变化通道常用语验证原文是否被篡改。典型的算法MD5、SHA、BASE64、CRC等。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 10,
+          "to": 10,
+          "files": [
+            {
+              "page": 10,
+              "file": "/study/topic-09-network-protocols/assets/ev/q003_0_10.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTPS的加密方式是什么，讲讲整个加密解密流程。  对称加密：加解密使用相同密钥，速度快、可加密内容大，用于加密会话消息，典型算法 DES、AES、RC5、IDEA、RC4。 非对称加密：加解密使用不同密钥，速度慢但能提供身份认证，用来加密对称加密的密钥，典型算法 RSA、DSA、DH。 散列算法：把内容变成固定长度散列值，不可逆，用于验证原文是否被篡改，典型算法 MD5、SHA、BASE64、CRC。  加密方式： 1）、对称密码算法：指加密和解密使用相同的密钥，速度高，可加密内容较大，用来加密会话过程中的消息。典型算法DES、AES、RC5、IDEA（分组加密）RC4。 2）、非对称密码算法：又称为公钥加密算法，是指加密和解密使用不同的密钥，加密速度较慢，但能提供更好的身份认证技术，用来加密对称加密的密钥（公开的密钥用于加密，私有的密钥用于解密）典型的算法RSA、DSA、DH。 3）、散列算法：将文件内容通过此算法加密变成固定长度的值（散列值），这个过程可以使用密钥也可以不使用。这种散列变化是不可逆的，也就是说不能从散列值编程原文，因此散列变化通道常用语验证原文是否被篡改。典型的算法MD5、SHA、BASE64、CRC等。"
+    },
+    {
+      "key": "net/q004",
+      "no": 4,
+      "id": "q004",
+      "title": "Http与Https的区别：",
+      "aliases": [],
+      "summary": [
+        "URL 前缀不同：HTTP 为 http://，HTTPS 为 https://。",
+        "HTTP 不安全、无法加密；HTTPS 对传输数据加密，是安全的。",
+        "默认端口：HTTP 80，HTTPS 443。",
+        "协议层次不同：HTTP 工作在应用层，HTTPS 的安全传输机制工作在传输层；HTTP 无需证书，HTTPS 需要 CA 机构颁发的 SSL 证书。"
+      ],
+      "note": "",
+      "pages": "p10–10",
+      "firstPage": 10,
+      "answer": "<p>HTTP 的URL 以http:// 开头，而HTTPS 的URL 以https:// 开头</p><p>HTTP 是不安全的，而 HTTPS 是安全的</p><p>HTTP 标准端口是80 ，而 HTTPS 的标准端口是443</p><p>在OSI 网络模型中，HTTP工作于应用层，而HTTPS 的安全传输机制工作在传输层</p><p>HTTP 无法加密，而HTTPS 对传输的数据进行加密</p><p>HTTP无需证书，而HTTPS 需要CA机构颁发的SSL证书</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 10,
+          "to": 10,
+          "files": [
+            {
+              "page": 10,
+              "file": "/study/topic-09-network-protocols/assets/ev/q004_0_10.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "Http与Https的区别：  URL 前缀不同：HTTP 为 http://，HTTPS 为 https://。 HTTP 不安全、无法加密；HTTPS 对传输数据加密，是安全的。 默认端口：HTTP 80，HTTPS 443。 协议层次不同：HTTP 工作在应用层，HTTPS 的安全传输机制工作在传输层；HTTP 无需证书，HTTPS 需要 CA 机构颁发的 SSL 证书。  HTTP 的URL 以http:// 开头，而HTTPS 的URL 以https:// 开头 HTTP 是不安全的，而 HTTPS 是安全的 HTTP 标准端口是80 ，而 HTTPS 的标准端口是443 在OSI 网络模型中，HTTP工作于应用层，而HTTPS 的安全传输机制工作在传输层 HTTP 无法加密，而HTTPS 对传输的数据进行加密 HTTP无需证书，而HTTPS 需要CA机构颁发的SSL证书"
+    },
+    {
+      "key": "net/q005",
+      "no": 5,
+      "id": "q005",
+      "title": "什么是Http协议无状态协议?怎么解决Http协议无状态协议?",
+      "aliases": [],
+      "summary": [
+        "无状态协议对事务处理没有记忆能力，后续处理无法依赖前面的信息。",
+        "客户端一次 HTTP 请求完成后再次请求，服务器并不知道这是同一个“老用户”。",
+        "用 Cookie 解决：首次访问时下发 Cookie，再次访问时客户端携带 Cookie，服务器据此识别老用户。"
+      ],
+      "note": "",
+      "pages": "p10–10",
+      "firstPage": 10,
+      "answer": "<p>无状态协议对于事务处理没有记忆能力。缺少状态意味着如果后续处理需要前面的信息</p><p>也就是说，当客户端一次HTTP请求完成以后，客户端再发送一次HTTP请求，HTTP并不知道当前客户端是一个”老用户“。</p><p>可以使用Cookie来解决无状态的问题，Cookie就相当于一个通行证，第一次访问的时候给客户端发送一个Cookie，当客户端再次来的时候，拿着Cookie(通行证)，那么服务器就知道这个是”老用户“</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 10,
+          "to": 10,
+          "files": [
+            {
+              "page": 10,
+              "file": "/study/topic-09-network-protocols/assets/ev/q005_0_10.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "什么是Http协议无状态协议?怎么解决Http协议无状态协议?  无状态协议对事务处理没有记忆能力，后续处理无法依赖前面的信息。 客户端一次 HTTP 请求完成后再次请求，服务器并不知道这是同一个“老用户”。 用 Cookie 解决：首次访问时下发 Cookie，再次访问时客户端携带 Cookie，服务器据此识别老用户。  无状态协议对于事务处理没有记忆能力。缺少状态意味着如果后续处理需要前面的信息 也就是说，当客户端一次HTTP请求完成以后，客户端再发送一次HTTP请求，HTTP并不知道当前客户端是一个”老用户“。 可以使用Cookie来解决无状态的问题，Cookie就相当于一个通行证，第一次访问的时候给客户端发送一个Cookie，当客户端再次来的时候，拿着Cookie(通行证)，那么服务器就知道这个是”老用户“"
+    },
+    {
+      "key": "net/q006",
+      "no": 6,
+      "id": "q006",
+      "title": "URI和URL的区别",
+      "aliases": [],
+      "summary": [
+        "URI（统一资源标识符）用来唯一标识一个资源，一般由访问资源的命名机制、存放资源的主机名、资源自身的名称（路径）三部分组成。",
+        "URL（统一资源定位器）是一种具体的 URI，除了标识资源，还指明如何定位该资源。",
+        "URL 一般由协议（服务方式）、主机 IP 地址（可含端口号）、主机资源的具体地址（目录和文件名）三部分组成。"
+      ],
+      "note": "",
+      "pages": "p11–11",
+      "firstPage": 11,
+      "answer": "<p>URI，是uniform resource identifier，统一资源标识符，用来唯一的标识一个资源。</p><p>Web上可用的每种资源如HTML文档、图像、视频片段、程序等都是一个来URI来定位的URI一般由三部组成：</p><p>①访问资源的命名机制</p><p>②存放资源的主机名</p><p>③资源自身的名称，由路径表示，着重强调于资源。</p><p>URL是uniform resource locator，统一资源定位器，它是一种具体的URI，即URL可以用来标识一个资源，而且还指明了如何locate这个资源。</p><p>URL是Internet上用来描述信息资源的字符串，主要用在各种WWW客户程序和服务器程序上，特别是著名的Mosaic。</p><p>采用URL可以用一种统一的格式来描述各种信息资源，包括文件、服务器的地址和目录等。URL一般由三部组成：</p><p>①协议(或称为服务方式)</p><p>②存有该资源的主机IP地址(有时也包括端口号)</p><p>③主机资源的具体地址。如目录和文件名等</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 11,
+          "to": 11,
+          "files": [
+            {
+              "page": 11,
+              "file": "/study/topic-09-network-protocols/assets/ev/q006_0_11.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "URI和URL的区别  URI（统一资源标识符）用来唯一标识一个资源，一般由访问资源的命名机制、存放资源的主机名、资源自身的名称（路径）三部分组成。 URL（统一资源定位器）是一种具体的 URI，除了标识资源，还指明如何定位该资源。 URL 一般由协议（服务方式）、主机 IP 地址（可含端口号）、主机资源的具体地址（目录和文件名）三部分组成。  URI，是uniform resource identifier，统一资源标识符，用来唯一的标识一个资源。 Web上可用的每种资源如HTML文档、图像、视频片段、程序等都是一个来URI来定位的URI一般由三部组成： ①访问资源的命名机制 ②存放资源的主机名 ③资源自身的名称，由路径表示，着重强调于资源。 URL是uniform resource locator，统一资源定位器，它是一种具体的URI，即URL可以用来标识一个资源，而且还指明了如何locate这个资源。 URL是Internet上用来描述信息资源的字符串，主要用在各种WWW客户程序和服务器程序上，特别是著名的Mosaic。 采用URL可以用一种统一的格式来描述各种信息资源，包括文件、服务器的地址和目录等。URL一般由三部组成： ①协议(或称为服务方式) ②存有该资源的主机IP地址(有时也包括端口号) ③主机资源的具体地址。如目录和文件名等"
+    },
+    {
+      "key": "net/q007",
+      "no": 7,
+      "id": "q007",
+      "title": "常见的HTTP相应状态码",
+      "aliases": [],
+      "summary": [
+        "2XX 成功：200 正常处理、204 无资源返回、206 部分资源。",
+        "3XX 重定向：301 永久重定向、302 临时重定向、303 以 GET 重定向、304 条件不满足、307 强制 POST 的临时重定向。",
+        "4XX 客户端错误：400 报文语法错误、401 需要认证、403 资源禁止访问、404 找不到资源。",
+        "5XX 服务器错误：500 服务器内部错误、503 服务器正忙。"
+      ],
+      "note": "",
+      "pages": "p11–12",
+      "firstPage": 11,
+      "answer": "<p>200：请求被正常处理</p><p>204：请求被受理但没有资源可以返回</p><p>206：客户端只是请求资源的一部分，服务器只对请求的部分资源执行GET方法，相应报文中通过Content-Range指定范围的资源。</p><p>301：永久性重定向</p><p>302：临时重定向</p><p>303：与302状态码有相似功能，只是它希望客户端在请求一个URI的时候，能通过GET方法重定向到另一个URI上</p><p>304：发送附带条件的请求时，条件不满足时返回，与重定向无关</p><p>307：临时重定向，与302类似，只是强制要求使用POST方法</p><p>400：请求报文语法有误，服务器无法识别</p><p>401：请求需要认证</p><p>403：请求的对应资源禁止被访问</p><p>404：服务器无法找到对应资源</p><p>500：服务器内部错误</p><p>503：服务器正忙</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 11,
+          "to": 12,
+          "files": [
+            {
+              "page": 11,
+              "file": "/study/topic-09-network-protocols/assets/ev/q007_0_11.jpg"
+            },
+            {
+              "page": 12,
+              "file": "/study/topic-09-network-protocols/assets/ev/q007_0_12.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "常见的HTTP相应状态码  2XX 成功：200 正常处理、204 无资源返回、206 部分资源。 3XX 重定向：301 永久重定向、302 临时重定向、303 以 GET 重定向、304 条件不满足、307 强制 POST 的临时重定向。 4XX 客户端错误：400 报文语法错误、401 需要认证、403 资源禁止访问、404 找不到资源。 5XX 服务器错误：500 服务器内部错误、503 服务器正忙。  200：请求被正常处理 204：请求被受理但没有资源可以返回 206：客户端只是请求资源的一部分，服务器只对请求的部分资源执行GET方法，相应报文中通过Content-Range指定范围的资源。 301：永久性重定向 302：临时重定向 303：与302状态码有相似功能，只是它希望客户端在请求一个URI的时候，能通过GET方法重定向到另一个URI上 304：发送附带条件的请求时，条件不满足时返回，与重定向无关 307：临时重定向，与302类似，只是强制要求使用POST方法 400：请求报文语法有误，服务器无法识别 401：请求需要认证 403：请求的对应资源禁止被访问 404：服务器无法找到对应资源 500：服务器内部错误 503：服务器正忙"
+    },
+    {
+      "key": "net/q008",
+      "no": 8,
+      "id": "q008",
+      "title": "HTTP优化方案",
+      "aliases": [],
+      "summary": [
+        "TCP 复用：多个客户端 HTTP 请求复用一个服务器端 TCP 连接，或一个客户端的多个请求走同一个 TCP 连接。",
+        "内容缓存：缓存常用内容，客户端可直接从内存获取数据。",
+        "压缩：压缩文本数据，减少带宽占用。",
+        "SSL 加速与 TCP 缓冲：在通道内加密并加速，提高服务器响应时间和处理效率，减少连接负担。"
+      ],
+      "note": "",
+      "pages": "p12–12",
+      "firstPage": 12,
+      "answer": "<p>我下面就简要概括一下：</p><p>TCP复用：TCP连接复用是将多个客户端的HTTP请求复用到一个服务器端TCP连接上，而HTTP复用则是一个客户端的多个HTTP请求通过一个TCP连接进行处理。前者是负载均衡设备的独特功能；而后者是HTTP 1.1协议所支持的新功能</p><p>内容缓存：将经常用到的内容进行缓存起来，那么客户端就可以直接在内存中获取相应的数据了。</p><p>压缩：将文本数据进行压缩，减少带宽</p><p>SSL加速（SSL Acceleration）：使用SSL协议对HTTP协议进行加密，在通道内加密并加速TCP缓冲：通过采用TCP缓冲技术，可以提高服务器端响应时间和处理效率，减少由于通信链路问题给服务器造成的连接负担。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 12,
+          "to": 12,
+          "files": [
+            {
+              "page": 12,
+              "file": "/study/topic-09-network-protocols/assets/ev/q008_0_12.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTP优化方案  TCP 复用：多个客户端 HTTP 请求复用一个服务器端 TCP 连接，或一个客户端的多个请求走同一个 TCP 连接。 内容缓存：缓存常用内容，客户端可直接从内存获取数据。 压缩：压缩文本数据，减少带宽占用。 SSL 加速与 TCP 缓冲：在通道内加密并加速，提高服务器响应时间和处理效率，减少连接负担。  我下面就简要概括一下： TCP复用：TCP连接复用是将多个客户端的HTTP请求复用到一个服务器端TCP连接上，而HTTP复用则是一个客户端的多个HTTP请求通过一个TCP连接进行处理。前者是负载均衡设备的独特功能；而后者是HTTP 1.1协议所支持的新功能 内容缓存：将经常用到的内容进行缓存起来，那么客户端就可以直接在内存中获取相应的数据了。 压缩：将文本数据进行压缩，减少带宽 SSL加速（SSL Acceleration）：使用SSL协议对HTTP协议进行加密，在通道内加密并加速TCP缓冲：通过采用TCP缓冲技术，可以提高服务器端响应时间和处理效率，减少由于通信链路问题给服务器造成的连接负担。"
+    },
+    {
+      "key": "net/q009",
+      "no": 9,
+      "id": "q009",
+      "title": "GET方法与POST方法的区别",
+      "aliases": [],
+      "summary": [
+        "语义不同：GET 重点从服务器获取资源，POST 重点向服务器发送数据。",
+        "参数位置不同：GET 把字段=值拼在 URL 后，用户可见；POST 把字段与值封存在请求实体中，用户不可见。",
+        "数据量与效率：GET 受 URL 长度限制、数据量小但效率较高；POST 可传大量数据，上传文件只能用 POST。",
+        "安全与字符集：GET 的 URL 可见、可能泄露私密信息，且只支持 ASCII；POST 较安全，支持标准字符集，可正确传递中文。"
+      ],
+      "note": "",
+      "pages": "p12–12",
+      "firstPage": 12,
+      "answer": "<p>区别一：</p><p>get重点在从服务器上获取资源，post重点在向服务器发送数据；</p><p>区别二：</p><p>get传输数据是通过URL请求，以field（字段）= value的形式，置于URL后，并用&quot;?&quot;连接，多个请求数据间用&quot;&amp;&quot;连接，如http://127.0.0.1/Test/login.action?name=admin&amp;password=admin，这个过程用户是可见的；</p><p>post传输数据通过Http的post机制，将字段与对应值封存在请求实体中发送给服务器，这个过程对用户是不可见的；</p><p>区别三：</p><p>Get传输的数据量小，因为受URL长度限制，但效率较高；</p><p>Post可以传输大量数据，所以上传文件时只能用Post方式；</p><p>区别四：</p><p>get是不安全的，因为URL是可见的，可能会泄露私密信息，如密码等；</p><p>post较get安全性较高；</p><p>区别五：</p><p>get方式只能支持ASCII字符，向服务器传的中文字符可能会乱码。</p><p>post支持标准字符集，可以正确传递中文字符。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 12,
+          "to": 12,
+          "files": [
+            {
+              "page": 12,
+              "file": "/study/topic-09-network-protocols/assets/ev/q009_0_12.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "GET方法与POST方法的区别  语义不同：GET 重点从服务器获取资源，POST 重点向服务器发送数据。 参数位置不同：GET 把字段=值拼在 URL 后，用户可见；POST 把字段与值封存在请求实体中，用户不可见。 数据量与效率：GET 受 URL 长度限制、数据量小但效率较高；POST 可传大量数据，上传文件只能用 POST。 安全与字符集：GET 的 URL 可见、可能泄露私密信息，且只支持 ASCII；POST 较安全，支持标准字符集，可正确传递中文。  区别一： get重点在从服务器上获取资源，post重点在向服务器发送数据； 区别二： get传输数据是通过URL请求，以field（字段）= value的形式，置于URL后，并用\"?\"连接，多个请求数据间用\"&\"连接，如http://127.0.0.1/Test/login.action?name=admin&password=admin，这个过程用户是可见的； post传输数据通过Http的post机制，将字段与对应值封存在请求实体中发送给服务器，这个过程对用户是不可见的； 区别三： Get传输的数据量小，因为受URL长度限制，但效率较高； Post可以传输大量数据，所以上传文件时只能用Post方式； 区别四： get是不安全的，因为URL是可见的，可能会泄露私密信息，如密码等； post较get安全性较高； 区别五： get方式只能支持ASCII字符，向服务器传的中文字符可能会乱码。 post支持标准字符集，可以正确传递中文字符。"
+    },
+    {
+      "key": "net/q010",
+      "no": 10,
+      "id": "q010",
+      "title": "HTTP请求报文与响应报文格式",
+      "aliases": [],
+      "summary": [
+        "请求报文三部分：请求行（请求方法、URI、HTTP 版本）、请求首部字段、请求内容实体。",
+        "响应报文三部分：状态行（HTTP 版本、状态码、原因短语）、响应首部字段、响应内容实体。"
+      ],
+      "note": "",
+      "pages": "p12–13",
+      "firstPage": 12,
+      "answer": "<p>请求报文包含三部分：</p><p>a、请求行：包含请求方法、URI、HTTP版本信息</p><p>b、请求首部字段</p><p>c、请求内容实体</p><p>响应报文包含三部分：</p><p>a、状态行：包含HTTP版本、状态码、状态码的原因短语</p><p>b、响应首部字段</p><p>c、响应内容实体</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 12,
+          "to": 13,
+          "files": [
+            {
+              "page": 12,
+              "file": "/study/topic-09-network-protocols/assets/ev/q010_0_12.jpg"
+            },
+            {
+              "page": 13,
+              "file": "/study/topic-09-network-protocols/assets/ev/q010_0_13.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTP请求报文与响应报文格式  请求报文三部分：请求行（请求方法、URI、HTTP 版本）、请求首部字段、请求内容实体。 响应报文三部分：状态行（HTTP 版本、状态码、原因短语）、响应首部字段、响应内容实体。  请求报文包含三部分： a、请求行：包含请求方法、URI、HTTP版本信息 b、请求首部字段 c、请求内容实体 响应报文包含三部分： a、状态行：包含HTTP版本、状态码、状态码的原因短语 b、响应首部字段 c、响应内容实体"
+    },
+    {
+      "key": "net/q011",
+      "no": 11,
+      "id": "q011",
+      "title": "Session和cookie的区别。",
+      "aliases": [],
+      "summary": [
+        "存储位置：Cookie 保存在客户端；Session 保存在服务器端，Session 过多会消耗服务器资源。",
+        "生命周期：未设置存储时间的 Cookie 关闭浏览器即删除，设置后保存在磁盘直到过期；Cookie 可被伪造，敏感数据不宜保存。",
+        "Session 用唯一 session ID 跟踪用户，服务端生成 Session 时向客户端下发保存 sessionId 的 Cookie，用于匹配服务端成千上万的 Session。",
+        "存储类型不同：Session 可存任意 Java 对象，Cookie 只能存 String；超过 10K 的数据不要用 Cookie。"
+      ],
+      "note": "",
+      "pages": "p13–13",
+      "firstPage": 13,
+      "answer": "<p>（1）、Cookie保存在客户端，未设置存储时间的Cookie，关闭浏览器会话Cookie就会被删除；设置了存储时间的Cookie保存在用户设备的磁盘中知道过期，同时Cookie在客户端所以可以伪造，不是十分安全，敏感数据不易保存。Session保存在服务器端，存储在IIS的进程开辟的内存中，而Session过多会消耗服务器资源，所以尽量少使用Session。</p><p>（2）、Session是服务器用来跟踪用户的一种手段，每个Session都有一个唯一标识：session ID。</p><p>当服务端生成一个Session时就会向客户端发送一个Cookie保存到客户端，这个Cookie保存的是Session的SessionId这样才能保证客户端发起请求后，用户能够与服务器端成千上万的Session进行匹配，同时也保证了不同页面之间传值的正确性.</p><p>（3）、存储数据类型不同：Session能够存储任意的JAVA对象，Cookie只能存储String类型的对象。</p><p>（4）、长于10K的数据，不要用到Cookies。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 13,
+          "to": 13,
+          "files": [
+            {
+              "page": 13,
+              "file": "/study/topic-09-network-protocols/assets/ev/q011_0_13.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "Session和cookie的区别。  存储位置：Cookie 保存在客户端；Session 保存在服务器端，Session 过多会消耗服务器资源。 生命周期：未设置存储时间的 Cookie 关闭浏览器即删除，设置后保存在磁盘直到过期；Cookie 可被伪造，敏感数据不宜保存。 Session 用唯一 session ID 跟踪用户，服务端生成 Session 时向客户端下发保存 sessionId 的 Cookie，用于匹配服务端成千上万的 Session。 存储类型不同：Session 可存任意 Java 对象，Cookie 只能存 String；超过 10K 的数据不要用 Cookie。  （1）、Cookie保存在客户端，未设置存储时间的Cookie，关闭浏览器会话Cookie就会被删除；设置了存储时间的Cookie保存在用户设备的磁盘中知道过期，同时Cookie在客户端所以可以伪造，不是十分安全，敏感数据不易保存。Session保存在服务器端，存储在IIS的进程开辟的内存中，而Session过多会消耗服务器资源，所以尽量少使用Session。 （2）、Session是服务器用来跟踪用户的一种手段，每个Session都有一个唯一标识：session ID。 当服务端生成一个Session时就会向客户端发送一个Cookie保存到客户端，这个Cookie保存的是Session的SessionId这样才能保证客户端发起请求后，用户能够与服务器端成千上万的Session进行匹配，同时也保证了不同页面之间传值的正确性. （3）、存储数据类型不同：Session能够存储任意的JAVA对象，Cookie只能存储String类型的对象。 （4）、长于10K的数据，不要用到Cookies。"
+    },
+    {
+      "key": "net/q012",
+      "no": 12,
+      "id": "q012",
+      "title": "http的请求报文是什么样的？",
+      "aliases": [],
+      "summary": [
+        "请求报文由请求行、请求头部、空行、请求体四部分组成。",
+        "请求行包含请求方法字段、URL 字段、HTTP 协议版本字段，用空格分隔，例如 GET /index.html HTTP/1.1。",
+        "请求头部由关键字/值对组成，每行一对，关键字和值用英文冒号分隔。",
+        "常见头部：User-Agent 浏览器类型、Accept 可识别的内容类型列表、Host 请求的主机名；请求体是 POST、PUT 等携带的数据。"
+      ],
+      "note": "",
+      "pages": "p13–14",
+      "firstPage": 13,
+      "answer": "<p>请求报文有4部分组成:</p><ul class='pdf-list'><li>请求行</li><li>请求头部</li><li>空行</li><li>请求体</li></ul><figure class='pdf-img zoomable' data-cap='原文配图 · 第 13 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p13_0.jpg' alt='原文配图'><figcaption>原文配图 · p13</figcaption></figure><ul class='pdf-list'><li>请求行包括：请求方法字段、URL字段、HTTP协议版本字段。它们用空格分隔。例如，GET /index.html HTTP/1.1。</li><li>请求头部:请求头部由关键字/值对组成，每行一对，关键字和值用英文冒号“:”分隔</li></ul><li class='num'>1. User-Agent：产生请求的浏览器类型。</li><li class='num'>2. Accept：客户端可识别的内容类型列表。</li><li class='num'>3. Host：请求的主机名，允许多个域名同处一个IP地址，即虚拟主机。</li><ul class='pdf-list'><li>请求体: post put等请求携带的数据</li></ul><figure class='pdf-img zoomable' data-cap='原文配图 · 第 14 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p14_0.jpg' alt='原文配图'><figcaption>原文配图 · p14</figcaption></figure><figure class='pdf-img zoomable' data-cap='原文配图 · 第 14 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p14_1.jpg' alt='原文配图'><figcaption>原文配图 · p14</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 13,
+          "to": 14,
+          "files": [
+            {
+              "page": 13,
+              "file": "/study/topic-09-network-protocols/assets/ev/q012_0_13.jpg"
+            },
+            {
+              "page": 14,
+              "file": "/study/topic-09-network-protocols/assets/ev/q012_0_14.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "http的请求报文是什么样的？  请求报文由请求行、请求头部、空行、请求体四部分组成。 请求行包含请求方法字段、URL 字段、HTTP 协议版本字段，用空格分隔，例如 GET /index.html HTTP/1.1。 请求头部由关键字/值对组成，每行一对，关键字和值用英文冒号分隔。 常见头部：User-Agent 浏览器类型、Accept 可识别的内容类型列表、Host 请求的主机名；请求体是 POST、PUT 等携带的数据。  请求报文有4部分组成: 请求行 请求头部 空行 请求体 请求行包括：请求方法字段、URL字段、HTTP协议版本字段。它们用空格分隔。例如，GET /index.html HTTP/1.1。 请求头部:请求头部由关键字/值对组成，每行一对，关键字和值用英文冒号“:”分隔 1. User-Agent：产生请求的浏览器类型。 2. Accept：客户端可识别的内容类型列表。 3. Host：请求的主机名，允许多个域名同处一个IP地址，即虚拟主机。 请求体: post put等请求携带的数据"
+    },
+    {
+      "key": "net/q013",
+      "no": 13,
+      "id": "q013",
+      "title": "http的响应报文是什么样的？",
+      "aliases": [],
+      "summary": [
+        "响应报文由响应行、响应头、空行、响应体四部分组成。",
+        "响应行由协议版本、状态码和状态码的原因短语组成，例如 HTTP/1.1 200 OK。",
+        "响应头由响应部首组成，响应体是服务器响应的数据。"
+      ],
+      "note": "",
+      "pages": "p14–15",
+      "firstPage": 14,
+      "answer": "<p>请求报文有4部分组成:</p><ul class='pdf-list'><li>响应行</li><li>响应头</li><li>空行</li><li>响应体</li></ul><figure class='pdf-img zoomable' data-cap='原文配图 · 第 15 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p15_0.jpg' alt='原文配图'><figcaption>原文配图 · p15</figcaption></figure><ul class='pdf-list'><li>响应行： 由协议版本，状态码和状态码的原因短语组成，例如HTTP/1.1 200 OK 。</li><li>响应头：响应部首组成</li><li>响应体：服务器响应的数据</li></ul>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 14,
+          "to": 15,
+          "files": [
+            {
+              "page": 14,
+              "file": "/study/topic-09-network-protocols/assets/ev/q013_0_14.jpg"
+            },
+            {
+              "page": 15,
+              "file": "/study/topic-09-network-protocols/assets/ev/q013_0_15.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "http的响应报文是什么样的？  响应报文由响应行、响应头、空行、响应体四部分组成。 响应行由协议版本、状态码和状态码的原因短语组成，例如 HTTP/1.1 200 OK。 响应头由响应部首组成，响应体是服务器响应的数据。  请求报文有4部分组成: 响应行 响应头 空行 响应体 响应行： 由协议版本，状态码和状态码的原因短语组成，例如HTTP/1.1 200 OK 。 响应头：响应部首组成 响应体：服务器响应的数据"
+    },
+    {
+      "key": "net/q014",
+      "no": 14,
+      "id": "q014",
+      "title": "聊一聊HTTP的部首有哪些？",
+      "aliases": [],
+      "summary": [
+        "通用首部字段：请求和响应都会使用，如 Cache-Control 控制缓存、Connection 连接管理、Upgrade 升级协议、Transfor-Encoding 传输编码、Date 创建日期。",
+        "请求首部字段：客户端向服务器发送请求时使用，如 Accept、Accept-Encoding、Accept-Language、If-Match、If-None-Match、Range、Authorization、Host、User-Agent。",
+        "响应首部字段：服务器向客户端响应时使用，如 Accept-Ranges、Age、Location、ETag、WWW-Authenticate、Server、Retry-After。",
+        "实体首部字段：针对请求/响应报文的实体部分，如 Allow、Content-Language、Content-Encoding、Content-Length、Content-Type、Content-MD5、Last-Modified、Expires。"
+      ],
+      "note": "",
+      "pages": "p15–16",
+      "firstPage": 15,
+      "answer": "<ul class='pdf-list'><li>内容很多，重点看标『✨』内容</li></ul><p>通用首部字段（General Header Fields）：请求报文和响应报文两方都会使用的首部</p><ul class='pdf-list'><li>Cache-Control  控制缓存 ✨</li><li>Connection 连接管理、逐条首部 ✨</li><li>Upgrade  升级为其他协议</li><li>via 代理服务器的相关信息</li><li>Wraning 错误和警告通知</li><li>Transfor-Encoding 报文主体的传输编码格式 ✨</li><li>Trailer 报文末端的首部一览</li><li>Pragma 报文指令</li><li>Date 创建报文的日期</li></ul><p>请求首部字段（Reauest Header Fields）:客户端向服务器发送请求的报文时使用的首部</p><ul class='pdf-list'><li>Accept 客户端或者代理能够处理的媒体类型 ✨</li><li>Accept-Encoding 优先可处理的编码格式</li><li>Accept-Language 优先可处理的自然语言</li><li>Accept-Charset 优先可以处理的字符集</li><li>If-Match 比较实体标记（ETage） ✨</li><li>If-None-Match 比较实体标记（ETage）与 If-Match相反 ✨</li><li>If-Modified-Since 比较资源更新时间（Last-Modified）✨</li><li>If-Unmodified-Since比较资源更新时间（Last-Modified），与 If-Modified-Since相反 ✨ If-Rnages 资源未更新时发送实体byte的范围请求</li><li>Range 实体的字节范围请求 ✨</li><li>Authorization web的认证信息 ✨</li><li>Proxy-Authorization 代理服务器要求web认证信息</li><li>Host 请求资源所在服务器 ✨</li><li>From 用户的邮箱地址</li><li>User-Agent 客户端程序信息 ✨</li><li>Max-Forwrads 最大的逐跳次数</li><li>TE 传输编码的优先级</li><li>Referer 请求原始放的url</li><li>Expect 期待服务器的特定行为</li></ul><p>响应首部字段（Response Header Fields）:从服务器向客户端响应时使用的字段</p><ul class='pdf-list'><li>Accept-Ranges 能接受的字节范围</li><li>Age 推算资源创建经过时间</li><li>Location 令客户端重定向的URI ✨</li><li>vary  代理服务器的缓存信息</li><li>ETag 能够表示资源唯一资源的字符串 ✨</li><li>WWW-Authenticate 服务器要求客户端的验证信息</li><li>Proxy-Authenticate 代理服务器要求客户端的验证信息</li><li>Server 服务器的信息 ✨</li><li>Retry-After 和状态码503 一起使用的首部字段，表示下次请求服务器的时间</li></ul><p>实体首部字段（Entiy Header Fields）:针对请求报文和响应报文的实体部分使用首部</p><ul class='pdf-list'><li>Allow 资源可支持http请求的方法 ✨</li><li>Content-Language 实体的资源语言</li><li>Content-Encoding 实体的编码格式</li><li>Content-Length 实体的大小（字节）</li><li>Content-Type 实体媒体类型</li><li>Content-MD5 实体报文的摘要</li><li>Content-Location 代替资源的yri</li><li>Content-Rnages 实体主体的位置返回</li><li>Last-Modified 资源最后的修改资源 ✨</li><li>Expires 实体主体的过期资源 ✨</li></ul>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 15,
+          "to": 16,
+          "files": [
+            {
+              "page": 15,
+              "file": "/study/topic-09-network-protocols/assets/ev/q014_0_15.jpg"
+            },
+            {
+              "page": 16,
+              "file": "/study/topic-09-network-protocols/assets/ev/q014_0_16.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "聊一聊HTTP的部首有哪些？  通用首部字段：请求和响应都会使用，如 Cache-Control 控制缓存、Connection 连接管理、Upgrade 升级协议、Transfor-Encoding 传输编码、Date 创建日期。 请求首部字段：客户端向服务器发送请求时使用，如 Accept、Accept-Encoding、Accept-Language、If-Match、If-None-Match、Range、Authorization、Host、User-Agent。 响应首部字段：服务器向客户端响应时使用，如 Accept-Ranges、Age、Location、ETag、WWW-Authenticate、Server、Retry-After。 实体首部字段：针对请求/响应报文的实体部分，如 Allow、Content-Language、Content-Encoding、Content-Length、Content-Type、Content-MD5、Last-Modified、Expires。  内容很多，重点看标『✨』内容 通用首部字段（General Header Fields）：请求报文和响应报文两方都会使用的首部 Cache-Control 控制缓存 ✨ Connection 连接管理、逐条首部 ✨ Upgrade 升级为其他协议 via 代理服务器的相关信息 Wraning 错误和警告通知 Transfor-Encoding 报文主体的传输编码格式 ✨ Trailer 报文末端的首部一览 Pragma 报文指令 Date 创建报文的日期 请求首部字段（Reauest Header Fields）:客户端向服务器发送请求的报文时使用的首部 Accept 客户端或者代理能够处理的媒体类型 ✨ Accept-Encoding 优先可处理的编码格式 Accept-Language 优先可处理的自然语言 Accept-Charset 优先可以处理的字符集 If-Match 比较实体标记（ETage） ✨ If-None-Match 比较实体标记（ETage）与 If-Match相反 ✨ If-Modified-Since 比较资源更新时间（Last-Modified）✨ If-Unmodified-Since比较资源更新时间（Last-Modified），与 If-Modified-Since相反 ✨ If-Rnages 资源未更新时发送实体byte的范围请求 Range 实体的字节范围请求 ✨ Authorization web的认证信息 ✨ Proxy-Authorization 代理服务器要求web认证信息 Host 请求资源所在服务器 ✨ From 用户的邮箱地址 User-Agent 客户端程序信息 ✨ Max-Forwrads 最大的逐跳次数 TE 传输编码的优先级 Referer 请求原始放的url Expect 期待服务器的特定行为 响应首部字段（Response Header Fields）:从服务器向客户端响应时使用的字段 Accept-Ranges 能接受的字节范围 Age 推算资源创建经过时间 Location 令客户端重定向的URI ✨ vary 代理服务器的缓存信息 ETag 能够表示资源唯一资源的字符串 ✨ WWW-Authenticate 服务器要求客户端的验证信息 Proxy-Authenticate 代理服务器要求客户端的验证信息 Server 服务器的信息 ✨ Retry-After 和状态码503 一起使用的首部字段，表示下次请求服务器的时间 实体首部字段（Entiy Header Fields）:针对请求报文和响应报文的实体部分使用首部 Allow 资源可支持http请求的方法 ✨ Content-Language 实体的资源语言 Content-Encoding 实体的编码格式 Content-Length 实体的大小（字节） Content-Type 实体媒体类型 Content-MD5 实体报文的摘要 Content-Location 代替资源的yri Content-Rnages 实体主体的位置返回 Last-Modified 资源最后的修改资源 ✨ Expires 实体主体的过期资源 ✨"
+    },
+    {
+      "key": "net/q015",
+      "no": 15,
+      "id": "q015",
+      "title": "聊一聊HTTP的状态码有哪些？",
+      "aliases": [],
+      "summary": [
+        "2XX 成功：200 OK、201 Created、202 Accepted、204 No Content、206 Partial Content。",
+        "3XX 重定向：301 永久重定向、302 临时重定向、303 See Other、304 Not Modified、307 Temporary Redirect。",
+        "4XX 客户端错误：400 Bad Request、401 Unauthorized、403 Forbidden、404 Not Found、408 Request Timeout、409 Conflict。",
+        "5XX 服务器错误：500 Internal Server Error、501 Not Implemented、503 Service Unavailable、505 HTTP Version Not Supported。"
+      ],
+      "note": "",
+      "pages": "p16–17",
+      "firstPage": 16,
+      "answer": "<ul class='pdf-list'><li>内容很多，重点看标『✨』内容</li></ul><p>2XX 成功</p><ul class='pdf-list'><li>200 OK，表示从客户端发来的请求在服务器端被正确处理 ✨</li><li>201 Created 请求已经被实现，而且有一个新的资源已经依据请求的需要而建立</li><li>202 Accepted 请求已接受，但是还没执行，不保证完成请求</li><li>204 No content，表示请求成功，但响应报文不含实体的主体部分</li><li>206 Partial Content，进行范围请求 ✨</li></ul><p>3XX 重定向</p><ul class='pdf-list'><li>301 moved permanently，永久性重定向，表示资源已被分配了新的 URL</li><li>302 found，临时性重定向，表示资源临时被分配了新的 URL ✨</li><li>303 see other，表示资源存在着另一个 URL，应使用 GET 方法丁香获取资源</li><li>304 not modified，表示服务器允许访问资源，但因发生请求未满足条件的情况</li><li>307 temporary redirect，临时重定向，和302含义相同</li></ul><p>4XX 客户端错误</p><ul class='pdf-list'><li>400 bad request，请求报文存在语法错误 ✨</li><li>401 unauthorized，表示发送的请求需要有通过 HTTP 认证的认证信息 ✨</li><li>403 forbidden，表示对请求资源的访问被服务器拒绝 ✨</li><li>404 not found，表示在服务器上没有找到请求的资源 ✨</li><li>408 Request timeout, 客户端请求超时</li><li>409 Confict, 请求的资源可能引起冲突</li></ul><p>5XX 服务器错误</p><ul class='pdf-list'><li>500 internal sever error，表示服务器端在执行请求时发生了错误 ✨</li><li>501 Not Implemented 请求超出服务器能力范围，例如服务器不支持当前请求所需要的某个功能，或者请求是服务器不支持的某个方法</li><li>503 service unavailable，表明服务器暂时处于超负载或正在停机维护，无法处理请求505 http version not supported 服务器不支持，或者拒绝支持在请求中使用的 HTTP 版本</li></ul>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 16,
+          "to": 17,
+          "files": [
+            {
+              "page": 16,
+              "file": "/study/topic-09-network-protocols/assets/ev/q015_0_16.jpg"
+            },
+            {
+              "page": 17,
+              "file": "/study/topic-09-network-protocols/assets/ev/q015_0_17.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "聊一聊HTTP的状态码有哪些？  2XX 成功：200 OK、201 Created、202 Accepted、204 No Content、206 Partial Content。 3XX 重定向：301 永久重定向、302 临时重定向、303 See Other、304 Not Modified、307 Temporary Redirect。 4XX 客户端错误：400 Bad Request、401 Unauthorized、403 Forbidden、404 Not Found、408 Request Timeout、409 Conflict。 5XX 服务器错误：500 Internal Server Error、501 Not Implemented、503 Service Unavailable、505 HTTP Version Not Supported。  内容很多，重点看标『✨』内容 2XX 成功 200 OK，表示从客户端发来的请求在服务器端被正确处理 ✨ 201 Created 请求已经被实现，而且有一个新的资源已经依据请求的需要而建立 202 Accepted 请求已接受，但是还没执行，不保证完成请求 204 No content，表示请求成功，但响应报文不含实体的主体部分 206 Partial Content，进行范围请求 ✨ 3XX 重定向 301 moved permanently，永久性重定向，表示资源已被分配了新的 URL 302 found，临时性重定向，表示资源临时被分配了新的 URL ✨ 303 see other，表示资源存在着另一个 URL，应使用 GET 方法丁香获取资源 304 not modified，表示服务器允许访问资源，但因发生请求未满足条件的情况 307 temporary redirect，临时重定向，和302含义相同 4XX 客户端错误 400 bad request，请求报文存在语法错误 ✨ 401 unauthorized，表示发送的请求需要有通过 HTTP 认证的认证信息 ✨ 403 forbidden，表示对请求资源的访问被服务器拒绝 ✨ 404 not found，表示在服务器上没有找到请求的资源 ✨ 408 Request timeout, 客户端请求超时 409 Confict, 请求的资源可能引起冲突 5XX 服务器错误 500 internal sever error，表示服务器端在执行请求时发生了错误 ✨ 501 Not Implemented 请求超出服务器能力范围，例如服务器不支持当前请求所需要的某个功能，或者请求是服务器不支持的某个方法 503 service unavailable，表明服务器暂时处于超负载或正在停机维护，无法处理请求505 http version not supported 服务器不支持，或者拒绝支持在请求中使用的 HTTP 版本"
+    },
+    {
+      "key": "net/q016",
+      "no": 16,
+      "id": "q016",
+      "title": "同样是重定向307，303，302的区别？",
+      "aliases": [],
+      "summary": [
+        "302 是 HTTP/1.0 的协议状态码，HTTP/1.1 为了细化它又引入了 303 和 307。",
+        "303 明确要求客户端用 GET 获取资源，会把 POST 请求变为 GET 请求再重定向。",
+        "307 遵照浏览器标准，不会把 POST 变成 GET。"
+      ],
+      "note": "",
+      "pages": "p17–17",
+      "firstPage": 17,
+      "answer": "<p>302是http1.0的协议状态码，在http1.1版本的时候为了细化302状态码又出来了两个303和307。</p><p>303明确表示客户端应当采用get方法获取资源，他会把POST请求变为GET请求进行重定向。 307会遵照浏览器标准，不会从post变为get。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 17,
+          "to": 17,
+          "files": [
+            {
+              "page": 17,
+              "file": "/study/topic-09-network-protocols/assets/ev/q016_0_17.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "同样是重定向307，303，302的区别？  302 是 HTTP/1.0 的协议状态码，HTTP/1.1 为了细化它又引入了 303 和 307。 303 明确要求客户端用 GET 获取资源，会把 POST 请求变为 GET 请求再重定向。 307 遵照浏览器标准，不会把 POST 变成 GET。  302是http1.0的协议状态码，在http1.1版本的时候为了细化302状态码又出来了两个303和307。 303明确表示客户端应当采用get方法获取资源，他会把POST请求变为GET请求进行重定向。 307会遵照浏览器标准，不会从post变为get。"
+    },
+    {
+      "key": "net/q017",
+      "no": 17,
+      "id": "q017",
+      "title": "HTTP的keep-alive是干什么的？",
+      "aliases": [],
+      "summary": [
+        "早期 HTTP/1.0 每次请求都要新建连接，消耗资源和时间；keep-alive 通过重用连接减少消耗、缩短响应时间。",
+        "在请求头中加入 Connection: keep-alive，告诉对方请求响应完成后不要关闭连接；HTTP/1.0 想保持长连接必须显式加该头部。",
+        "优点：减少 CPU 和内存使用、允许 HTTP 管线化、降低拥塞控制（TCP 连接减少）、减少后续请求延迟（无需重复握手）、报告错误无需关闭 TCP 连接。"
+      ],
+      "note": "",
+      "pages": "p17–17",
+      "firstPage": 17,
+      "answer": "<p>在早期的HTTP/1.0中，每次http请求都要创建一个连接，而创建连接的过程需要消耗资源和时间，为了减少资源消耗，缩短响应时间，就需要重用连接。在后来的HTTP/1.0中以及HTTP/1.1中，引入了重用连接的机制，就是在http请求头中加入Connection: keep-alive来告诉对方这个请求响应完成后不要关闭，下一次咱们还用这个请求继续交流。协议规定HTTP/1.0如果想要保持长连接，需要在请求头中加上Connection: keep-alive。</p><p>keep-alive的优点：</p><ul class='pdf-list'><li>较少的CPU和内存的使用（由于同时打开的连接的减少了）</li><li>允许请求和应答的HTTP管线化</li><li>降低拥塞控制 （TCP连接减少了）</li><li>减少了后续请求的延迟（无需再进行握手）</li><li>报告错误无需关闭TCP连</li></ul>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 17,
+          "to": 17,
+          "files": [
+            {
+              "page": 17,
+              "file": "/study/topic-09-network-protocols/assets/ev/q017_0_17.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTP的keep-alive是干什么的？  早期 HTTP/1.0 每次请求都要新建连接，消耗资源和时间；keep-alive 通过重用连接减少消耗、缩短响应时间。 在请求头中加入 Connection: keep-alive，告诉对方请求响应完成后不要关闭连接；HTTP/1.0 想保持长连接必须显式加该头部。 优点：减少 CPU 和内存使用、允许 HTTP 管线化、降低拥塞控制（TCP 连接减少）、减少后续请求延迟（无需重复握手）、报告错误无需关闭 TCP 连接。  在早期的HTTP/1.0中，每次http请求都要创建一个连接，而创建连接的过程需要消耗资源和时间，为了减少资源消耗，缩短响应时间，就需要重用连接。在后来的HTTP/1.0中以及HTTP/1.1中，引入了重用连接的机制，就是在http请求头中加入Connection: keep-alive来告诉对方这个请求响应完成后不要关闭，下一次咱们还用这个请求继续交流。协议规定HTTP/1.0如果想要保持长连接，需要在请求头中加上Connection: keep-alive。 keep-alive的优点： 较少的CPU和内存的使用（由于同时打开的连接的减少了） 允许请求和应答的HTTP管线化 降低拥塞控制 （TCP连接减少了） 减少了后续请求的延迟（无需再进行握手） 报告错误无需关闭TCP连"
+    },
+    {
+      "key": "net/q018",
+      "no": 18,
+      "id": "q018",
+      "title": "HTTP2相对于HTTP1.x有什么优势和特点？",
+      "aliases": [],
+      "summary": [
+        "二进制分帧：HTTP/2 采用二进制格式传输数据而非 HTTP/1.x 的文本格式，解析更高效；消息由一个或多个帧组成，流是连接中的虚拟通道。",
+        "服务器推送：服务端可在发送 HTML 时主动推送 JS、CSS 等资源，客户端也可通过 RST_STREAM 拒收已缓存资源，推送遵守同源策略。",
+        "头部压缩：用“首部表”跟踪并存储已发送的键值对，相同数据不再重复发送，只发送差异数据。",
+        "多路复用：同域名所有通信在单个连接上完成，一个连接可承载任意数量双向数据流，帧可乱序发送并按流标识重组。"
+      ],
+      "note": "",
+      "pages": "p17–18",
+      "firstPage": 17,
+      "answer": "<h5>二进制分帧</h5><p>帧：HTTP/2 数据通信的最小单位消息：指 HTTP/2 中逻辑上的 HTTP 消息。例如请求和响应等，消息由一个或多个帧组成。</p><p>流：存在于连接中的一个虚拟通道。流可以承载双向消息，每个流都有一个唯一的整数ID HTTP/2 采用二进制格式传输数据，而非 HTTP 1.x 的文本格式，二进制协议解析起来更高效。</p><h5>服务器推送</h5><p>服务端可以在发送页面HTML时主动推送其它资源，而不用等到浏览器解析到相应位置，发起请求再响应。例如服务端可以主动把JS和CSS文件推送给客户端，而不需要客户端解析HTML时再发送这些请求。</p><p>服务端可以主动推送，客户端也有权利选择是否接收。如果服务端推送的资源已经被浏览器缓存过，浏览器可以通过发送RST_STREAM帧来拒收。主动推送也遵守同源策略，服务器不会随便推送第三方资源给客户端。</p><h5>头部压缩</h5><p>HTTP/1.x会在请求和响应中中重复地携带不常改变的、冗长的头部数据，给网络带来额外的负担。</p><ul class='pdf-list'><li>HTTP/2在客户端和服务器端使用“首部表”来跟踪和存储之前发送的键－值对，对于相同的数据，不再通过每次请求和响应发送</li><li>首部表在HTTP/2的连接存续期内始终存在，由客户端和服务器共同渐进地更新;</li><li>每个新的首部键－值对要么被追加到当前表的末尾，要么替换表中之前的值。</li><li>你可以理解为只发送差异数据，而不是全部发送，从而减少头部的信息量</li></ul><figure class='pdf-img zoomable' data-cap='原文配图 · 第 18 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p18_0.jpg' alt='原文配图'><figcaption>原文配图 · p18</figcaption></figure><h5>多路复用</h5><p>HTTP 1.x 中，如果想并发多个请求，必须使用多个 TCP 链接，且浏览器为了控制资源，还会对单个域名有 6-8个的TCP链接请求限制。</p><p>HTTP2中：</p><ul class='pdf-list'><li>同域名下所有通信都在单个连接上完成。</li><li>单个连接可以承载任意数量的双向数据流。</li><li>数据流以消息的形式发送，而消息又由一个或多个帧组成，多个帧之间可以乱序发送，因为根据帧首部的流标识可以重新组装</li></ul><figure class='pdf-img zoomable' data-cap='原文配图 · 第 18 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p18_1.jpg' alt='原文配图'><figcaption>原文配图 · p18</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 17,
+          "to": 18,
+          "files": [
+            {
+              "page": 17,
+              "file": "/study/topic-09-network-protocols/assets/ev/q018_0_17.jpg"
+            },
+            {
+              "page": 18,
+              "file": "/study/topic-09-network-protocols/assets/ev/q018_0_18.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTP2相对于HTTP1.x有什么优势和特点？  二进制分帧：HTTP/2 采用二进制格式传输数据而非 HTTP/1.x 的文本格式，解析更高效；消息由一个或多个帧组成，流是连接中的虚拟通道。 服务器推送：服务端可在发送 HTML 时主动推送 JS、CSS 等资源，客户端也可通过 RST_STREAM 拒收已缓存资源，推送遵守同源策略。 头部压缩：用“首部表”跟踪并存储已发送的键值对，相同数据不再重复发送，只发送差异数据。 多路复用：同域名所有通信在单个连接上完成，一个连接可承载任意数量双向数据流，帧可乱序发送并按流标识重组。  二进制分帧 帧：HTTP/2 数据通信的最小单位消息：指 HTTP/2 中逻辑上的 HTTP 消息。例如请求和响应等，消息由一个或多个帧组成。 流：存在于连接中的一个虚拟通道。流可以承载双向消息，每个流都有一个唯一的整数ID HTTP/2 采用二进制格式传输数据，而非 HTTP 1.x 的文本格式，二进制协议解析起来更高效。 服务器推送 服务端可以在发送页面HTML时主动推送其它资源，而不用等到浏览器解析到相应位置，发起请求再响应。例如服务端可以主动把JS和CSS文件推送给客户端，而不需要客户端解析HTML时再发送这些请求。 服务端可以主动推送，客户端也有权利选择是否接收。如果服务端推送的资源已经被浏览器缓存过，浏览器可以通过发送RST_STREAM帧来拒收。主动推送也遵守同源策略，服务器不会随便推送第三方资源给客户端。 头部压缩 HTTP/1.x会在请求和响应中中重复地携带不常改变的、冗长的头部数据，给网络带来额外的负担。 HTTP/2在客户端和服务器端使用“首部表”来跟踪和存储之前发送的键－值对，对于相同的数据，不再通过每次请求和响应发送 首部表在HTTP/2的连接存续期内始终存在，由客户端和服务器共同渐进地更新; 每个新的首部键－值对要么被追加到当前表的末尾，要么替换表中之前的值。 你可以理解为只发送差异数据，而不是全部发送，从而减少头部的信息量 多路复用 HTTP 1.x 中，如果想并发多个请求，必须使用多个 TCP 链接，且浏览器为了控制资源，还会对单个域名有 6-8个的TCP链接请求限制。 HTTP2中： 同域名下所有通信都在单个连接上完成。 单个连接可以承载任意数量的双向数据流。 数据流以消息的形式发送，而消息又由一个或多个帧组成，多个帧之间可以乱序发送，因为根据帧首部的流标识可以重新组装"
+    },
+    {
+      "key": "net/q019",
+      "no": 19,
+      "id": "q019",
+      "title": "HTTPS 是什么？",
+      "aliases": [],
+      "summary": [
+        "HTTPS 实际是在 TCP 层与 HTTP 层之间加入 SSL/TLS。",
+        "主要用到对称加密、非对称加密、证书等技术，对客户端与服务器的数据加密传输，保证整个通信的安全性。"
+      ],
+      "note": "",
+      "pages": "p19–19",
+      "firstPage": 19,
+      "answer": "<p>HTTPS ，实际就是在 TCP 层与 HTTP 层之间加入了 SSL/TLS 来为上层的安全保驾护航，主要用到对称加密、非对称加密、证书，等技术进行客户端与服务器的数据加密传输，最终达到保证整个通信的安全性。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 19,
+          "to": 19,
+          "files": [
+            {
+              "page": 19,
+              "file": "/study/topic-09-network-protocols/assets/ev/q019_0_19.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTPS 是什么？  HTTPS 实际是在 TCP 层与 HTTP 层之间加入 SSL/TLS。 主要用到对称加密、非对称加密、证书等技术，对客户端与服务器的数据加密传输，保证整个通信的安全性。  HTTPS ，实际就是在 TCP 层与 HTTP 层之间加入了 SSL/TLS 来为上层的安全保驾护航，主要用到对称加密、非对称加密、证书，等技术进行客户端与服务器的数据加密传输，最终达到保证整个通信的安全性。"
+    },
+    {
+      "key": "net/q020",
+      "no": 20,
+      "id": "q020",
+      "title": "为什么有了HTTP为什么还要HTTPS？",
+      "aliases": [],
+      "summary": [
+        "HTTPS 是安全版的 HTTP。",
+        "HTTP 协议的数据都是明文传输，敏感信息传输很不安全；HTTPS 就是为了解决 HTTP 的不安全而生的。"
+      ],
+      "note": "",
+      "pages": "p19–19",
+      "firstPage": 19,
+      "answer": "<p>https是安全版的http，因为http协议的数据都是明文进行传输的，所以对于一些敏感信息的传输就很不安全，HTTPS就是为了解决HTTP的不安全而生的。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 19,
+          "to": 19,
+          "files": [
+            {
+              "page": 19,
+              "file": "/study/topic-09-network-protocols/assets/ev/q020_0_19.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "为什么有了HTTP为什么还要HTTPS？  HTTPS 是安全版的 HTTP。 HTTP 协议的数据都是明文传输，敏感信息传输很不安全；HTTPS 就是为了解决 HTTP 的不安全而生的。  https是安全版的http，因为http协议的数据都是明文进行传输的，所以对于一些敏感信息的传输就很不安全，HTTPS就是为了解决HTTP的不安全而生的。"
+    },
+    {
+      "key": "net/q021",
+      "no": 21,
+      "id": "q021",
+      "title": "HTTPS是如何保证安全的？",
+      "aliases": [],
+      "summary": [
+        "对称加密性能好，但无法解决首次把密钥发给对方的问题，容易被黑客拦截密钥。",
+        "非对称加密用公钥加密、私钥解密，安全性更高但速度慢；通信双方先交换公钥，再用对方公钥加密数据。",
+        "解决方案：用非对称加密的公钥加密对称加密的密钥，接收方用私钥解密得到密钥，之后双方用对称加密通信。",
+        "为防中间人替换公钥，需要 CA 颁发证书证明身份；证书含签发者、用途、使用者公钥、HASH 算法、有效期等，并用 CA 私钥对证书内容摘要加密形成数字签名。",
+        "验证时用同样 Hash 算法生成摘要，再用 CA 公钥解密数字签名，两者比对即可发现证书是否被篡改。"
+      ],
+      "note": "",
+      "pages": "p19–20",
+      "firstPage": 19,
+      "answer": "<p>过程比较复杂，我们得先理解两个概念</p><p>对称加密：即通信的双方都使用同一个秘钥进行加解密，比如特务接头的暗号，就属于对称加密对称加密虽然很简单性能也好，但是无法解决首次把秘钥发给对方的问题，很容易被hacker拦截秘钥。</p><p>非对称加密：</p><li class='num'>1. 私钥 + 公钥= 密钥对</li><li class='num'>2. 即用私钥加密的数据,只有对应的公钥才能解密,用公钥加密的数据,只有对应的私钥才能解密3. 因为通信双方的手里都有一套自己的密钥对,通信之前双方会先把自己的公钥都先发给对方4. 然后对方再拿着这个公钥来加密数据响应给对方,等到到了对方那里,对方再用自己的私钥进行解密</li><p>非对称加密虽然安全性更高，但是带来的问题就是速度很慢，影响性能。</p><p>解决方案：</p><p>那么结合两种加密方式，将对称加密的密钥使用非对称加密的公钥进行加密，然后发送出去，接收方使用私钥进行解密得到对称加密的密钥，然后双方可以使用对称加密来进行沟通。</p><p>此时又带来一个问题，中间人问题：</p><p>如果此时在客户端和服务器之间存在一个中间人,这个中间人只需要把原本双方通信互发的公钥,换成自己的公钥,这样中间人就可以轻松解密通信双方所发送的所有数据。</p><p>所以这个时候需要一个安全的第三方颁发证书（CA），证明身份的身份，防止被中间人攻击。</p><p>证书中包括：签发者、证书用途、使用者公钥、使用者私钥、使用者的HASH算法、证书到期时间等但是问题来了，如果中间人篡改了证书，那么身份证明是不是就无效了？这个证明就白买了，这个时候需要一个新的技术，数字签名。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 19 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p19_0.jpg' alt='原文配图'><figcaption>原文配图 · p19</figcaption></figure><p>数字签名就是用CA自带的HASH算法对证书的内容进行HASH得到一个摘要，再用CA的私钥加密，最终组成数字签名。</p><p>当别人把他的证书发过来的时候,我再用同样的Hash算法,再次生成消息摘要，然后用CA的公钥对数字签名解密,得到CA创建的消息摘要,两者一比,就知道中间有没有被人篡改了。</p><p>这个时候就能最大程度保证通信的安全了。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 19,
+          "to": 20,
+          "files": [
+            {
+              "page": 19,
+              "file": "/study/topic-09-network-protocols/assets/ev/q021_0_19.jpg"
+            },
+            {
+              "page": 20,
+              "file": "/study/topic-09-network-protocols/assets/ev/q021_0_20.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "HTTPS是如何保证安全的？  对称加密性能好，但无法解决首次把密钥发给对方的问题，容易被黑客拦截密钥。 非对称加密用公钥加密、私钥解密，安全性更高但速度慢；通信双方先交换公钥，再用对方公钥加密数据。 解决方案：用非对称加密的公钥加密对称加密的密钥，接收方用私钥解密得到密钥，之后双方用对称加密通信。 为防中间人替换公钥，需要 CA 颁发证书证明身份；证书含签发者、用途、使用者公钥、HASH 算法、有效期等，并用 CA 私钥对证书内容摘要加密形成数字签名。 验证时用同样 Hash 算法生成摘要，再用 CA 公钥解密数字签名，两者比对即可发现证书是否被篡改。  过程比较复杂，我们得先理解两个概念 对称加密：即通信的双方都使用同一个秘钥进行加解密，比如特务接头的暗号，就属于对称加密对称加密虽然很简单性能也好，但是无法解决首次把秘钥发给对方的问题，很容易被hacker拦截秘钥。 非对称加密： 1. 私钥 + 公钥= 密钥对 2. 即用私钥加密的数据,只有对应的公钥才能解密,用公钥加密的数据,只有对应的私钥才能解密3. 因为通信双方的手里都有一套自己的密钥对,通信之前双方会先把自己的公钥都先发给对方4. 然后对方再拿着这个公钥来加密数据响应给对方,等到到了对方那里,对方再用自己的私钥进行解密 非对称加密虽然安全性更高，但是带来的问题就是速度很慢，影响性能。 解决方案： 那么结合两种加密方式，将对称加密的密钥使用非对称加密的公钥进行加密，然后发送出去，接收方使用私钥进行解密得到对称加密的密钥，然后双方可以使用对称加密来进行沟通。 此时又带来一个问题，中间人问题： 如果此时在客户端和服务器之间存在一个中间人,这个中间人只需要把原本双方通信互发的公钥,换成自己的公钥,这样中间人就可以轻松解密通信双方所发送的所有数据。 所以这个时候需要一个安全的第三方颁发证书（CA），证明身份的身份，防止被中间人攻击。 证书中包括：签发者、证书用途、使用者公钥、使用者私钥、使用者的HASH算法、证书到期时间等但是问题来了，如果中间人篡改了证书，那么身份证明是不是就无效了？这个证明就白买了，这个时候需要一个新的技术，数字签名。 数字签名就是用CA自带的HASH算法对证书的内容进行HASH得到一个摘要，再用CA的私钥加密，最终组成数字签名。 当别人把他的证书发过来的时候,我再用同样的Hash算法,再次生成消息摘要，然后用CA的公钥对数字签名解密,得到CA创建的消息摘要,两者一比,就知道中间有没有被人篡改了。 这个时候就能最大程度保证通信的安全了。"
+    },
+    {
+      "key": "net/q022",
+      "no": 22,
+      "id": "q022",
+      "title": "nio和 bio 、aio的区别",
+      "aliases": [],
+      "summary": [
+        "BIO：发起 I/O 读写时均为阻塞方式，直到应用程序读到流或将流写入数据。",
+        "NIO：基于事件驱动思想，常采用 Reactor 模式，发起 I/O 请求时应用程序非阻塞，由操作系统通知应用程序有流可读/写，应用程序再读写缓冲区。",
+        "AIO：同样基于事件驱动，通常用 Proactor 模式实现；读操作由操作系统把数据读到缓冲区并通知应用程序，写操作由操作系统写入并主动通知，节省了 NIO 遍历事件通知队列的代价。",
+        "阻塞是条件不满足就一直等待；非阻塞是条件不满足立即返回标志，一般通过循环判断条件是否满足来获取结果。"
+      ],
+      "note": "",
+      "pages": "p20–20",
+      "firstPage": 20,
+      "answer": "<p>消息时的系统通信，通常基于网络协议实现。常见的协议包括TCP/IP,UDP/IP。</p><p>TCP/IP等协议用于数据传输，但要完成通信，还需要对数据进行处理。例如读取和写入数据。</p><p>I/O可以分为两种：同步IO和异步IO,同步I/O最常见的是 BIO(Blocking IO)、NIO(Non-Blocking IO) BIO：是当发起I/O的读或写操作时，均为阻塞方式，直到应用程序读到了流或者将流写入数据。</p><p>NIO：基于事件驱动思想，常采用reactor（反应器）模式。当发起 IO请求时，应用程序是非阻塞的。</p><p>当SOCKET有流可读或写的时候，</p><p>由操作系统通知应用程序，应用程序再将流读取到缓冲区或者写入系统。</p><p>AIO：同样基于事件驱动的思想，通常采用Proactor(前摄器模式)实现。对于读操作，操作系统将数据读到缓冲区，并通知应用程序，对于写操作，操作系统将write方法传递的流写入并主动通知应用程序。它节省了NIO中遍历事件通知队列的代价。</p><p>阻塞 某个请求发出后，由于该请求操作需要的条件不满足，请求操作一直阻塞，不会返回，直到条件满足。</p><p>非阻塞 请求发出后，若该请求需要的条件不满足，则立即返回一个标志信息告知条件不满足，而不会一直等待。一般需要通过循环判断请求条件是否满足来获取请求结果。</p><p>这里注意比较NIO和AIO的不同，AIO是操作系统完成IO并通知应用程序，NIO是操作系统通知应用程序，由应用程序完成。</p><p>reactor 模型</p><p>当客户端请求抵达后，服务处理程序使用多路分配策略，由一个非阻塞的线程来接收所有的请求，然后派发这些请求至相关的工作线程进行处理</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 20,
+          "to": 20,
+          "files": [
+            {
+              "page": 20,
+              "file": "/study/topic-09-network-protocols/assets/ev/q022_0_20.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "nio和 bio 、aio的区别  BIO：发起 I/O 读写时均为阻塞方式，直到应用程序读到流或将流写入数据。 NIO：基于事件驱动思想，常采用 Reactor 模式，发起 I/O 请求时应用程序非阻塞，由操作系统通知应用程序有流可读/写，应用程序再读写缓冲区。 AIO：同样基于事件驱动，通常用 Proactor 模式实现；读操作由操作系统把数据读到缓冲区并通知应用程序，写操作由操作系统写入并主动通知，节省了 NIO 遍历事件通知队列的代价。 阻塞是条件不满足就一直等待；非阻塞是条件不满足立即返回标志，一般通过循环判断条件是否满足来获取结果。  消息时的系统通信，通常基于网络协议实现。常见的协议包括TCP/IP,UDP/IP。 TCP/IP等协议用于数据传输，但要完成通信，还需要对数据进行处理。例如读取和写入数据。 I/O可以分为两种：同步IO和异步IO,同步I/O最常见的是 BIO(Blocking IO)、NIO(Non-Blocking IO) BIO：是当发起I/O的读或写操作时，均为阻塞方式，直到应用程序读到了流或者将流写入数据。 NIO：基于事件驱动思想，常采用reactor（反应器）模式。当发起 IO请求时，应用程序是非阻塞的。 当SOCKET有流可读或写的时候， 由操作系统通知应用程序，应用程序再将流读取到缓冲区或者写入系统。 AIO：同样基于事件驱动的思想，通常采用Proactor(前摄器模式)实现。对于读操作，操作系统将数据读到缓冲区，并通知应用程序，对于写操作，操作系统将write方法传递的流写入并主动通知应用程序。它节省了NIO中遍历事件通知队列的代价。 阻塞 某个请求发出后，由于该请求操作需要的条件不满足，请求操作一直阻塞，不会返回，直到条件满足。 非阻塞 请求发出后，若该请求需要的条件不满足，则立即返回一个标志信息告知条件不满足，而不会一直等待。一般需要通过循环判断请求条件是否满足来获取请求结果。 这里注意比较NIO和AIO的不同，AIO是操作系统完成IO并通知应用程序，NIO是操作系统通知应用程序，由应用程序完成。 reactor 模型 当客户端请求抵达后，服务处理程序使用多路分配策略，由一个非阻塞的线程来接收所有的请求，然后派发这些请求至相关的工作线程进行处理"
+    },
+    {
+      "key": "net/q023",
+      "no": 23,
+      "id": "q023",
+      "title": "网络的七层结构及其作用",
+      "aliases": [],
+      "summary": [
+        "应用层：确定进程间通信的性质以满足用户需要，提供网络与用户应用。",
+        "表示层：解决用户信息的语法表示问题，如加密解密；会话层：提供访问验证和会话管理等建立、维护应用通信的机制。",
+        "传输层：实现不同主机上用户进程之间的数据通信，负责可靠与不可靠传输、错误检测、流量控制。",
+        "网络层：提供逻辑地址（IP）与选路；数据链路层：把上层数据封装成帧，用 MAC 地址访问媒介并做错误检测与修正；物理层：传输比特流，规定物理接口与电气特性。"
+      ],
+      "note": "",
+      "pages": "p20–21",
+      "firstPage": 20,
+      "answer": "<p>自上而下是：</p><p>应用层（数据）：确定进程之间通信的性质以满足用户需要以及提供网络与用户应用</p><p>表示层（数据）：主要解决用户信息的语法表示问题，如加密解密</p><p>会话层（数据）：提供包括访问验证和会话管理在内的建立和维护应用之间通信的机制，如服务器验证用户登录便是由会话层完成的</p><p>传输层（段）：实现网络不同主机上用户进程之间的数据通信，可靠</p><p>与不可靠的传输，传输层的错误检测，流量控制等</p><p>网络层（包）：提供逻辑地址（IP）、选路，数据从源端到目的端的</p><p>传输</p><p>数据链路层（帧）：将上层数据封装成帧，用MAC地址访问媒介，错误检测与修正</p><p>物理层（比特流）：设备之间比特流的传输，物理接口，电气特性等</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 20,
+          "to": 21,
+          "files": [
+            {
+              "page": 20,
+              "file": "/study/topic-09-network-protocols/assets/ev/q023_0_20.jpg"
+            },
+            {
+              "page": 21,
+              "file": "/study/topic-09-network-protocols/assets/ev/q023_0_21.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "网络的七层结构及其作用  应用层：确定进程间通信的性质以满足用户需要，提供网络与用户应用。 表示层：解决用户信息的语法表示问题，如加密解密；会话层：提供访问验证和会话管理等建立、维护应用通信的机制。 传输层：实现不同主机上用户进程之间的数据通信，负责可靠与不可靠传输、错误检测、流量控制。 网络层：提供逻辑地址（IP）与选路；数据链路层：把上层数据封装成帧，用 MAC 地址访问媒介并做错误检测与修正；物理层：传输比特流，规定物理接口与电气特性。  自上而下是： 应用层（数据）：确定进程之间通信的性质以满足用户需要以及提供网络与用户应用 表示层（数据）：主要解决用户信息的语法表示问题，如加密解密 会话层（数据）：提供包括访问验证和会话管理在内的建立和维护应用之间通信的机制，如服务器验证用户登录便是由会话层完成的 传输层（段）：实现网络不同主机上用户进程之间的数据通信，可靠 与不可靠的传输，传输层的错误检测，流量控制等 网络层（包）：提供逻辑地址（IP）、选路，数据从源端到目的端的 传输 数据链路层（帧）：将上层数据封装成帧，用MAC地址访问媒介，错误检测与修正 物理层（比特流）：设备之间比特流的传输，物理接口，电气特性等"
+    },
+    {
+      "key": "net/q024",
+      "no": 24,
+      "id": "q024",
+      "title": "TCP协议",
+      "aliases": [],
+      "summary": [
+        "TCP/IP 协议按层次分为应用层、传输层、网络层、数据链路层四层。",
+        "TCP（传输控制协议）是面向连接的协议，收发数据前必须和对方建立可靠连接。",
+        "一个 TCP 连接必须经过三次“对话”才能建立起来。"
+      ],
+      "note": "",
+      "pages": "p21–21",
+      "firstPage": 21,
+      "answer": "<p>TCP/IP协议按照层次分为以下四层。应用层、传输层、网络层、数据链路层。</p><p>TCP（Transmission Control Protocol，传输控制协议）是面向连接的协议，也就是说，在收发数据前，必须和对方建立可靠的连接。一个TCP连接必须要经过三次“对话”才能建立起来，其中的过程非常复杂，</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 21 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p21_0.jpg' alt='原文配图'><figcaption>原文配图 · p21</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 21,
+          "to": 21,
+          "files": [
+            {
+              "page": 21,
+              "file": "/study/topic-09-network-protocols/assets/ev/q024_0_21.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "TCP协议  TCP/IP 协议按层次分为应用层、传输层、网络层、数据链路层四层。 TCP（传输控制协议）是面向连接的协议，收发数据前必须和对方建立可靠连接。 一个 TCP 连接必须经过三次“对话”才能建立起来。  TCP/IP协议按照层次分为以下四层。应用层、传输层、网络层、数据链路层。 TCP（Transmission Control Protocol，传输控制协议）是面向连接的协议，也就是说，在收发数据前，必须和对方建立可靠的连接。一个TCP连接必须要经过三次“对话”才能建立起来，其中的过程非常复杂，"
+    },
+    {
+      "key": "net/q025",
+      "no": 25,
+      "id": "q025",
+      "title": "TCP选项有哪些",
+      "aliases": [],
+      "summary": [
+        "TCP 首部选项字段最多 40B。",
+        "选项结束字段（EOP，0x00）占 1B，仅用一次，放在末尾用于填充；无操作字段（NOP，0x01）占 1B，也用于填充，放在选项开头。",
+        "MSS（最大报文段长度）：种类 1B（值 2）、长度 1B（值 4）、数值 2B，用于连接开始时确定 MSS，未确定则用默认值（一般 536B）。",
+        "窗口扩大因子：种类 1B（值 3）、长度 1B（值 3）、数值 1B，新窗口值 = 首部窗口值 × 2 的扩大因子次方。",
+        "时间戳用于测试 RTT 和防止序号绕回；还允许 SACK 和 SACK 选项。"
+      ],
+      "note": "",
+      "pages": "p21–22",
+      "firstPage": 21,
+      "answer": "<p>TCP首部选项字段多达40B，一些常用的字段有：</p><p>1）选项结束字段（EOP，0x00），占1B，一个报文段仅用一次。放在末尾用于填充，用途是说明：首部已经没有更多的消息，应用数据在下一个32位字开始处</p><p>2）无操作字段（NOP, 0x01），占1B，也用于填充，放在选项的开头</p><p>3）MSS（最大报文段长度），格式如下：种类（1B，值为2），长度（1B，值为4），数值（2B）</p><p>用于在连接开始时确定MSS的大小，如果没有确定，就用默认的（一般实现是536B）  4）窗口扩大因子，格式如下：种类（1B，值为3），长度（1B，值为3),数值（1B）</p><p>新窗口值 = 首部窗口值 * 2的（扩大因子）次方</p><p>当通信双方认为首部的窗口值还不够大的时候，在连接开始时用这个来定义更大的窗口。仅在连接开始时有效。一经定义，通信过程中无法更改。</p><p>5）时间戳（应用测试RTT和防止序号绕回）</p><p>6）允许SACK和SACK选项</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 22 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p22_0.jpg' alt='原文配图'><figcaption>原文配图 · p22</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 21,
+          "to": 22,
+          "files": [
+            {
+              "page": 21,
+              "file": "/study/topic-09-network-protocols/assets/ev/q025_0_21.jpg"
+            },
+            {
+              "page": 22,
+              "file": "/study/topic-09-network-protocols/assets/ev/q025_0_22.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "TCP选项有哪些  TCP 首部选项字段最多 40B。 选项结束字段（EOP，0x00）占 1B，仅用一次，放在末尾用于填充；无操作字段（NOP，0x01）占 1B，也用于填充，放在选项开头。 MSS（最大报文段长度）：种类 1B（值 2）、长度 1B（值 4）、数值 2B，用于连接开始时确定 MSS，未确定则用默认值（一般 536B）。 窗口扩大因子：种类 1B（值 3）、长度 1B（值 3）、数值 1B，新窗口值 = 首部窗口值 × 2 的扩大因子次方。 时间戳用于测试 RTT 和防止序号绕回；还允许 SACK 和 SACK 选项。  TCP首部选项字段多达40B，一些常用的字段有： 1）选项结束字段（EOP，0x00），占1B，一个报文段仅用一次。放在末尾用于填充，用途是说明：首部已经没有更多的消息，应用数据在下一个32位字开始处 2）无操作字段（NOP, 0x01），占1B，也用于填充，放在选项的开头 3）MSS（最大报文段长度），格式如下：种类（1B，值为2），长度（1B，值为4），数值（2B） 用于在连接开始时确定MSS的大小，如果没有确定，就用默认的（一般实现是536B） 4）窗口扩大因子，格式如下：种类（1B，值为3），长度（1B，值为3),数值（1B） 新窗口值 = 首部窗口值 * 2的（扩大因子）次方 当通信双方认为首部的窗口值还不够大的时候，在连接开始时用这个来定义更大的窗口。仅在连接开始时有效。一经定义，通信过程中无法更改。 5）时间戳（应用测试RTT和防止序号绕回） 6）允许SACK和SACK选项"
+    },
+    {
+      "key": "net/q026",
+      "no": 26,
+      "id": "q026",
+      "title": "TCP三次握手：",
+      "aliases": [],
+      "summary": [
+        "发送方：我要和你建立链接？",
+        "接收方：你真的要和我建立链接么？",
+        "发送方：我真的要和你建立链接，成功。"
+      ],
+      "note": "",
+      "pages": "p22–22",
+      "firstPage": 22,
+      "answer": "<p>发送方：我要和你建立链接？</p><p>接收方：你真的要和我建立链接么？</p><p>发送方：我真的要和你建立链接，成功。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 22 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p22_1.jpg' alt='原文配图'><figcaption>原文配图 · p22</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 22,
+          "to": 22,
+          "files": [
+            {
+              "page": 22,
+              "file": "/study/topic-09-network-protocols/assets/ev/q026_0_22.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "TCP三次握手：  发送方：我要和你建立链接？ 接收方：你真的要和我建立链接么？ 发送方：我真的要和你建立链接，成功。  发送方：我要和你建立链接？ 接收方：你真的要和我建立链接么？ 发送方：我真的要和你建立链接，成功。"
+    },
+    {
+      "key": "net/q027",
+      "no": 27,
+      "id": "q027",
+      "title": "为什么 TCP 连接需要三次握手，两次不可以么，为什么？",
+      "aliases": [],
+      "summary": [
+        "为了防止已失效的连接请求报文突然又传送到服务端而产生错误。",
+        "客户端发出的连接请求报文可能未丢失，而是在某个网络节点长时间滞留，延误到连接释放后的某个时间才到达服务器。"
+      ],
+      "note": "",
+      "pages": "p22–22",
+      "firstPage": 22,
+      "answer": "<p>为了防止已失效的连接请求报文突然又传送到了服务端，因而产生错误。客户端发出的连接请求报文并未丢失，而是在某个网络节点长时间滞留了，以致延误到链接释放以后的某个时间才到达 Server 。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 22,
+          "to": 22,
+          "files": [
+            {
+              "page": 22,
+              "file": "/study/topic-09-network-protocols/assets/ev/q027_0_22.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "为什么 TCP 连接需要三次握手，两次不可以么，为什么？  为了防止已失效的连接请求报文突然又传送到服务端而产生错误。 客户端发出的连接请求报文可能未丢失，而是在某个网络节点长时间滞留，延误到连接释放后的某个时间才到达服务器。  为了防止已失效的连接请求报文突然又传送到了服务端，因而产生错误。客户端发出的连接请求报文并未丢失，而是在某个网络节点长时间滞留了，以致延误到链接释放以后的某个时间才到达 Server 。"
+    },
+    {
+      "key": "net/q028",
+      "no": 28,
+      "id": "q028",
+      "title": "问:三次握手过程中有哪些不安全性",
+      "aliases": [],
+      "summary": [
+        "SYN 洪泛攻击：伪装 IP 发送 SYN，服务器回复 SYN+ACK 后收不到 ACK 会重复发送，大量半连接耗尽 backlog，属于 DOS 的一种。",
+        "防范：降低 SYN timeout、启用 SYN cookie、在网关处过滤源 IP 不属于其来源子网的包。",
+        "攻击者截获服务器的 ACK+SYN 后可伪装成原始主机继续通信；此外还有 DOS/DDoS 带宽攻击与连通性攻击。",
+        "死亡值 ping：故意产生尺寸超过 ICMP 上限（64KB）的畸形 ping 包，使未防护的系统内存分配错误，导致 TCP/IP 栈崩溃、接收方宕机。"
+      ],
+      "note": "",
+      "pages": "p22–24",
+      "firstPage": 22,
+      "answer": "<p>一、SYN洪泛攻击</p><p>服务器处于SYN_Wait的状态：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 23 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p23_0.jpg' alt='原文配图'><figcaption>原文配图 · p23</figcaption></figure><p>1）伪装的IP向服务器发送一个SYN请求建立连接，然后服务器向该IP回复SYN和ACK，但是找不到该IP对应的主机，当超时时服务器收不到ACK会重复发送。当大量的攻击者请求建立连接时，服务器就会存在大量未完成三次握手的连接，服务器主机backlog被耗尽而不能响应其它连接。即SYN泛洪攻击（属于DOS的一种，发送大量的半连接请求，耗费CPU和内存资源，引起网络堵塞甚至系统瘫痪）  当你在服务器上看到大量的半连接状态时，特别是源IP地址是随机的，基本上可以断定这是一次SYN攻击.在Linux下可以如下命令检测是否被Syn攻击</p><pre class='code'><code><span class='cl'>netstat -n -p <span class='tk-type'>TCP</span> | grep <span class='tk-type'>SYN_RECV</span></span></code></pre><p>防范措施：</p><p>1、降低SYN timeout时间，使得主机尽快释放半连接的占用</p><p>2、采用SYN cookie设置，如果短时间内连续收到某个IP的重复SYN请求，则认为受到了该IP的攻击，丢弃来自该IP的后续请求报文</p><p>3、在网关处设置过滤，拒绝将一个源IP地址不属于其来源子网的包进行更远的路由  2）当一个主机向服务器发送SYN请求连接，服务器回复ACK和SYN后，攻击者截获ACK和SYN。</p><p>然后伪装成原始主机继续与服务器进行通信。</p><p>二、DOS攻击 拒绝服务攻击</p><p>DDoS（分布式拒绝服务攻击）</p><p>DOS攻击利用合理的服务请求占用过多的服务资源，使正常用户的请求无法得到相应。</p><p>常见的DOS攻击有计算机网络带宽攻击和连通性攻击。</p><p>带宽攻击指以极大的通信量冲击网络，使得所有可用网络资源都被消耗殆尽，最后导致合法的用户请求无法通过。</p><p>连通性攻击指用大量的连接请求冲击计算机，使得所有可用的操作系统资源都被消耗殆尽，最终计算机无法再处理合法用户的请求。</p><p>三、死亡值ping</p><p>许多操作系统的TCP/IP协议栈规定ICMP包大小为64KB（网间控制报文），且在对包的标题头进行读取之后，要根据该标题头里包含的信息来为有效载荷生成缓冲区。</p><p>”死亡值ping”就是故意产生畸形的测试ping包，声称自己的尺寸超过ICMP上限，也就是加载的尺寸超过64KB上限，使未采取保护措施的网络系统出现内存分配错误，导致TCP/IP协议栈崩溃，最终接收方宕机。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 24 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p24_0.jpg' alt='原文配图'><figcaption>原文配图 · p24</figcaption></figure><figure class='pdf-img zoomable' data-cap='原文配图 · 第 24 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p24_1.jpg' alt='原文配图'><figcaption>原文配图 · p24</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 22,
+          "to": 24,
+          "files": [
+            {
+              "page": 22,
+              "file": "/study/topic-09-network-protocols/assets/ev/q028_0_22.jpg"
+            },
+            {
+              "page": 23,
+              "file": "/study/topic-09-network-protocols/assets/ev/q028_0_23.jpg"
+            },
+            {
+              "page": 24,
+              "file": "/study/topic-09-network-protocols/assets/ev/q028_0_24.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "问:三次握手过程中有哪些不安全性  SYN 洪泛攻击：伪装 IP 发送 SYN，服务器回复 SYN+ACK 后收不到 ACK 会重复发送，大量半连接耗尽 backlog，属于 DOS 的一种。 防范：降低 SYN timeout、启用 SYN cookie、在网关处过滤源 IP 不属于其来源子网的包。 攻击者截获服务器的 ACK+SYN 后可伪装成原始主机继续通信；此外还有 DOS/DDoS 带宽攻击与连通性攻击。 死亡值 ping：故意产生尺寸超过 ICMP 上限（64KB）的畸形 ping 包，使未防护的系统内存分配错误，导致 TCP/IP 栈崩溃、接收方宕机。  一、SYN洪泛攻击 服务器处于SYN_Wait的状态： 1）伪装的IP向服务器发送一个SYN请求建立连接，然后服务器向该IP回复SYN和ACK，但是找不到该IP对应的主机，当超时时服务器收不到ACK会重复发送。当大量的攻击者请求建立连接时，服务器就会存在大量未完成三次握手的连接，服务器主机backlog被耗尽而不能响应其它连接。即SYN泛洪攻击（属于DOS的一种，发送大量的半连接请求，耗费CPU和内存资源，引起网络堵塞甚至系统瘫痪） 当你在服务器上看到大量的半连接状态时，特别是源IP地址是随机的，基本上可以断定这是一次SYN攻击.在Linux下可以如下命令检测是否被Syn攻击 netstat -n -p TCP | grep SYN_RECV 防范措施： 1、降低SYN timeout时间，使得主机尽快释放半连接的占用 2、采用SYN cookie设置，如果短时间内连续收到某个IP的重复SYN请求，则认为受到了该IP的攻击，丢弃来自该IP的后续请求报文 3、在网关处设置过滤，拒绝将一个源IP地址不属于其来源子网的包进行更远的路由 2）当一个主机向服务器发送SYN请求连接，服务器回复ACK和SYN后，攻击者截获ACK和SYN。 然后伪装成原始主机继续与服务器进行通信。 二、DOS攻击 拒绝服务攻击 DDoS（分布式拒绝服务攻击） DOS攻击利用合理的服务请求占用过多的服务资源，使正常用户的请求无法得到相应。 常见的DOS攻击有计算机网络带宽攻击和连通性攻击。 带宽攻击指以极大的通信量冲击网络，使得所有可用网络资源都被消耗殆尽，最后导致合法的用户请求无法通过。 连通性攻击指用大量的连接请求冲击计算机，使得所有可用的操作系统资源都被消耗殆尽，最终计算机无法再处理合法用户的请求。 三、死亡值ping 许多操作系统的TCP/IP协议栈规定ICMP包大小为64KB（网间控制报文），且在对包的标题头进行读取之后，要根据该标题头里包含的信息来为有效载荷生成缓冲区。 ”死亡值ping”就是故意产生畸形的测试ping包，声称自己的尺寸超过ICMP上限，也就是加载的尺寸超过64KB上限，使未采取保护措施的网络系统出现内存分配错误，导致TCP/IP协议栈崩溃，最终接收方宕机。"
+    },
+    {
+      "key": "net/q029",
+      "no": 29,
+      "id": "q029",
+      "title": "什么是 TCP 四次挥手？",
+      "aliases": [],
+      "summary": [
+        "发送方：我要和你断开连接！接收方：好的，断吧。",
+        "接收方：我也要和你断开连接！发送方：好的，断吧。"
+      ],
+      "note": "",
+      "pages": "p24–24",
+      "firstPage": 24,
+      "answer": "<p>四次挥手，简单来说，就是：</p><p>发送方：我要和你断开连接！</p><p>接收方：好的，断吧。</p><p>接收方：我也要和你断开连接！</p><p>发送方：好的，断吧。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 24 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p24_2.jpg' alt='原文配图'><figcaption>原文配图 · p24</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 24,
+          "to": 24,
+          "files": [
+            {
+              "page": 24,
+              "file": "/study/topic-09-network-protocols/assets/ev/q029_0_24.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "什么是 TCP 四次挥手？  发送方：我要和你断开连接！接收方：好的，断吧。 接收方：我也要和你断开连接！发送方：好的，断吧。  四次挥手，简单来说，就是： 发送方：我要和你断开连接！ 接收方：好的，断吧。 接收方：我也要和你断开连接！ 发送方：好的，断吧。"
+    },
+    {
+      "key": "net/q030",
+      "no": 30,
+      "id": "q030",
+      "title": "问题：为什么要有TIME_WAIT状态？",
+      "aliases": [],
+      "summary": [
+        "可靠终止 TCP 连接：最后一个 ACK 被丢弃时，server 会超时重传 FIN，处于 TIME_WAIT 的 client 可继续回复 ACK。",
+        "保证迟来的 TCP 报文段有足够时间被识别和丢弃，避免影响立刻建立的新连接。"
+      ],
+      "note": "",
+      "pages": "p25–25",
+      "firstPage": 25,
+      "answer": "<p>TIME_WAIT状态存在有两个原因。</p><p>一、可靠终止TCP连接。如果最后一个ACK报文因为网络原因被丢弃，此时server因为没有收到ACK而超时重传FIN报文，处于TIME_WAIT状态的client可以继续对FIN报文做回复，向server发送ACK报文。</p><p>二、保证让迟来的TCP报文段有足够的时间被识别和丢弃。连接结束了，网络中的延迟报文也应该被丢弃掉，以免影响立刻建立的新连接。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 25,
+          "to": 25,
+          "files": [
+            {
+              "page": 25,
+              "file": "/study/topic-09-network-protocols/assets/ev/q030_0_25.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "问题：为什么要有TIME_WAIT状态？  可靠终止 TCP 连接：最后一个 ACK 被丢弃时，server 会超时重传 FIN，处于 TIME_WAIT 的 client 可继续回复 ACK。 保证迟来的 TCP 报文段有足够时间被识别和丢弃，避免影响立刻建立的新连接。  TIME_WAIT状态存在有两个原因。 一、可靠终止TCP连接。如果最后一个ACK报文因为网络原因被丢弃，此时server因为没有收到ACK而超时重传FIN报文，处于TIME_WAIT状态的client可以继续对FIN报文做回复，向server发送ACK报文。 二、保证让迟来的TCP报文段有足够的时间被识别和丢弃。连接结束了，网络中的延迟报文也应该被丢弃掉，以免影响立刻建立的新连接。"
+    },
+    {
+      "key": "net/q031",
+      "no": 31,
+      "id": "q031",
+      "title": "问题：TCP粘包、拆包及解决办法",
+      "aliases": [],
+      "summary": [
+        "UDP 基于报文发送，首部用 16bit 指示数据报长度，应用层能区分不同报文，因此没有粘包/拆包问题。",
+        "TCP 基于字节流，数据块之间没有边界，首部也没有数据长度字段，因此可能发生粘包或拆包。",
+        "发生原因：发送数据大于缓冲区剩余空间或大于 MSS 会拆包；小于缓冲区大小、多次写入一次发送，或接收端应用层未及时读取，会粘包。",
+        "解决办法：消息定长、设置消息边界（如包尾加回车换行）、消息头带总长度/消息体长度、使用 Netty 等更复杂的应用层协议。"
+      ],
+      "note": "",
+      "pages": "p25–26",
+      "firstPage": 25,
+      "answer": "<p>为什么常说 TCP 有粘包和拆包的问题而不说 UDP ？</p><p>由前两节可知，UDP 是基于报文发送的，UDP首部采用了 16bit 来指示 UDP 数据报文的长度，因此在应用层能很好的将不同的数据报文区分开，从而避免粘包和拆包的问题。</p><p>而 TCP 是基于字节流的，虽然应用层和 TCP 传输层之间的数据交互是大小不等的数据块，但是 TCP 并没有把这些数据块区分边界，仅仅是一连串没有结构的字节流；另外从 TCP 的帧结构也可以看出，在TCP 的首部没有表示数据长度的字段，基于上面两点，在使用 TCP 传输数据时，才有粘包或者拆包现象发生的可能。</p><p>什么是粘包、拆包？</p><p>假设 Client 向 Server 连续发送了两个数据包，用 packet1 和 packet2 来表示，那么服务端收到的数据可以分为三种情况，现列举如下：</p><p>第一种情况，接收端正常收到两个数据包，即没有发生拆包和粘包的现象。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 25 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p25_0.jpg' alt='原文配图'><figcaption>原文配图 · p25</figcaption></figure><p>第二种情况，接收端只收到一个数据包，但是这一个数据包中包含了发送端发送的两个数据包的信息，这种现象即为粘包。这种情况由于接收端不知道这两个数据包的界限，所以对于接收端来说很难处理。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 25 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p25_1.jpg' alt='原文配图'><figcaption>原文配图 · p25</figcaption></figure><p>第三种情况，这种情况有两种表现形式，如下图。接收端收到了两个数据包，但是这两个数据包要么是不完整的，要么就是多出来一块，这种情况即发生了拆包和粘包。这两种情况如果不加特殊处理，对于接收端同样是不好处理的。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 25 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p25_2.jpg' alt='原文配图'><figcaption>原文配图 · p25</figcaption></figure><figure class='pdf-img zoomable' data-cap='原文配图 · 第 26 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p26_0.jpg' alt='原文配图'><figcaption>原文配图 · p26</figcaption></figure><p>为什么会发生 TCP 粘包、拆包？</p><ul class='pdf-list'><li>要发送的数据大于 TCP 发送缓冲区剩余空间大小，将会发生拆包。</li><li>待发送数据大于 MSS（最大报文长度），TCP 在传输前将进行拆包。</li><li>要发送的数据小于 TCP 发送缓冲区的大小，TCP 将多次写入缓冲区的数据一次发送出去，将会发生粘包。</li><li>接收数据端的应用层没有及时读取接收缓冲区中的数据，将发生粘包。</li></ul><p>粘包、拆包解决办法</p><p>由于 TCP 本身是面向字节流的，无法理解上层的业务数据，所以在底层是无法保证数据包不被拆分和重组的，这个问题只能通过上层的应用协议栈设计来解决，根据业界的主流协议的解决方案，归纳如下：</p><ul class='pdf-list'><li>消息定长：发送端将每个数据包封装为固定长度（不够的可以通过补 0 填充），这样接收端每次接收缓冲区中读取固定长度的数据就自然而然的把每个数据包拆分开来。</li><li>设置消息边界：服务端从网络流中按消息边界分离出消息内容。在包尾增加回车换行符进行分割，例如 FTP 协议。</li><li>将消息分为消息头和消息体：消息头中包含表示消息总长度（或者消息体长度）的字段。</li><li>更复杂的应用层协议比如 Netty 中实现的一些协议都对粘包、拆包做了很好的处理。</li></ul>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 25,
+          "to": 26,
+          "files": [
+            {
+              "page": 25,
+              "file": "/study/topic-09-network-protocols/assets/ev/q031_0_25.jpg"
+            },
+            {
+              "page": 26,
+              "file": "/study/topic-09-network-protocols/assets/ev/q031_0_26.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "问题：TCP粘包、拆包及解决办法  UDP 基于报文发送，首部用 16bit 指示数据报长度，应用层能区分不同报文，因此没有粘包/拆包问题。 TCP 基于字节流，数据块之间没有边界，首部也没有数据长度字段，因此可能发生粘包或拆包。 发生原因：发送数据大于缓冲区剩余空间或大于 MSS 会拆包；小于缓冲区大小、多次写入一次发送，或接收端应用层未及时读取，会粘包。 解决办法：消息定长、设置消息边界（如包尾加回车换行）、消息头带总长度/消息体长度、使用 Netty 等更复杂的应用层协议。  为什么常说 TCP 有粘包和拆包的问题而不说 UDP ？ 由前两节可知，UDP 是基于报文发送的，UDP首部采用了 16bit 来指示 UDP 数据报文的长度，因此在应用层能很好的将不同的数据报文区分开，从而避免粘包和拆包的问题。 而 TCP 是基于字节流的，虽然应用层和 TCP 传输层之间的数据交互是大小不等的数据块，但是 TCP 并没有把这些数据块区分边界，仅仅是一连串没有结构的字节流；另外从 TCP 的帧结构也可以看出，在TCP 的首部没有表示数据长度的字段，基于上面两点，在使用 TCP 传输数据时，才有粘包或者拆包现象发生的可能。 什么是粘包、拆包？ 假设 Client 向 Server 连续发送了两个数据包，用 packet1 和 packet2 来表示，那么服务端收到的数据可以分为三种情况，现列举如下： 第一种情况，接收端正常收到两个数据包，即没有发生拆包和粘包的现象。 第二种情况，接收端只收到一个数据包，但是这一个数据包中包含了发送端发送的两个数据包的信息，这种现象即为粘包。这种情况由于接收端不知道这两个数据包的界限，所以对于接收端来说很难处理。 第三种情况，这种情况有两种表现形式，如下图。接收端收到了两个数据包，但是这两个数据包要么是不完整的，要么就是多出来一块，这种情况即发生了拆包和粘包。这两种情况如果不加特殊处理，对于接收端同样是不好处理的。 为什么会发生 TCP 粘包、拆包？ 要发送的数据大于 TCP 发送缓冲区剩余空间大小，将会发生拆包。 待发送数据大于 MSS（最大报文长度），TCP 在传输前将进行拆包。 要发送的数据小于 TCP 发送缓冲区的大小，TCP 将多次写入缓冲区的数据一次发送出去，将会发生粘包。 接收数据端的应用层没有及时读取接收缓冲区中的数据，将发生粘包。 粘包、拆包解决办法 由于 TCP 本身是面向字节流的，无法理解上层的业务数据，所以在底层是无法保证数据包不被拆分和重组的，这个问题只能通过上层的应用协议栈设计来解决，根据业界的主流协议的解决方案，归纳如下： 消息定长：发送端将每个数据包封装为固定长度（不够的可以通过补 0 填充），这样接收端每次接收缓冲区中读取固定长度的数据就自然而然的把每个数据包拆分开来。 设置消息边界：服务端从网络流中按消息边界分离出消息内容。在包尾增加回车换行符进行分割，例如 FTP 协议。 将消息分为消息头和消息体：消息头中包含表示消息总长度（或者消息体长度）的字段。 更复杂的应用层协议比如 Netty 中实现的一些协议都对粘包、拆包做了很好的处理。"
+    },
+    {
+      "key": "net/q032",
+      "no": 32,
+      "id": "q032",
+      "title": "问题：说说TCP 滑动窗口",
+      "aliases": [],
+      "summary": [
+        "窗口是缓存的一部分，用来暂时存放字节流；收发双方各有一个窗口，接收方通过 TCP 报文中的窗口字段告诉发送方自己的窗口大小。",
+        "发送窗口内的字节允许发送，接收窗口内的字节允许接收；已发送并确认的字节使窗口向右滑动。",
+        "接收窗口只对窗口内最后一个按序到达的字节进行确认；发送方收到该确认后，就知道该字节之前的字节都已被接收。"
+      ],
+      "note": "",
+      "pages": "p26–26",
+      "firstPage": 26,
+      "answer": "<p>窗口是缓存的一部分，用来暂时存放字节流。发送方和接收方各有一个窗口，接收方通过 TCP 报文段中的窗口字段告诉发送方自己的窗口大小，发送方根据这个值和其它信息设置自己的窗口大小。</p><p>发送窗口内的字节都允许被发送，接收窗口内的字节都允许被接收。如果发送窗口左部的字节已经发送并且收到了确认，那么就将发送窗口向右滑动一定距离，直到左部第一个字节不是已发送并且已确认的状态；接收窗口的滑动类似，接收窗口左部字节已经发送确认并交付主机，就向右滑动接收窗口。</p><p>接收窗口只会对窗口内最后一个按序到达的字节进行确认，例如接收窗口已经收到的字节为 {31, 34, 35}，其中 {31} 按序到达，而 {34, 35} 就不是，因此只对字节 31 进行确认。发送方得到一个字节的确认之后，就知道这个字节之前的所有字节都已经被接收。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 26 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p26_1.jpg' alt='原文配图'><figcaption>原文配图 · p26</figcaption></figure>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 26,
+          "to": 26,
+          "files": [
+            {
+              "page": 26,
+              "file": "/study/topic-09-network-protocols/assets/ev/q032_0_26.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "问题：说说TCP 滑动窗口  窗口是缓存的一部分，用来暂时存放字节流；收发双方各有一个窗口，接收方通过 TCP 报文中的窗口字段告诉发送方自己的窗口大小。 发送窗口内的字节允许发送，接收窗口内的字节允许接收；已发送并确认的字节使窗口向右滑动。 接收窗口只对窗口内最后一个按序到达的字节进行确认；发送方收到该确认后，就知道该字节之前的字节都已被接收。  窗口是缓存的一部分，用来暂时存放字节流。发送方和接收方各有一个窗口，接收方通过 TCP 报文段中的窗口字段告诉发送方自己的窗口大小，发送方根据这个值和其它信息设置自己的窗口大小。 发送窗口内的字节都允许被发送，接收窗口内的字节都允许被接收。如果发送窗口左部的字节已经发送并且收到了确认，那么就将发送窗口向右滑动一定距离，直到左部第一个字节不是已发送并且已确认的状态；接收窗口的滑动类似，接收窗口左部字节已经发送确认并交付主机，就向右滑动接收窗口。 接收窗口只会对窗口内最后一个按序到达的字节进行确认，例如接收窗口已经收到的字节为 {31, 34, 35}，其中 {31} 按序到达，而 {34, 35} 就不是，因此只对字节 31 进行确认。发送方得到一个字节的确认之后，就知道这个字节之前的所有字节都已经被接收。"
+    },
+    {
+      "key": "net/q033",
+      "no": 33,
+      "id": "q033",
+      "title": "说说TCP 流量控制？",
+      "aliases": [],
+      "summary": [
+        "流量控制控制发送方发送速率，保证接收方来得及接收。",
+        "接收方确认报文中的窗口字段可控制发送方窗口大小，从而影响发送速率；窗口设为 0 时发送方不能发送数据。",
+        "为避免死锁，发送端会不时发送仅含一个字节的窗口探测数据段，获取最新窗口大小。"
+      ],
+      "note": "",
+      "pages": "p27–27",
+      "firstPage": 27,
+      "answer": "<p>流量控制是为了控制发送方发送速率，保证接收方来得及接收。</p><p>接收方发送的确认报文中的窗口字段可以用来控制发送方窗口大小，从而影响发送方的发送速率。将窗口字段设置为 0，则发送方不能发送数据。</p><p>实际上，为了避免此问题的产生，发送端主机会时不时的发送一个叫做窗口探测的数据段，此数据段仅包含一个字节来获取最新的窗口大小信息。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 27,
+          "to": 27,
+          "files": [
+            {
+              "page": 27,
+              "file": "/study/topic-09-network-protocols/assets/ev/q033_0_27.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "说说TCP 流量控制？  流量控制控制发送方发送速率，保证接收方来得及接收。 接收方确认报文中的窗口字段可控制发送方窗口大小，从而影响发送速率；窗口设为 0 时发送方不能发送数据。 为避免死锁，发送端会不时发送仅含一个字节的窗口探测数据段，获取最新窗口大小。  流量控制是为了控制发送方发送速率，保证接收方来得及接收。 接收方发送的确认报文中的窗口字段可以用来控制发送方窗口大小，从而影响发送方的发送速率。将窗口字段设置为 0，则发送方不能发送数据。 实际上，为了避免此问题的产生，发送端主机会时不时的发送一个叫做窗口探测的数据段，此数据段仅包含一个字节来获取最新的窗口大小信息。"
+    },
+    {
+      "key": "net/q034",
+      "no": 34,
+      "id": "q034",
+      "title": "UDP 是什么？",
+      "aliases": [],
+      "summary": [
+        "UDP（用户数据报协议）是与 TCP 相对应的协议。",
+        "它是面向非连接的协议，不与对方建立连接，而是直接把数据包发送过去。"
+      ],
+      "note": "",
+      "pages": "p27–27",
+      "firstPage": 27,
+      "answer": "<p>UDP（User Data Protocol，用户数据报协议），是与 TCP 相对应的协议。它是面向非连接的协议，它不与对方建立连接，而是直接就把数据包发送过去。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 27,
+          "to": 27,
+          "files": [
+            {
+              "page": 27,
+              "file": "/study/topic-09-network-protocols/assets/ev/q034_0_27.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "UDP 是什么？  UDP（用户数据报协议）是与 TCP 相对应的协议。 它是面向非连接的协议，不与对方建立连接，而是直接把数据包发送过去。  UDP（User Data Protocol，用户数据报协议），是与 TCP 相对应的协议。它是面向非连接的协议，它不与对方建立连接，而是直接就把数据包发送过去。"
+    },
+    {
+      "key": "net/q035",
+      "no": 35,
+      "id": "q035",
+      "title": "问题：UDP 主要特点",
+      "aliases": [],
+      "summary": [
+        "UDP 是无连接的。",
+        "使用尽最大努力交付，不保证可靠交付，主机不需要维持复杂的连接状态。",
+        "UDP 面向报文。",
+        "没有拥塞控制，网络拥塞不会使源主机发送速率降低。"
+      ],
+      "note": "",
+      "pages": "p27–27",
+      "firstPage": 27,
+      "answer": "<p>UDP 是无连接的。</p><p>UDP 使用尽最大努力交付，即不保证可靠交付，因此主机不需要维持复杂的链接状态（这里面有许多参数）。</p><p>UDP 是面向报文的。</p><p>UDP 没有拥塞控制，因此网络出现拥塞不会使源主机的发送速率降低。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 27,
+          "to": 27,
+          "files": [
+            {
+              "page": 27,
+              "file": "/study/topic-09-network-protocols/assets/ev/q035_0_27.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "问题：UDP 主要特点  UDP 是无连接的。 使用尽最大努力交付，不保证可靠交付，主机不需要维持复杂的连接状态。 UDP 面向报文。 没有拥塞控制，网络拥塞不会使源主机发送速率降低。  UDP 是无连接的。 UDP 使用尽最大努力交付，即不保证可靠交付，因此主机不需要维持复杂的链接状态（这里面有许多参数）。 UDP 是面向报文的。 UDP 没有拥塞控制，因此网络出现拥塞不会使源主机的发送速率降低。"
+    },
+    {
+      "key": "net/q036",
+      "no": 36,
+      "id": "q036",
+      "title": "tcp与UDP的区别",
+      "aliases": [],
+      "summary": [
+        "TCP 面向连接、可靠；UDP 无连接、不可靠。",
+        "TCP 只支持点对点通信；UDP 支持一对一、一对多、多对一、多对多。",
+        "TCP 面向字节流；UDP 面向报文。",
+        "TCP 有拥塞控制；UDP 没有拥塞控制，适合媒体通信。",
+        "TCP 首部开销 20 字节，比 UDP 的 8 字节大。"
+      ],
+      "note": "",
+      "pages": "p27–27",
+      "firstPage": 27,
+      "answer": "<p>TCP 是面向连接的；UDP 是无连接的。</p><p>TCP 是可靠的；UDP 是不可靠的。</p><p>TCP 只支持点对点通信；UDP 支持一对一、一对多、多对一、多对多的通信模式。</p><p>TCP 是面向字节流的；UDP 是面向报文的。</p><p>TCP 有拥塞控制机制；UDP 没有拥塞控制，适合媒体通信。</p><p>TCP 首部开销(20 个字节)，比 UDP 的首部开销(8 个字节)要大。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 27,
+          "to": 27,
+          "files": [
+            {
+              "page": 27,
+              "file": "/study/topic-09-network-protocols/assets/ev/q036_0_27.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "tcp与UDP的区别  TCP 面向连接、可靠；UDP 无连接、不可靠。 TCP 只支持点对点通信；UDP 支持一对一、一对多、多对一、多对多。 TCP 面向字节流；UDP 面向报文。 TCP 有拥塞控制；UDP 没有拥塞控制，适合媒体通信。 TCP 首部开销 20 字节，比 UDP 的 8 字节大。  TCP 是面向连接的；UDP 是无连接的。 TCP 是可靠的；UDP 是不可靠的。 TCP 只支持点对点通信；UDP 支持一对一、一对多、多对一、多对多的通信模式。 TCP 是面向字节流的；UDP 是面向报文的。 TCP 有拥塞控制机制；UDP 没有拥塞控制，适合媒体通信。 TCP 首部开销(20 个字节)，比 UDP 的首部开销(8 个字节)要大。"
+    },
+    {
+      "key": "net/q037",
+      "no": 37,
+      "id": "q037",
+      "title": "问题：UDP 和 TCP 的特点与区别",
+      "aliases": [],
+      "summary": [
+        "UDP：无连接、尽最大可能交付、没有拥塞控制、面向报文（不合并也不拆分，只添加 UDP 首部），支持一对一、一对多、多对一、多对多。",
+        "TCP：面向连接、提供可靠交付、有流量控制和拥塞控制、提供全双工通信、面向字节流，每条连接只能是点对点（一对一）。"
+      ],
+      "note": "",
+      "pages": "p27–28",
+      "firstPage": 27,
+      "answer": "<p>用户数据报协议 UDP（User Datagram Protocol）</p><p>是无连接的，尽最大可能交付，没有拥塞控制，面向报文（对于应用程序传下来的报文不合并也不拆分，只是添加 UDP 首部），支持一对一、一对多、多对一和多对多的交互通信。</p><p>传输控制协议 TCP（Transmission Control Protocol）</p><p>是面向连接的，提供可靠交付，有流量控制，拥塞控制，提供全双工通信，面向字节流（把应用层传下来的报文看成字节流，把字节流组织成大小不等的数据块），每一条 TCP 连接只能是点对点的（一对一）。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 27,
+          "to": 28,
+          "files": [
+            {
+              "page": 27,
+              "file": "/study/topic-09-network-protocols/assets/ev/q037_0_27.jpg"
+            },
+            {
+              "page": 28,
+              "file": "/study/topic-09-network-protocols/assets/ev/q037_0_28.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "问题：UDP 和 TCP 的特点与区别  UDP：无连接、尽最大可能交付、没有拥塞控制、面向报文（不合并也不拆分，只添加 UDP 首部），支持一对一、一对多、多对一、多对多。 TCP：面向连接、提供可靠交付、有流量控制和拥塞控制、提供全双工通信、面向字节流，每条连接只能是点对点（一对一）。  用户数据报协议 UDP（User Datagram Protocol） 是无连接的，尽最大可能交付，没有拥塞控制，面向报文（对于应用程序传下来的报文不合并也不拆分，只是添加 UDP 首部），支持一对一、一对多、多对一和多对多的交互通信。 传输控制协议 TCP（Transmission Control Protocol） 是面向连接的，提供可靠交付，有流量控制，拥塞控制，提供全双工通信，面向字节流（把应用层传下来的报文看成字节流，把字节流组织成大小不等的数据块），每一条 TCP 连接只能是点对点的（一对一）。"
+    },
+    {
+      "key": "net/q038",
+      "no": 38,
+      "id": "q038",
+      "title": "问题：对比一下UDP 、TCP 首部格式？",
+      "aliases": [],
+      "summary": [
+        "UDP 首部只有 8 字节：源端口、目的端口、长度、检验和；12 字节伪首部仅用于计算检验和，是临时添加的。",
+        "TCP 首部比 UDP 复杂：序号对字节流编号；确认号是期望收到的下一个报文段序号。",
+        "数据偏移指数据部分距报文段起始处的偏移量，实际是首部长度。",
+        "控制位八位为 CWR、ECE、URG、ACK、PSH、RST、SYN、FIN，各自表示拥塞通知、紧急数据、确认有效、立即上传、重置连接、建立/断开连接等。",
+        "窗口值作为接收方让发送方设置发送窗口的依据，因为接收方缓存空间有限。"
+      ],
+      "note": "",
+      "pages": "p28–29",
+      "firstPage": 28,
+      "answer": "<p>UDP 首部字段如下：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 28 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p28_0.jpg' alt='原文配图'><figcaption>原文配图 · p28</figcaption></figure><p>UDP 首部字段只有 8 个字节，包括源端口、目的端口、长度、检验和。12 字节的伪首部是为了计算检验和临时添加的。</p><p>TCP 首部字段如下：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 28 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p28_1.jpg' alt='原文配图'><figcaption>原文配图 · p28</figcaption></figure><p>TCP 首部格式比 UDP 复杂。</p><p>序号：用于对字节流进行编号，例如序号为 301，表示第一个字节的编号为 301，如果携带的数据长度为 100 字节，那么下一个报文段的序号应为 401。</p><p>确认号：期望收到的下一个报文段的序号。例如 B 正确收到 A 发送来的一个报文段，序号为 501，携带的数据长度为 200 字节，因此 B 期望下一个报文段的序号为 701，B 发送给 A 的确认报文段中确认号就为 701。</p><p>数据偏移：指的是数据部分距离报文段起始处的偏移量，实际上指的是首部的长度。</p><p>控制位：八位从左到右分别是 CWR，ECE，URG，ACK，PSH，RST，SYN，FIN。</p><p>CWR：CWR 标志与后面的 ECE 标志都用于 IP 首部的 ECN 字段，ECE 标志为 1 时，则通知对方已将拥塞窗口缩小；</p><p>ECE：若其值为 1 则会通知对方，从对方到这边的网络有阻塞。在收到数据包的 IP 首部中 ECN 为 1 时将 TCP 首部中的 ECE 设为 1；</p><p>URG：该位设为 1，表示包中有需要紧急处理的数据，对于需要紧急处理的数据，与后面的紧急指针有关；</p><p>ACK：该位设为 1，确认应答的字段有效，TCP规定除了最初建立连接时的 SYN 包之外该位必须设为1；</p><p>PSH：该位设为 1，表示需要将收到的数据立刻传给上层应用协议，若设为 0，则先将数据进行缓存；</p><p>RST：该位设为 1，表示 TCP 连接出现异常必须强制断开连接；</p><p>SYN：用于建立连接，该位设为 1，表示希望建立连接，并在其序列号的字段进行序列号初值设定；</p><p>FIN：该位设为 1，表示今后不再有数据发送，希望断开连接。当通信结束希望断开连接时，通信双方的主机之间就可以相互交换 FIN 位置为 1 的 TCP 段。</p><p>每个主机又对对方的 FIN 包进行确认应答之后可以断开连接。不过，主机收到 FIN 设置为 1 的 TCP 段之后不必马上回复一个 FIN 包，而是可以等到缓冲区中的所有数据都因为已成功发送而被自动删除之后再发 FIN 包；</p><p>窗口：窗口值作为接收方让发送方设置其发送窗口的依据。之所以要有这个限制，是因为接收方的数据缓存空间是有限的。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 28,
+          "to": 29,
+          "files": [
+            {
+              "page": 28,
+              "file": "/study/topic-09-network-protocols/assets/ev/q038_0_28.jpg"
+            },
+            {
+              "page": 29,
+              "file": "/study/topic-09-network-protocols/assets/ev/q038_0_29.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "问题：对比一下UDP 、TCP 首部格式？  UDP 首部只有 8 字节：源端口、目的端口、长度、检验和；12 字节伪首部仅用于计算检验和，是临时添加的。 TCP 首部比 UDP 复杂：序号对字节流编号；确认号是期望收到的下一个报文段序号。 数据偏移指数据部分距报文段起始处的偏移量，实际是首部长度。 控制位八位为 CWR、ECE、URG、ACK、PSH、RST、SYN、FIN，各自表示拥塞通知、紧急数据、确认有效、立即上传、重置连接、建立/断开连接等。 窗口值作为接收方让发送方设置发送窗口的依据，因为接收方缓存空间有限。  UDP 首部字段如下： UDP 首部字段只有 8 个字节，包括源端口、目的端口、长度、检验和。12 字节的伪首部是为了计算检验和临时添加的。 TCP 首部字段如下： TCP 首部格式比 UDP 复杂。 序号：用于对字节流进行编号，例如序号为 301，表示第一个字节的编号为 301，如果携带的数据长度为 100 字节，那么下一个报文段的序号应为 401。 确认号：期望收到的下一个报文段的序号。例如 B 正确收到 A 发送来的一个报文段，序号为 501，携带的数据长度为 200 字节，因此 B 期望下一个报文段的序号为 701，B 发送给 A 的确认报文段中确认号就为 701。 数据偏移：指的是数据部分距离报文段起始处的偏移量，实际上指的是首部的长度。 控制位：八位从左到右分别是 CWR，ECE，URG，ACK，PSH，RST，SYN，FIN。 CWR：CWR 标志与后面的 ECE 标志都用于 IP 首部的 ECN 字段，ECE 标志为 1 时，则通知对方已将拥塞窗口缩小； ECE：若其值为 1 则会通知对方，从对方到这边的网络有阻塞。在收到数据包的 IP 首部中 ECN 为 1 时将 TCP 首部中的 ECE 设为 1； URG：该位设为 1，表示包中有需要紧急处理的数据，对于需要紧急处理的数据，与后面的紧急指针有关； ACK：该位设为 1，确认应答的字段有效，TCP规定除了最初建立连接时的 SYN 包之外该位必须设为1； PSH：该位设为 1，表示需要将收到的数据立刻传给上层应用协议，若设为 0，则先将数据进行缓存； RST：该位设为 1，表示 TCP 连接出现异常必须强制断开连接； SYN：用于建立连接，该位设为 1，表示希望建立连接，并在其序列号的字段进行序列号初值设定； FIN：该位设为 1，表示今后不再有数据发送，希望断开连接。当通信结束希望断开连接时，通信双方的主机之间就可以相互交换 FIN 位置为 1 的 TCP 段。 每个主机又对对方的 FIN 包进行确认应答之后可以断开连接。不过，主机收到 FIN 设置为 1 的 TCP 段之后不必马上回复一个 FIN 包，而是可以等到缓冲区中的所有数据都因为已成功发送而被自动删除之后再发 FIN 包； 窗口：窗口值作为接收方让发送方设置其发送窗口的依据。之所以要有这个限制，是因为接收方的数据缓存空间是有限的。"
+    },
+    {
+      "key": "net/q039",
+      "no": 39,
+      "id": "q039",
+      "title": "字节一面：在浏览器地址栏输入一个 URL 后回车，背后发生了什么？",
+      "aliases": [
+        "在浏览器地址栏输入一个 URL 后回车，背后发生了什么？"
+      ],
+      "summary": [
+        "解析 URL：把域名和需要请求的资源分离，确定目标服务器和资源路径。",
+        "浏览器封装 HTTP 请求报文；通过 DNS 解析域名获取 IP 地址（依次查浏览器缓存、操作系统缓存、本地域名服务器，再迭代查询上级域名服务器）。",
+        "建立 TCP 连接（三次握手），发送 HTTP 请求；传输层把报文切分成报文段，网络层用 IP 协议选路，数据链路层用 ARP 根据 IP 获取 MAC 地址逐段传输。",
+        "服务器重组请求、处理并返回 HTTP 响应；浏览器收到后按渲染机制解析渲染界面，最后四次挥手断开 TCP 连接。",
+        "总结：应用层封装 HTTP 与 DNS 解析，传输层建立连接并分段，网络层用 ARP 获取 MAC 后转发，服务端逐层向上交付并返回响应。"
+      ],
+      "note": "",
+      "pages": "p29–39",
+      "firstPage": 29,
+      "answer": "<h4>说在前面</h4><p>近段时间，有小伙伴面试字节，说遇到一个面试题：</p><ul class='pdf-list'><li>在浏览器地址栏输入一个 URL 后回车，背后发生了什么？</li></ul><h4>0. 前言</h4><p>在浏览器的地址栏输入一个 URL 后回车，背后到底发生了什么才能使得一个界面完美的展现在我们眼前？</p><p>今天讲解的这道题目，由于其涉及大量网络协议，可以非常直观的看出诸位小伙伴对计算机网络体系的整体把握程度，所以自然成为了各大公司的面试常客。</p><p>在浏览中输入 URL 并且获取响应的过程，其实就是浏览器和该 URL 对应的服务器的网络通信过程。比如我们输入 www.baidu.com ，那么会返回一个百度搜索的界面，这其实就是浏览器和百度服务器之间的网络通信过程。浏览器就是客户端，用于发出请求，而百度的服务器就是服务端，用于接收并响应请求。</p><p>下面我们就来详细讲解这个庞大的网络通信过程。</p><h4>1. 解析 URL</h4><p>不知道有没有同学会混淆域名和 URL 的概念，可以这样理解，URL 就是我们输入的网址，而网址里面含有域名。举个例子：www.baidu.com/veal98 是一个网址，而 www.baidu.com 就是服务器的域名。</p><p>URL 各元素的组成如下（当然，下述请求文件的路径名可以省略）：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 30 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p30_0.jpg' alt='原文配图'><figcaption>原文配图 · p30</figcaption></figure><p>这个 URL 请求的目标服务器上的文件路径就是：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 31 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p31_0.jpg' alt='原文配图'><figcaption>原文配图 · p31</figcaption></figure><p>那么首先，浏览器做的第一步就是解析 URL 得到里面的参数，将域名和需要请求的资源分离开来，从而了解需要请求的是哪个服务器，请求的是服务器上什么资源等等。</p><h4>2. 浏览器封装 HTTP 请求报文</h4><p>对 URL 进行解析之后，浏览器确定了目标服务器和文件名，接下来就需要根据这些消息封装成一个HTTP 请求报文发送出去。举个 HTTP 请求报文的例子：</p><ul class='pdf-list'><li>关于 HTTP 协议详细可见 《Java高并发核心编程（卷1）加强版》 这里不再赘述</li></ul><figure class='pdf-img zoomable' data-cap='原文配图 · 第 32 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p32_0.jpg' alt='原文配图'><figcaption>原文配图 · p32</figcaption></figure><p>解释一下封装，这是一个贯穿整个计算机网络的概念。就是说发送端在层与层之间传输数据时，每经过一层必定会被打上一个该层所属的首部信息。反之，接收端在层与层之间传输数据时，每经过一层就会把该层对应的首部信息消去。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 32 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p32_1.jpg' alt='原文配图'><figcaption>原文配图 · p32</figcaption></figure><h4>3. DNS 域名解析获取 IP 地址</h4><p>封装好 HTTP 请求报文后，在正式还有一项准备工作没有做，那就是获取目标服务器的 IP 地址。</p><p>虽然解析得到了域名，理论浏览器已经知道目标服务器是谁了。但是实际上，域名并不是目标服务器真正意义上的地址，互联网上每一台计算机都被全世界唯一 IP 地址标识着，但是 IP 地址并不方便记忆，所以才设计出了域名。</p><p>那么就需要解析域名获取目标服务器的 IP 地址。不然空有一个方便记忆的域名咋知道这个请求到底发送到哪里去呢。由域名转换得到 IP 地址就是 DNS 协议做的事情，如下：</p><ul class='pdf-list'><li>关于 DNS 详细的内容各位可以回顾 DNS图解（秒懂 + 史上最全） 这篇文章，比如什么是域名，域名服务器，递归查询和迭代查询等等，写的已经足够详细，此处只列出 DNS 的解析过程。</li></ul><p>1）首先搜索浏览器的 DNS 缓存，缓存中维护着一张域名与 IP 地址的对应表；</p><p>2）若没有命中，则继续搜索操作系统的 DNS 缓存；</p><p>3）若仍然没有命中，则操作系统将域名发送至本地域名服务器，本地域名服务器查询自己的 DNS 缓存，查找成功则返回结果（注意：主机和本地域名服务器之间的查询方式是递归查询）；</p><p>4）若本地域名服务器的 DNS 缓存没有命中，则本地域名服务器向上级域名服务器进行查询，通过以下方式进行迭代查询（注意：本地域名服务器和其他域名服务器之间的查询方式是迭代查询，防止根域名服务器压力过大）：</p><ul class='pdf-list'><li>首先本地域名服务器向根域名服务器发起请求，根域名服务器是最高层次的，它并不会直接指明这个域名对应的 IP 地址，而是返回顶级域名服务器的地址，也就是说给本地域名服务器指明一条道路，让他去这里寻找答案</li><li>本地域名服务器拿到这个顶级域名服务器的地址后，就向其发起请求，获取权限域名服务器的地址本地域名服务器根据权限域名服务器的地址向其发起请求，最终得到该域名对应的 IP 地址</li></ul><p>4）本地域名服务器将得到的 IP 地址返回给操作系统，同时自己将 IP 地址缓存起来</p><p>5）操作系统将 IP 地址返回给浏览器，同时自己也将 IP 地址缓存起来</p><p>6）至此，浏览器就得到了域名对应的 IP 地址，并将 IP 地址缓存起来</p><p>配合下图直观理解：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 33 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p33_0.jpg' alt='原文配图'><figcaption>原文配图 · p33</figcaption></figure><p>需要注意的是，DNS 使用的是 UDP 协议，也就是说上面各种请求的转发，都是基于 UDP 这个无连接协议的。</p><h4>4. 建立 TCP 连接</h4><p>获取到了目标服务器的 IP 地址之后，浏览器就知道我等下请求要发给谁了，这个时候就可以开始发送封装好了的 HTTP 请求报文了，那么既然需要发送请求，必然就需要 TCP 通过三次握手为浏览器和服务器之间建立可靠的连接，保证双方都具有可靠的接收和发送能力。</p><ul class='pdf-list'><li>这里又是一道经典的面试题：TCP 三次握手和四次挥手，详细可见 关于 TCP 三次握手和四次挥手，满分回答在此 这篇文章。</li></ul><p>三次握手过程如下图：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 34 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p34_0.jpg' alt='原文配图'><figcaption>原文配图 · p34</figcaption></figure><h4>5. 浏览器发送请求</h4><p>TCP 三次握手完成后，浏览器与目标服务器之间就建立了一个可靠的虚拟通道，于是浏览器就可以发送自己的 HTTP 请求了。</p><p>需要注意的是，HTTP 请求报文或者响应报文在 TCP 连接通道上进行传输的时候，由于这些报文比较大，为了更容易和准确可靠的传输，TCP 会将 HTTP 报文按序号分割成若干报文段并加上 TCP 首部，分别进行传输。接收方在收到这些报文段后，按照序号以原来的顺序重组 HTTP 报文。</p><h4>6. 负责传输的 IP 协议</h4><p>实际上，TCP 在三次握手建立连接、四次握手断开连接、以及连接建立过程中的收发数据（TCP 报文段）等各阶段操作时，都是通过 IP 协议进行传输的，IP 协议将这些阶段的数据添加 IP 首部封装成 IP数据报再进行传输。</p><p>IP 数据报的首部存有源 IP 地址和 目标 IP 地址。所谓源 IP 地址 就是发送方的 IP 地址；目标 IP 地址就是通过 DNS 域名解析得到的目标服务器的 IP 地址。</p><p>事实上，IP 协议身处的网络层规定的是：数据报要通过怎样的路径（传输路线）才能到达对方计算机，并传送给对方。不理解这句话的详细解释马上就来，继续往下读。</p><h4>7. 使用 ARP 协议凭借 MAC 地址通信</h4><ul class='pdf-list'><li>关于 IP 协议、IP 地址、MAC 地址等详细请看 TCP/IP协议 （图解+秒懂+史上最全）  这篇文章。</li></ul><p>上面说了，IP 协议的作用是把各种数据包传送给对方，而要保证确实传送到对方那里，则需要满足各类条件，其中必要的两个就是 IP 地址 和 MAC 地址。</p><p>MAC 地址也是用来唯一标识一个接入互联网的设备的，可能不禁有小伙伴要问，既然网络层已经有了唯一标识的 IP 地址，为啥还需要 MAC 地址？</p><p>看下面这幅图，在网络上，通信的双方在同一局域网内的情况是很少见的，通常是需要多台计算机和网络设备的中转才能连接到对方。而在进行中转时，就需要利用下一站中转设备的 MAC 地址来搜索下一个中转目标。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 35 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p35_0.jpg' alt='原文配图'><figcaption>原文配图 · p35</figcaption></figure><ul class='pdf-list'><li>网络层指定了从哪个主机（「源 IP 地址」）发送到哪个主机（「目的 IP 地址」）。源 IP 地址和目标 IP 地址在传输过程中是不会变化的</li><li>而数据链路层则是根据 MAC 地址在一个接一个的区间中进行传输的，每个区间内的出发地址即「源 MAC 地址」，每个区间内的目的地址即「目的 MAC 地址」。显然，随着数据的传输，源MAC 地址和目的 MAC 地址会不断的发生变化</li><li>比如上图，网络层告知了 1-2-3 路线，也就是说指明了这几个路由器的 IP 地址。那么数据链路层就会根据这几个 IP 地址对应的 MAC 地址依次找到 1、2、3，并在他们之间传输数据。</li></ul><p>这么说吧，举个形象点的例子：我们把数据链路层当成乘坐高铁从苏州到南京，再在南京转乘到北京，再在北京转乘到西藏的旅客，那么网络层就相当于每个车站的工作人员，在数据链路层每次转乘时，网络层为其购买了一张标有下一个 MAC 地址的车票。因此，即使旅客（数据链路层）不知道其最终目的地也没有关系，工作人员（网络层）会给你做出指引。</p><p>实际上，网络层做出指引的过程，我们将其称为路由控制，其中又涉及到了路由协议比如 OSPF 等</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 36 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p36_0.jpg' alt='原文配图'><figcaption>原文配图 · p36</figcaption></figure><p>那么，将 IP 地址转化为 MAC 地址，从而在数据链路层精确的传输数据的协议就是 ARP 协议。</p><p>ARP 是借助 ARP 请求与 ARP 响应两种类型的包确定 MAC 地址的。并且每个主机都有一个 ARP 高速缓存，里面有本局域网上的各主机和路由器的 IP 地址到 MAC 地址的映射表。</p><p>如下图所示，假定主机 A 向同一链路上的主机 B 发送 IP 数据报，已知主机 A 和主机 B 的 IP 地址，它们互不知道对方的 MAC 地址：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 36 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p36_1.jpg' alt='原文配图'><figcaption>原文配图 · p36</figcaption></figure><p>1）首先，主机 A 为了获得主机 B 的 MAC 地址，它会先去查询自己的 ARP 高速缓存中有没有主机 B 的相关记录；</p><p>2）如果主机 A 的 ARP 高速缓存中没有主机 B 的 IP 地址到 MAC 地址的映射，主机 A 就会通过广播的方式发送 ARP 请求包（该包携带自己的 IP 地址 和 MAC 地址 以及 目标主机的 IP 地址），表明自己想要获得主机 B 的 MAC 地址；</p><p>2） 由于广播请求可以被同一个链路上的所有主机或路由器接收，因此如果这条链路上某个主机或路由的 IP 地址与这个 ARP 请求包中包含的目标主机的 IP 地址相同，那么这个节点就将自己的 MAC 地址塞入 ARP 响应包中返回给主机 A；</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 37 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p37_0.jpg' alt='原文配图'><figcaption>原文配图 · p37</figcaption></figure><ul class='pdf-list'><li>当然，ARP 响应包是以单播的形式进行发送的，毕竟 ARP 请求包中已经包含了主机 A 的 IP 地址，所以主机 B 非常清楚这个响应包应该发送给谁。</li><li>大部分网络协议在设计的时候，都是保持极度克制的，不需要的交互就砍掉，能合并的信息就合并，能不用广播就用单播，以此让带宽变得更多让网络变得更快。</li></ul><p>3）主机 A 在收到主机 B 发过来的 ARP 响应包后，向其 ARP 高速缓存中写入主机 B 的 IP 地址到 MAC地址的映射。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 37 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p37_1.jpg' alt='原文配图'><figcaption>原文配图 · p37</figcaption></figure><p>当然，缓存是有一定期限的，超过这个期限，缓存的内容将被清空。这也使得即使 MAC 地址和 IP 地址的映射关系发生了变化，也依然能够正确的将数据包发送给目标地址。</p><h4>8. 服务器响应请求</h4><p>浏览器的 HTTP 请求报文通过 TCP 三次握手建立的连接通道被切分成若干报文段分别发送给服务器，服务器在收到这些报文段后，按照序号以原来的顺序重组 HTTP 请求报文。然后处理并返回一个 HTTP 响应。当然，HTTP 响应报文也要经过和 HTTP 请求报文一样的过程。</p><p>看下方这个图回顾一下（图片来源《图解 HTTP》）：</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 38 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p38_0.jpg' alt='原文配图'><figcaption>原文配图 · p38</figcaption></figure><h4>9. 断开 TCP 连接</h4><p>浏览器和服务器都不再需要发送数据后，四次挥手断开 TCP 连接，详细可见 关于 TCP 三次握手和四次挥手，满分回答在此 这篇文章。</p><h4>10. 浏览器显示界面</h4><p>浏览器接收到服务器返回的数据包，根据浏览器的渲染机制对相应的数据进行渲染</p><h4>总结</h4><p>屏蔽掉底层细节，笼统的总结一下上述过程：</p><p>应用层：</p><ul class='pdf-list'><li>浏览器封装 HTTP 请求报文</li><li>DNS 解析域名获得目标服务器地址</li></ul><p>传输层：</p><ul class='pdf-list'><li>建立连接</li><li>把应用层传过来的 HTTP 请求报文进行分割，并在各个报文上打上标记序号及端口号转发给网络层</li></ul><p>网络层：</p><ul class='pdf-list'><li>利用 ARP 协议根据 IP 地址获取作为通信目的地的 MAC 地址后转发给链路层</li></ul><p>服务端在链路层收到数据，按序往上层发送，一直到应用层接收到浏览器发送来的 HTTP 请求报文，然后处理该请求并返回 HTTP 响应报文，浏览器接收到响应报文之后解析渲染界面。最后 TCP 断开连接。</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 29,
+          "to": 39,
+          "files": [
+            {
+              "page": 29,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_29.jpg"
+            },
+            {
+              "page": 30,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_30.jpg"
+            },
+            {
+              "page": 31,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_31.jpg"
+            },
+            {
+              "page": 32,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_32.jpg"
+            },
+            {
+              "page": 33,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_33.jpg"
+            },
+            {
+              "page": 34,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_34.jpg"
+            },
+            {
+              "page": 35,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_35.jpg"
+            },
+            {
+              "page": 36,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_36.jpg"
+            },
+            {
+              "page": 37,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_37.jpg"
+            },
+            {
+              "page": 38,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_38.jpg"
+            },
+            {
+              "page": 39,
+              "file": "/study/topic-09-network-protocols/assets/ev/q039_0_39.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "字节一面：在浏览器地址栏输入一个 URL 后回车，背后发生了什么？ 在浏览器地址栏输入一个 URL 后回车，背后发生了什么？ 解析 URL：把域名和需要请求的资源分离，确定目标服务器和资源路径。 浏览器封装 HTTP 请求报文；通过 DNS 解析域名获取 IP 地址（依次查浏览器缓存、操作系统缓存、本地域名服务器，再迭代查询上级域名服务器）。 建立 TCP 连接（三次握手），发送 HTTP 请求；传输层把报文切分成报文段，网络层用 IP 协议选路，数据链路层用 ARP 根据 IP 获取 MAC 地址逐段传输。 服务器重组请求、处理并返回 HTTP 响应；浏览器收到后按渲染机制解析渲染界面，最后四次挥手断开 TCP 连接。 总结：应用层封装 HTTP 与 DNS 解析，传输层建立连接并分段，网络层用 ARP 获取 MAC 后转发，服务端逐层向上交付并返回响应。  说在前面 近段时间，有小伙伴面试字节，说遇到一个面试题： 在浏览器地址栏输入一个 URL 后回车，背后发生了什么？ 0. 前言 在浏览器的地址栏输入一个 URL 后回车，背后到底发生了什么才能使得一个界面完美的展现在我们眼前？ 今天讲解的这道题目，由于其涉及大量网络协议，可以非常直观的看出诸位小伙伴对计算机网络体系的整体把握程度，所以自然成为了各大公司的面试常客。 在浏览中输入 URL 并且获取响应的过程，其实就是浏览器和该 URL 对应的服务器的网络通信过程。比如我们输入 www.baidu.com ，那么会返回一个百度搜索的界面，这其实就是浏览器和百度服务器之间的网络通信过程。浏览器就是客户端，用于发出请求，而百度的服务器就是服务端，用于接收并响应请求。 下面我们就来详细讲解这个庞大的网络通信过程。 1. 解析 URL 不知道有没有同学会混淆域名和 URL 的概念，可以这样理解，URL 就是我们输入的网址，而网址里面含有域名。举个例子：www.baidu.com/veal98 是一个网址，而 www.baidu.com 就是服务器的域名。 URL 各元素的组成如下（当然，下述请求文件的路径名可以省略）： 这个 URL 请求的目标服务器上的文件路径就是： 那么首先，浏览器做的第一步就是解析 URL 得到里面的参数，将域名和需要请求的资源分离开来，从而了解需要请求的是哪个服务器，请求的是服务器上什么资源等等。 2. 浏览器封装 HTTP 请求报文 对 URL 进行解析之后，浏览器确定了目标服务器和文件名，接下来就需要根据这些消息封装成一个HTTP 请求报文发送出去。举个 HTTP 请求报文的例子： 关于 HTTP 协议详细可见 《Java高并发核心编程（卷1）加强版》 这里不再赘述 解释一下封装，这是一个贯穿整个计算机网络的概念。就是说发送端在层与层之间传输数据时，每经过一层必定会被打上一个该层所属的首部信息。反之，接收端在层与层之间传输数据时，每经过一层就会把该层对应的首部信息消去。 3. DNS 域名解析获取 IP 地址 封装好 HTTP 请求报文后，在正式还有一项准备工作没有做，那就是获取目标服务器的 IP 地址。 虽然解析得到了域名，理论浏览器已经知道目标服务器是谁了。但是实际上，域名并不是目标服务器真正意义上的地址，互联网上每一台计算机都被全世界唯一 IP 地址标识着，但是 IP 地址并不方便记忆，所以才设计出了域名。 那么就需要解析域名获取目标服务器的 IP 地址。不然空有一个方便记忆的域名咋知道这个请求到底发送到哪里去呢。由域名转换得到 IP 地址就是 DNS 协议做的事情，如下： 关于 DNS 详细的内容各位可以回顾 DNS图解（秒懂 + 史上最全） 这篇文章，比如什么是域名，域名服务器，递归查询和迭代查询等等，写的已经足够详细，此处只列出 DNS 的解析过程。 1）首先搜索浏览器的 DNS 缓存，缓存中维护着一张域名与 IP 地址的对应表； 2）若没有命中，则继续搜索操作系统的 DNS 缓存； 3）若仍然没有命中，则操作系统将域名发送至本地域名服务器，本地域名服务器查询自己的 DNS 缓存，查找成功则返回结果（注意：主机和本地域名服务器之间的查询方式是递归查询）； 4）若本地域名服务器的 DNS 缓存没有命中，则本地域名服务器向上级域名服务器进行查询，通过以下方式进行迭代查询（注意：本地域名服务器和其他域名服务器之间的查询方式是迭代查询，防止根域名服务器压力过大）： 首先本地域名服务器向根域名服务器发起请求，根域名服务器是最高层次的，它并不会直接指明这个域名对应的 IP 地址，而是返回顶级域名服务器的地址，也就是说给本地域名服务器指明一条道路，让他去这里寻找答案 本地域名服务器拿到这个顶级域名服务器的地址后，就向其发起请求，获取权限域名服务器的地址本地域名服务器根据权限域名服务器的地址向其发起请求，最终得到该域名对应的 IP 地址 4）本地域名服务器将得到的 IP 地址返回给操作系统，同时自己将 IP 地址缓存起来 5）操作系统将 IP 地址返回给浏览器，同时自己也将 IP 地址缓存起来 6）至此，浏览器就得到了域名对应的 IP 地址，并将 IP 地址缓存起来 配合下图直观理解： 需要注意的是，DNS 使用的是 UDP 协议，也就是说上面各种请求的转发，都是基于 UDP 这个无连接协议的。 4. 建立 TCP 连接 获取到了目标服务器的 IP 地址之后，浏览器就知道我等下请求要发给谁了，这个时候就可以开始发送封装好了的 HTTP 请求报文了，那么既然需要发送请求，必然就需要 TCP 通过三次握手为浏览器和服务器之间建立可靠的连接，保证双方都具有可靠的接收和发送能力。 这里又是一道经典的面试题：TCP 三次握手和四次挥手，详细可见 关于 TCP 三次握手和四次挥手，满分回答在此 这篇文章。 三次握手过程如下图： 5. 浏览器发送请求 TCP 三次握手完成后，浏览器与目标服务器之间就建立了一个可靠的虚拟通道，于是浏览器就可以发送自己的 HTTP 请求了。 需要注意的是，HTTP 请求报文或者响应报文在 TCP 连接通道上进行传输的时候，由于这些报文比较大，为了更容易和准确可靠的传输，TCP 会将 HTTP 报文按序号分割成若干报文段并加上 TCP 首部，分别进行传输。接收方在收到这些报文段后，按照序号以原来的顺序重组 HTTP 报文。 6. 负责传输的 IP 协议 实际上，TCP 在三次握手建立连接、四次握手断开连接、以及连接建立过程中的收发数据（TCP 报文段）等各阶段操作时，都是通过 IP 协议进行传输的，IP 协议将这些阶段的数据添加 IP 首部封装成 IP数据报再进行传输。 IP 数据报的首部存有源 IP 地址和 目标 IP 地址。所谓源 IP 地址 就是发送方的 IP 地址；目标 IP 地址就是通过 DNS 域名解析得到的目标服务器的 IP 地址。 事实上，IP 协议身处的网络层规定的是：数据报要通过怎样的路径（传输路线）才能到达对方计算机，并传送给对方。不理解这句话的详细解释马上就来，继续往下读。 7. 使用 ARP 协议凭借 MAC 地址通信 关于 IP 协议、IP 地址、MAC 地址等详细请看 TCP/IP协议 （图解+秒懂+史上最全） 这篇文章。 上面说了，IP 协议的作用是把各种数据包传送给对方，而要保证确实传送到对方那里，则需要满足各类条件，其中必要的两个就是 IP 地址 和 MAC 地址。 MAC 地址也是用来唯一标识一个接入互联网的设备的，可能不禁有小伙伴要问，既然网络层已经有了唯一标识的 IP 地址，为啥还需要 MAC 地址？ 看下面这幅图，在网络上，通信的双方在同一局域网内的情况是很少见的，通常是需要多台计算机和网络设备的中转才能连接到对方。而在进行中转时，就需要利用下一站中转设备的 MAC 地址来搜索下一个中转目标。 网络层指定了从哪个主机（「源 IP 地址」）发送到哪个主机（「目的 IP 地址」）。源 IP 地址和目标 IP 地址在传输过程中是不会变化的 而数据链路层则是根据 MAC 地址在一个接一个的区间中进行传输的，每个区间内的出发地址即「源 MAC 地址」，每个区间内的目的地址即「目的 MAC 地址」。显然，随着数据的传输，源MAC 地址和目的 MAC 地址会不断的发生变化 比如上图，网络层告知了 1-2-3 路线，也就是说指明了这几个路由器的 IP 地址。那么数据链路层就会根据这几个 IP 地址对应的 MAC 地址依次找到 1、2、3，并在他们之间传输数据。 这么说吧，举个形象点的例子：我们把数据链路层当成乘坐高铁从苏州到南京，再在南京转乘到北京，再在北京转乘到西藏的旅客，那么网络层就相当于每个车站的工作人员，在数据链路层每次转乘时，网络层为其购买了一张标有下一个 MAC 地址的车票。因此，即使旅客（数据链路层）不知道其最终目的地也没有关系，工作人员（网络层）会给你做出指引。 实际上，网络层做出指引的过程，我们将其称为路由控制，其中又涉及到了路由协议比如 OSPF 等 那么，将 IP 地址转化为 MAC 地址，从而在数据链路层精确的传输数据的协议就是 ARP 协议。 ARP 是借助 ARP 请求与 ARP 响应两种类型的包确定 MAC 地址的。并且每个主机都有一个 ARP 高速缓存，里面有本局域网上的各主机和路由器的 IP 地址到 MAC 地址的映射表。 如下图所示，假定主机 A 向同一链路上的主机 B 发送 IP 数据报，已知主机 A 和主机 B 的 IP 地址，它们互不知道对方的 MAC 地址： 1）首先，主机 A 为了获得主机 B 的 MAC 地址，它会先去查询自己的 ARP 高速缓存中有没有主机 B 的相关记录； 2）如果主机 A 的 ARP 高速缓存中没有主机 B 的 IP 地址到 MAC 地址的映射，主机 A 就会通过广播的方式发送 ARP 请求包（该包携带自己的 IP 地址 和 MAC 地址 以及 目标主机的 IP 地址），表明自己想要获得主机 B 的 MAC 地址； 2） 由于广播请求可以被同一个链路上的所有主机或路由器接收，因此如果这条链路上某个主机或路由的 IP 地址与这个 ARP 请求包中包含的目标主机的 IP 地址相同，那么这个节点就将自己的 MAC 地址塞入 ARP 响应包中返回给主机 A； 当然，ARP 响应包是以单播的形式进行发送的，毕竟 ARP 请求包中已经包含了主机 A 的 IP 地址，所以主机 B 非常清楚这个响应包应该发送给谁。 大部分网络协议在设计的时候，都是保持极度克制的，不需要的交互就砍掉，能合并的信息就合并，能不用广播就用单播，以此让带宽变得更多让网络变得更快。 3）主机 A 在收到主机 B 发过来的 ARP 响应包后，向其 ARP 高速缓存中写入主机 B 的 IP 地址到 MAC地址的映射。 当然，缓存是有一定期限的，超过这个期限，缓存的内容将被清空。这也使得即使 MAC 地址和 IP 地址的映射关系发生了变化，也依然能够正确的将数据包发送给目标地址。 8. 服务器响应请求 浏览器的 HTTP 请求报文通过 TCP 三次握手建立的连接通道被切分成若干报文段分别发送给服务器，服务器在收到这些报文段后，按照序号以原来的顺序重组 HTTP 请求报文。然后处理并返回一个 HTTP 响应。当然，HTTP 响应报文也要经过和 HTTP 请求报文一样的过程。 看下方这个图回顾一下（图片来源《图解 HTTP》）： 9. 断开 TCP 连接 浏览器和服务器都不再需要发送数据后，四次挥手断开 TCP 连接，详细可见 关于 TCP 三次握手和四次挥手，满分回答在此 这篇文章。 10. 浏览器显示界面 浏览器接收到服务器返回的数据包，根据浏览器的渲染机制对相应的数据进行渲染 总结 屏蔽掉底层细节，笼统的总结一下上述过程： 应用层： 浏览器封装 HTTP 请求报文 DNS 解析域名获得目标服务器地址 传输层： 建立连接 把应用层传过来的 HTTP 请求报文进行分割，并在各个报文上打上标记序号及端口号转发给网络层 网络层： 利用 ARP 协议根据 IP 地址获取作为通信目的地的 MAC 地址后转发给链路层 服务端在链路层收到数据，按序往上层发送，一直到应用层接收到浏览器发送来的 HTTP 请求报文，然后处理该请求并返回 HTTP 响应报文，浏览器接收到响应报文之后解析渲染界面。最后 TCP 断开连接。"
+    },
+    {
+      "key": "net/q040",
+      "no": 40,
+      "id": "q040",
+      "title": "聊聊：生产Nginx现大量TIME-WAIT，导致连接耗尽，该如何处理？",
+      "aliases": [
+        "生产环境 Nginx 后端服务大量 TIME-WAIT 的解决步骤"
+      ],
+      "summary": [
+        "TIME_WAIT 是主动关闭连接的一方最终进入的状态，通常持续 2MSL（常见 30 秒、1 分钟或 2 分钟）；大量短连接快速开关会让 TIME_WAIT 套接字累积，耗尽本地端口，影响新建出站连接。",
+        "TIME_WAIT 存在的两个原因：防止前一个连接的延迟报文被误认为新连接的一部分；可靠实现 TCP 全双工连接终止（最后一个 ACK 丢失时可重传 FIN）。",
+        "查询方式：netstat 按 TCP 状态计数、ss -s、netstat 统计第 6 列、统计 TIME_WAIT 连接的本地地址，也可用 tcpdump 抓包。",
+        "内核参数优化：net.ipv4.tcp_tw_reuse=1、tcp_tw_recycle=1（NAT 网络建议设 0）、tcp_timestamps=1，写入 sysctl.conf 后 sysctl -p 生效。",
+        "Nginx 优化：配置 keepalive_timeout、keepalive_requests，并用 proxy_http_version 1.1 与 proxy_set_header Connection keep-alive 保持与后端的长连接；keepalive 参数控制空闲长连接数。",
+        "设计原则：服务器尽量不要主动关闭连接；客户端侧可用连接池、长连接和应用层关闭顺序来减少 TIME_WAIT。"
+      ],
+      "note": "",
+      "pages": "p39–48",
+      "firstPage": 39,
+      "answer": "<h4>背景说明：</h4><ul class='pdf-list'><li>尼恩，生产环境 Nginx 后端服务大量 TIME-WAIT ， 该怎么办？</li></ul><p>除了Nginx进程之外，还有其他的后端服务如：</p><ul class='pdf-list'><li>尼恩，生产环境 Netty、SpringCloud Gateway 后端服务大量 TIME-WAIT ， 该怎么办？</li></ul><p>遇到这样的生产环境难题，小伙伴们非常头疼。</p><p>更为头疼的是，这个也是一道场景的面试题。之前有小伙伴反应过，他面试科大讯飞的时候，遇到了这道题目：</p><ul class='pdf-list'><li>生产环境 Nginx 后端服务大量 TIME-WAIT 的解决步骤</li></ul><h4>基础知识：</h4><h5>TIME_WAIT是什么？</h5><figure class='pdf-img zoomable' data-cap='原文配图 · 第 40 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p40_0.jpg' alt='原文配图'><figcaption>原文配图 · p40</figcaption></figure><figure class='pdf-img zoomable' data-cap='原文配图 · 第 40 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p40_1.jpg' alt='原文配图'><figcaption>原文配图 · p40</figcaption></figure><p>在构建TCP客户端服务器系统时，很容易犯简单的错误，这些错误会严重限制可伸缩性。</p><p>其中一个错误是没有考虑到TIME_WAIT 状态。</p><p>为什么TIME_WAIT 存在，它可能导致的问题，如何解决它，以及什么时候不应该。</p><p>TIME_WAIT 是 TCP 状态转换图中经常被误解的状态。</p><p>这是某些套接字可以进入并保持相对较长时间的状态，如果您有足够的套接字，那么您创建新套接字连接的能力可能会受到影响，这可能会影响客户端服务器系统的可伸缩性。</p><p>关于套接字如何以及为什么首先进入TIME_WAIT ，经常存在一些误解，不应该有，这并不神奇。从下面的TCP状态转换图中可以看出TIME_WAIT ，是TCP客户端通常最终处于的最终状态。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 41 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p41_0.jpg' alt='原文配图'><figcaption>原文配图 · p41</figcaption></figure><p>虽然状态转换图显示TIME_WAIT 为客户端的最终状态，但它不一定是客户端TIME_WAIT 。事实上，最终状态是启动“主动关闭”的对等端最终进入，这可以是客户端或服务器。那么，发布“主动关闭”是什么意思？</p><p>如果TCP对等方是第一个呼叫Close() 连接的对等方，则TCP对等方会启动“主动关闭” 。</p><p>在许多协议和客户端/服务器设计中，这是客户端。</p><p>在HTTP和FTP服务器中，这通常是服务器。</p><p>导致同伴结束的事件的实际顺序TIME_WAIT 如下。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 42 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p42_0.jpg' alt='原文配图'><figcaption>原文配图 · p42</figcaption></figure><p>现在我们知道套接字是如何结束TIME_WAIT 的，理解为什么这个状态存在以及它为什么会成为一个潜在的问题是有用的。</p><p>TIME_WAIT 通常也被称为2MSL等待状态。</p><p>这是因为转换到的套接字在此期间的持续时间TIME_WAIT 为2 x最大段寿命。</p><p>MSL是任何段的最大时间量，对于构成TCP协议一部分的数据报的所有意图和目的而言，在丢弃之前，网络可以在网络上保持有效。这个时间限制最终以用于传输TCP段的IP数据报中的TTL字段为界。</p><p>不同的实现为MSL选择不同的值，常用值为30秒，1分钟或2分钟。</p><p>RFC 793指定MSL为2分钟，Windows系统默认为此值，但可以使用TcpTimedWaitDelay注册表设置进行调整。</p><p>TIME_WAIT 可能影响系统可伸缩性 的原因是，TCP连接中一个完全关闭的套接字将保持TIME_WAIT 约4分钟的状态。</p><p>如果许多连接正在快速打开和关闭，那么套接字TIME_WAIT 可能会开始累积在系统上; 您可以TIME_WAIT 使用netstat查看套接字。一次可以建立有限数量的套接字连接，限制此数量的其中一个因素是可用本地端口的数量。</p><p>如果TIME_WAIT 插入太多的套接字，您会发现很难建立新的出站连接，因为缺少可用于新连接的本地端口。</p><p>但为什么TIME_WAIT 存在呢？有两个原因需要TIME_WAIT 。</p><p>首先是防止一个连接的延迟段被误解为后续连接的一部分。丢弃在连接处于2MSL等待状态时到达的任何段。</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 43 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p43_0.jpg' alt='原文配图'><figcaption>原文配图 · p43</figcaption></figure><p>在上图中，我们有两个从终点1到终点2的连接。每个终点的地址和端口在每个连接中都是相同的。第一个连接终止于由端点2启动的主动关闭。如果端点2没有保持TIME_WAIT 足够长的时间以确保来自先前连接的所有分段已经失效，则延迟的分段（具有适当的序列号）可以是误认为是第二个连接的一部分...</p><p>请注意，延迟片段很可能会导致这样的问题。首先，每个端点的地址和端口需要相同; 这通常不太可能，因为操作系统通常从短暂端口范围为您选择客户端端口，从而在连接之间进行更改。其次，延迟段的序列号需要在新连接中有效，这也是不太可能的。但是，如果出现这两种情况，TIME_WAIT 则会阻止新连接的数据被破坏。</p><p>需要TIME_WAIT 第二个原因是可靠地实施TCP的全双工连接终端。</p><p>如果ACK 从终点2开始的终点被丢弃，则终点1将重新发送终点FIN 。如果连接已经过渡到CLOSED 终点2，那么唯一可能的应答是发送一个，RST 因为重发FIN 是意外的。即使所有数据传输正确，这也会导致终点1接收到错误。</p><p>不幸的是，一些操作系统实现的方式TIME_WAIT 似乎有点幼稚。</p><p>只有TIME_WAIT 通过阻塞才能提供保护的连接与需要的socket完全匹配TIME_WAIT 。这意味着由客户端地址，客户端端口，服务器地址和服务器端口标识的连接。但是，某些操作系统会施加更严格的限制，并且阻止本地端口号被重新使用，而该端口号包含在连接中TIME_WAIT 。如果有足够的套接字结束，TIME_WAIT 则不能建立新的出站连接，因为没有剩余本地端口分配给新连接。</p><p>Windows不会执行此操作，只会阻止与其中的连接完全匹配的出站连接TIME_WAIT 。</p><p>入站连接受影响较小TIME_WAIT 。</p><p>虽然由服务器主动关闭的TIME_WAIT 连接与客户端连接完全一样，但是服务器正在侦听的本地端口不会阻止其成为新的入站连接的一部分。在Windows上，服务器正在监听的众所周知的端口可以构成随后接受的连接的一部分，并且如果从远程地址和端口建立了新的连接，该连接当前构成TIME_WAIT 该本地地址和端口的连接的一部分，则只要新序列号大于当前连接的最终序列号，就允许连接TIME_WAIT 。然而，TIME_WAIT 在服务器上累积可能会影响性能和资源使用，因为TIME_WAIT 最终需要超时的连接需要进行一些工作，直到TIME_WAIT 状态结束，连接仍占用（少量）服务器资源。</p><p>鉴于TIME_WAIT 由于本地端口号耗尽而影响出站连接的建立，并且这些连接通常使用由临时端口范围由操作系统自动分配的本地端口，因此您可以做的第一件事情是确保你正在使用一个体面的短暂端口范围。在Windows上，您可以通过调整MaxUserPort 注册表设置来完成此操作。请注意，默认情况下，许多Windows系统的临时端口范围大约为4000，这对于许多客户端服务器系统来说可能太低。</p><p>虽然有可能缩短套接字在TIME_WAIT 这方面的花费时间通常不会有帮助。鉴于TIME_WAIT 当许多连接建立并且主动关闭时，这只是一个问题，调整2MSL等待周期通常会导致在给定时间内建立和关闭更多连接的情况，因此必须不断调整2MSL直到由于延迟片段似乎是后来连接的一部分，因此它可能会开始出现问题; 如果您连接到相同的远程地址和端口，并且非常快速地使用所有本地端口范围，或者如果连接到相同的远程地址和端口并将本地端口绑定到固定值，这种情况才会变得可能。</p><p>更改2MSL延迟通常是机器范围内的配置更改。您可以尝试TIME_WAIT 使用SO_REUSEADDR 套接字选项解决套接字级别问题。这允许在具有相同地址和端口的现有套接字已经存在的同时创建套接字。新的套接字基本上劫持了旧的套接字。您可以使用它SO_REUSEADDR 来允许创建套接字，同时具有相同端口的套接字已经在其中，TIME_WAIT 但这也会导致诸如拒绝服务攻击或数据窃取等问题。在Windows平台上另一套接字选项，SO_EXCLUSIVEADDRUSE 可以帮助防止某些缺点的SO_REUSEADDR ，但在我看来，最好避免这些尝试在各地工作TIME_WAIT ，而是设计系统，使TIME_WAIT 不是问题。</p><p>上面的TCP状态转换图都显示有序的连接终止。还有另一种方法来终止TCP连接，这是通过中止连接并发送一个RST 而不是一个FIN 。这通常通过将SO_LINGER 套接字选项设置为0 来实现。这会导致挂起的数据被丢弃，并且连接将被中止，RST 而不是等待传输的数据，并且使用a清除干净的连接FIN 。重要的是要认识到，当连接被中止时，可能在对等体之间流动的任何数据将被丢弃，RST 直接送达; 通常作为表示“连接已被同级重置”的事实的错误。远程节点知道连接被中止，并且两个节点都没有进入TIME_WAIT 。</p><p>当然，已经中止使用的连接的新化身RST 可能成为TIME_WAIT 阻碍的延迟段问题的受害者，但是成为问题所需的条件是不太可能的，无论如何，参见上面的更多细节。为了防止已经中止的连接导致延迟段问题，两个对等端都必须转换到TIME_WAIT 连接关闭可能由诸如路由器之类的中介引起。但是，这不会发生，连接的两端都会关闭。</p><p>有几件事你可以做，以避免TIME_WAIT 成为你的问题。其中一些假定您有能力更改您的客户端和服务器之间所说的协议，但是对于自定义服务器设计，您通常会这样做。</p><p>对于永远不会建立自己的出站连接的服务器，除了维护连接的资源和性能意义之外TIME_WAIT ，您不必过分担心。</p><p>对于确实建立出站连接并接受入站连接的服务器，黄金法则是始终确保如果TIME_WAIT 需要发生这种情况，则它会在另一个对等而不是服务器上结束。做到这一点的最佳方式是永远不要从服务器发起主动关闭，无论原因是什么。如果您的对等方超时，则以中止连接RST 而不是关闭连接。如果你的对方发送无效数据，中止连接等等。</p><p>这个想法是，如果你的服务器永远不会启动一个主动关闭，它永远不会累积TIME_WAIT 套接字，因此永远不会受到它们导致的可伸缩性问题的困扰。虽然在出现错误情况时很容易看到如何中止连接，但正常连接终止的情况如何？理想情况下，您应该为协议设计一种方式，让服务器告诉客户端它应该断开连接，而不是简单地让服务器发起主动关闭。因此，如果服务器需要终止连接，服务器会发送一个应用程序级别“我们已经完成”的消息，客户将此消息作为关闭连接的原因。如果客户端未能在合理的时间内关闭连接，则服务器会中止连接。</p><p>在客户端上，事情稍微复杂一些，毕竟，有人必须发起一个主动关闭来干净地终止TCP连接，并且如果它是客户端，那么这就是TIME_WAIT 最终会结束的地方。然而，TIME_WAIT 最终在客户端有几个优点。</p><p>首先，如果由于某种原因，客户端由于套接字在TIME_WAIT 一个客户端中的积累而最终导致连接问题。其他客户不会受到影响。</p><p>其次，快速打开和关闭TCP连接到同一台服务器是没有效率的，因此超出了问题的意义TIME_WAIT 尝试维持更长时间的连接而不是更短的时间。不要设计一个协议，客户端每分钟连接一次，并打开一个新的连接。而是使用持久连接设计，并且只有在连接失败时才重新连接，如果中间路由器拒绝在没有数据流的情况下保持连接处于打开状态，则可以实现应用程序级别ping，使用TCP保持活动状态或仅接受路由器重置连接; 好处是你没有积累TIME_WAIT 插座。如果你在连接上做的工作自然是短暂的，那么考虑某种形式的“连接池”设计，从而保持连接的开放性和重用性。</p><p>最后，如果您绝对必须快速地从客户端打开和关闭连接到同一台服务器，那么也许您可以设计一个可以使用的应用程序级别关闭顺序，然后按照此顺序关闭。您的客户可能会发送“我完成了”消息，您的服务器可能会发送“再见”消息，然后客户端可能会中止连接。</p><p>TIME_WAIT 存在原因并通过缩短2MSL周期或允许地址重用来解决这个问题SO_REUSEADDR 并不总是一个好主意。</p><p>如果你能够设计你的协议TIME_WAIT 避免在脑海中，那么你通常可以完全避免这个问题。</p><h5>TIME_WAIT的4种查询方式</h5><p>1、netstat -n | awk &#x27;/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}&#x27;</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 45 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p45_0.jpg' alt='原文配图'><figcaption>原文配图 · p45</figcaption></figure><p>2、ss -s</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 45 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p45_1.jpg' alt='原文配图'><figcaption>原文配图 · p45</figcaption></figure><p>3、netstat -nat |awk &#x27;{print $6}&#x27;|sort|uniq -c|sort -rn</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 45 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p45_2.jpg' alt='原文配图'><figcaption>原文配图 · p45</figcaption></figure><p>4、 统计TIME_WAIT 连接的本地地址</p><p>netstat -an | grep TIME_WAIT | awk &#x27;{print $4}&#x27; | sort | uniq -c | sort -n -k1</p><figure class='pdf-img zoomable' data-cap='原文配图 · 第 46 页 / 共 65 页'><img loading='lazy' src='/study/topic-09-network-protocols/assets/img/p46_0.jpg' alt='原文配图'><figcaption>原文配图 · p46</figcaption></figure><p>尝试抓取 tcp 包</p><pre class='code'><code><span class='cl'>tcpdump tcp -i any -nn port <span class='tk-num'>8080</span> | grep <span class='tk-str'>&quot;172.11.11.11&quot;</span></span></code></pre><h4>系统参数优化</h4><p>处理方法：需要修改内核参数开启重启：</p><ul class='pdf-list'><li>net.ipv4.tcp_tw_reuse = 1，开启快速回收</li><li>net.ipv4.tcp_tw_recycle = 1 （在NAT网络中不建议开启，要设置为0），并且开启</li><li>net.ipv4.tcp_timestamps = 1以上两个参数才生产。</li></ul><p>具体操作方法如下：</p><pre class='code'><code><span class='cl'>echo <span class='tk-str'>&quot;net.ipv4.tcp_tw_reuse = 1&quot;</span> &gt;&gt; /etc/sysctl.conf;</span><span class='cl'>echo <span class='tk-str'>&quot;net.ipv4.tcp_tw_recycle = 1&quot;</span> &gt;&gt; /etc/sysctl.conf;</span><span class='cl'>echo <span class='tk-str'>&quot;net.ipv4.tcp_timestamps = 1&quot;</span> &gt;&gt; /etc/sysctl.conf;</span></code></pre><p>sysctl -p;</p><h4>nginx 配置优化</h4><p>当使用nginx作为反向代理时，为了支持长连接，需要做到两点：</p><li class='num'>1. 从client到nginx的连接是长连接</li><li class='num'>2. 从nginx到server的连接是长连接</li><p>保持和client的长连接：</p><pre class='code'><code><span class='cl'>http {</span><span class='cl'>    keepalive_timeout 120s 120s;</span><span class='cl'>    keepalive_requests <span class='tk-num'>1000</span>;</span><span class='cl'>}</span></code></pre><h4>keepalive_timeout设置</h4><p>语法</p><pre class='code'><code><span class='cl'>keepalive_timeout timeout [header_timeout];</span></code></pre><p>第一个参数：设置keep-alive客户端(浏览器)连接在服务器端(nginx端)保持开启的超时值（默认75s）；</p><p>值为0会禁用keep-alive客户端连接；</p><p>第二个参数：可选、在响应的header域中设置一个值“Keep-Alive: timeout=time”；通常可以不用设置；</p><p>这个keepalive_timeout针对的是浏览器和nginx建立的一个tcp通道，没有数据传输时最长等待该时候后就关闭.</p><p>nginx和upstream中的keepalive_timeout则受到tomcat连接器的控制，tomcat中也有一个类似的keepalive_timeout参数</p><h4>keepalive_requests理解设置</h4><p>keepalive_requests指令用于设置一个keep-alive连接上可以服务的请求的最大数量，当最大请求数量达到时，连接被关闭。默认是100。</p><p>这个参数的真实含义，是指一个keep alive建立之后，nginx就会为这个连接设置一个计数器，记录这个keep alive的长连接上已经接收并处理的客户端请求的数量。如果达到这个参数设置的最大值时，则nginx会强行关闭这个长连接，逼迫客户端不得不重新建立新的长连接。</p><p>保持和server的长连接</p><p>为了让nginx和后端server（nginx称为upstream）之间保持长连接，典型设置如下：（默认nginx访问后端都是用的短连接(HTTP1.0)，一个请求来了，Nginx 新开一个端口和后端建立连接，后端执行完毕后主动关闭该链接）</p><pre class='code'><code><span class='cl'>location / {</span><span class='cl'>    proxy_http_version <span class='tk-num'>1.1</span>;</span><span class='cl'>    proxy_set_header <span class='tk-type'>Connection</span> keep-alive;</span><span class='cl'>    proxy_pass http:<span class='tk-com'>//httpurl;</span></span><span class='cl'>}</span></code></pre><p>HTTP协议中对长连接的支持是从1.1版本之后才有的，因此最好通过proxy_http_version指令设置为”1.1”；</p><p>从client过来的http header，因为即使是client和nginx之间是短连接，nginx和upstream之间也是可以开启长连接的。</p><h4>keepalive理解设置</h4><p>此处keepalive的含义不是开启、关闭长连接的开关；也不是用来设置超时的timeout；更不是设置长连接池最大连接数。官方解释：</p><li class='num'>1. The connections parameter sets the maximum number of idle keepalive connections to</li><ul class='pdf-list'><li>upstream servers connections（设置到upstream服务器的空闲keepalive连接的最大数量）</li></ul><li class='num'>2. When this number is exceeded, the least recently used connections are closed. （当这个数量</li><ul class='pdf-list'><li>被突破时，最近使用最少的连接将被关闭）</li></ul><li class='num'>3. It should be particularly noted that the keepalive directive does not limit the total number of</li><ul class='pdf-list'><li>connections to upstream servers that an nginx worker process can open.（特别提醒：</li><li>keepalive指令不会限制一个nginx worker进程到upstream服务器连接的总数量）</li></ul><h4>总结：</h4><p>keepalive 这个参数一定要小心设置，尤其对于QPS比较高的场景，推荐先做一下估算，根据QPS和平均响应时间大体能计算出需要的长连接的数量。</p><p>比如前面10000 QPS和100毫秒响应时间就可以推算出需要的长连接数量大概是1000. 然后将keepalive设置为这个长连接数量的10%到30%。比较懒的同学，可以直接设置为keepalive=1000之类的，一般都OK的了。</p><p>综上，出现大量TIME_WAIT 的情况</p><p>1）导致 nginx端出现大量TIME_WAIT 的情况有两种：</p><p>keepalive_requests设置比较小，高并发下超过此值后nginx会强制关闭和客户端保持的keepalive长连接；（主动关闭连接后导致nginx出现TIME_WAIT ）</p><p>keepalive设置的比较小（空闲数太小），导致高并发下nginx会频繁出现连接数震荡（超过该值会关闭连接），不停的关闭、开启和后端server保持的keepalive长连接；</p><p>2）导致后端server端出现大量TIME_WAIT 的情况：</p><p>nginx没有打开和后端的长连接，即：没有设置proxy_http_version 1.1; 和proxy_set_header Connection “”; 从而导致后端server每次关闭连接，高并发下就会出现server端出现大量TIME_WAIT</p>",
+      "evidence": [
+        {
+          "label": "原文出处",
+          "from": 39,
+          "to": 48,
+          "files": [
+            {
+              "page": 39,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_39.jpg"
+            },
+            {
+              "page": 40,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_40.jpg"
+            },
+            {
+              "page": 41,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_41.jpg"
+            },
+            {
+              "page": 42,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_42.jpg"
+            },
+            {
+              "page": 43,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_43.jpg"
+            },
+            {
+              "page": 44,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_44.jpg"
+            },
+            {
+              "page": 45,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_45.jpg"
+            },
+            {
+              "page": 46,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_46.jpg"
+            },
+            {
+              "page": 47,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_47.jpg"
+            },
+            {
+              "page": 48,
+              "file": "/study/topic-09-network-protocols/assets/ev/q040_0_48.jpg"
+            }
+          ]
+        }
+      ],
+      "search": "聊聊：生产Nginx现大量TIME-WAIT，导致连接耗尽，该如何处理？ 生产环境 Nginx 后端服务大量 TIME-WAIT 的解决步骤 TIME_WAIT 是主动关闭连接的一方最终进入的状态，通常持续 2MSL（常见 30 秒、1 分钟或 2 分钟）；大量短连接快速开关会让 TIME_WAIT 套接字累积，耗尽本地端口，影响新建出站连接。 TIME_WAIT 存在的两个原因：防止前一个连接的延迟报文被误认为新连接的一部分；可靠实现 TCP 全双工连接终止（最后一个 ACK 丢失时可重传 FIN）。 查询方式：netstat 按 TCP 状态计数、ss -s、netstat 统计第 6 列、统计 TIME_WAIT 连接的本地地址，也可用 tcpdump 抓包。 内核参数优化：net.ipv4.tcp_tw_reuse=1、tcp_tw_recycle=1（NAT 网络建议设 0）、tcp_timestamps=1，写入 sysctl.conf 后 sysctl -p 生效。 Nginx 优化：配置 keepalive_timeout、keepalive_requests，并用 proxy_http_version 1.1 与 proxy_set_header Connection keep-alive 保持与后端的长连接；keepalive 参数控制空闲长连接数。 设计原则：服务器尽量不要主动关闭连接；客户端侧可用连接池、长连接和应用层关闭顺序来减少 TIME_WAIT。  背景说明： 尼恩，生产环境 Nginx 后端服务大量 TIME-WAIT ， 该怎么办？ 除了Nginx进程之外，还有其他的后端服务如： 尼恩，生产环境 Netty、SpringCloud Gateway 后端服务大量 TIME-WAIT ， 该怎么办？ 遇到这样的生产环境难题，小伙伴们非常头疼。 更为头疼的是，这个也是一道场景的面试题。之前有小伙伴反应过，他面试科大讯飞的时候，遇到了这道题目： 生产环境 Nginx 后端服务大量 TIME-WAIT 的解决步骤 基础知识： TIME_WAIT是什么？ 在构建TCP客户端服务器系统时，很容易犯简单的错误，这些错误会严重限制可伸缩性。 其中一个错误是没有考虑到TIME_WAIT 状态。 为什么TIME_WAIT 存在，它可能导致的问题，如何解决它，以及什么时候不应该。 TIME_WAIT 是 TCP 状态转换图中经常被误解的状态。 这是某些套接字可以进入并保持相对较长时间的状态，如果您有足够的套接字，那么您创建新套接字连接的能力可能会受到影响，这可能会影响客户端服务器系统的可伸缩性。 关于套接字如何以及为什么首先进入TIME_WAIT ，经常存在一些误解，不应该有，这并不神奇。从下面的TCP状态转换图中可以看出TIME_WAIT ，是TCP客户端通常最终处于的最终状态。 虽然状态转换图显示TIME_WAIT 为客户端的最终状态，但它不一定是客户端TIME_WAIT 。事实上，最终状态是启动“主动关闭”的对等端最终进入，这可以是客户端或服务器。那么，发布“主动关闭”是什么意思？ 如果TCP对等方是第一个呼叫Close() 连接的对等方，则TCP对等方会启动“主动关闭” 。 在许多协议和客户端/服务器设计中，这是客户端。 在HTTP和FTP服务器中，这通常是服务器。 导致同伴结束的事件的实际顺序TIME_WAIT 如下。 现在我们知道套接字是如何结束TIME_WAIT 的，理解为什么这个状态存在以及它为什么会成为一个潜在的问题是有用的。 TIME_WAIT 通常也被称为2MSL等待状态。 这是因为转换到的套接字在此期间的持续时间TIME_WAIT 为2 x最大段寿命。 MSL是任何段的最大时间量，对于构成TCP协议一部分的数据报的所有意图和目的而言，在丢弃之前，网络可以在网络上保持有效。这个时间限制最终以用于传输TCP段的IP数据报中的TTL字段为界。 不同的实现为MSL选择不同的值，常用值为30秒，1分钟或2分钟。 RFC 793指定MSL为2分钟，Windows系统默认为此值，但可以使用TcpTimedWaitDelay注册表设置进行调整。 TIME_WAIT 可能影响系统可伸缩性 的原因是，TCP连接中一个完全关闭的套接字将保持TIME_WAIT 约4分钟的状态。 如果许多连接正在快速打开和关闭，那么套接字TIME_WAIT 可能会开始累积在系统上; 您可以TIME_WAIT 使用netstat查看套接字。一次可以建立有限数量的套接字连接，限制此数量的其中一个因素是可用本地端口的数量。 如果TIME_WAIT 插入太多的套接字，您会发现很难建立新的出站连接，因为缺少可用于新连接的本地端口。 但为什么TIME_WAIT 存在呢？有两个原因需要TIME_WAIT 。 首先是防止一个连接的延迟段被误解为后续连接的一部分。丢弃在连接处于2MSL等待状态时到达的任何段。 在上图中，我们有两个从终点1到终点2的连接。每个终点的地址和端口在每个连接中都是相同的。第一个连接终止于由端点2启动的主动关闭。如果端点2没有保持TIME_WAIT 足够长的时间以确保来自先前连接的所有分段已经失效，则延迟的分段（具有适当的序列号）可以是误认为是第二个连接的一部分... 请注意，延迟片段很可能会导致这样的问题。首先，每个端点的地址和端口需要相同; 这通常不太可能，因为操作系统通常从短暂端口范围为您选择客户端端口，从而在连接之间进行更改。其次，延迟段的序列号需要在新连接中有效，这也是不太可能的。但是，如果出现这两种情况，TIME_WAIT 则会阻止新连接的数据被破坏。 需要TIME_WAIT 第二个原因是可靠地实施TCP的全双工连接终端。 如果ACK 从终点2开始的终点被丢弃，则终点1将重新发送终点FIN 。如果连接已经过渡到CLOSED 终点2，那么唯一可能的应答是发送一个，RST 因为重发FIN 是意外的。即使所有数据传输正确，这也会导致终点1接收到错误。 不幸的是，一些操作系统实现的方式TIME_WAIT 似乎有点幼稚。 只有TIME_WAIT 通过阻塞才能提供保护的连接与需要的socket完全匹配TIME_WAIT 。这意味着由客户端地址，客户端端口，服务器地址和服务器端口标识的连接。但是，某些操作系统会施加更严格的限制，并且阻止本地端口号被重新使用，而该端口号包含在连接中TIME_WAIT 。如果有足够的套接字结束，TIME_WAIT 则不能建立新的出站连接，因为没有剩余本地端口分配给新连接。 Windows不会执行此操作，只会阻止与其中的连接完全匹配的出站连接TIME_WAIT 。 入站连接受影响较小TIME_WAIT 。 虽然由服务器主动关闭的TIME_WAIT 连接与客户端连接完全一样，但是服务器正在侦听的本地端口不会阻止其成为新的入站连接的一部分。在Windows上，服务器正在监听的众所周知的端口可以构成随后接受的连接的一部分，并且如果从远程地址和端口建立了新的连接，该连接当前构成TIME_WAIT 该本地地址和端口的连接的一部分，则只要新序列号大于当前连接的最终序列号，就允许连接TIME_WAIT 。然而，TIME_WAIT 在服务器上累积可能会影响性能和资源使用，因为TIME_WAIT 最终需要超时的连接需要进行一些工作，直到TIME_WAIT 状态结束，连接仍占用（少量）服务器资源。 鉴于TIME_WAIT 由于本地端口号耗尽而影响出站连接的建立，并且这些连接通常使用由临时端口范围由操作系统自动分配的本地端口，因此您可以做的第一件事情是确保你正在使用一个体面的短暂端口范围。在Windows上，您可以通过调整MaxUserPort 注册表设置来完成此操作。请注意，默认情况下，许多Windows系统的临时端口范围大约为4000，这对于许多客户端服务器系统来说可能太低。 虽然有可能缩短套接字在TIME_WAIT 这方面的花费时间通常不会有帮助。鉴于TIME_WAIT 当许多连接建立并且主动关闭时，这只是一个问题，调整2MSL等待周期通常会导致在给定时间内建立和关闭更多连接的情况，因此必须不断调整2MSL直到由于延迟片段似乎是后来连接的一部分，因此它可能会开始出现问题; 如果您连接到相同的远程地址和端口，并且非常快速地使用所有本地端口范围，或者如果连接到相同的远程地址和端口并将本地端口绑定到固定值，这种情况才会变得可能。 更改2MSL延迟通常是机器范围内的配置更改。您可以尝试TIME_WAIT 使用SO_REUSEADDR 套接字选项解决套接字级别问题。这允许在具有相同地址和端口的现有套接字已经存在的同时创建套接字。新的套接字基本上劫持了旧的套接字。您可以使用它SO_REUSEADDR 来允许创建套接字，同时具有相同端口的套接字已经在其中，TIME_WAIT 但这也会导致诸如拒绝服务攻击或数据窃取等问题。在Windows平台上另一套接字选项，SO_EXCLUSIVEADDRUSE 可以帮助防止某些缺点的SO_REUSEADDR ，但在我看来，最好避免这些尝试在各地工作TIME_WAIT ，而是设计系统，使TIME_WAIT 不是问题。 上面的TCP状态转换图都显示有序的连接终止。还有另一种方法来终止TCP连接，这是通过中止连接并发送一个RST 而不是一个FIN 。这通常通过将SO_LINGER 套接字选项设置为0 来实现。这会导致挂起的数据被丢弃，并且连接将被中止，RST 而不是等待传输的数据，并且使用a清除干净的连接FIN 。重要的是要认识到，当连接被中止时，可能在对等体之间流动的任何数据将被丢弃，RST 直接送达; 通常作为表示“连接已被同级重置”的事实的错误。远程节点知道连接被中止，并且两个节点都没有进入TIME_WAIT 。 当然，已经中止使用的连接的新化身RST 可能成为TIME_WAIT 阻碍的延迟段问题的受害者，但是成为问题所需的条件是不太可能的，无论如何，参见上面的更多细节。为了防止已经中止的连接导致延迟段问题，两个对等端都必须转换到TIME_WAIT 连接关闭可能由诸如路由器之类的中介引起。但是，这不会发生，连接的两端都会关闭。 有几件事你可以做，以避免TIME_WAIT 成为你的问题。其中一些假定您有能力更改您的客户端和服务器之间所说的协议，但是对于自定义服务器设计，您通常会这样做。 对于永远不会建立自己的出站连接的服务器，除了维护连接的资源和性能意义之外TIME_WAIT ，您不必过分担心。 对于确实建立出站连接并接受入站连接的服务器，黄金法则是始终确保如果TIME_WAIT 需要发生这种情况，则它会在另一个对等而不是服务器上结束。做到这一点的最佳方式是永远不要从服务器发起主动关闭，无论原因是什么。如果您的对等方超时，则以中止连接RST 而不是关闭连接。如果你的对方发送无效数据，中止连接等等。 这个想法是，如果你的服务器永远不会启动一个主动关闭，它永远不会累积TIME_WAIT 套接字，因此永远不会受到它们导致的可伸缩性问题的困扰。虽然在出现错误情况时很容易看到如何中止连接，但正常连接终止的情况如何？理想情况下，您应该为协议设计一种方式，让服务器告诉客户端它应该断开连接，而不是简单地让服务器发起主动关闭。因此，如果服务器需要终止连接，服务器会发送一个应用程序级别“我们已经完成”的消息，客户将此消息作为关闭连接的原因。如果客户端未能在合理的时间内关闭连接，则服务器会中止连接。 在客户端上，事情稍微复杂一些，毕竟，有人必须发起一个主动关闭来干净地终止TCP连接，并且如果它是客户端，那么这就是TIME_WAIT 最终会结束的地方。然而，TIME_WAIT 最终在客户端有几个优点。 首先，如果由于某种原因，客户端由于套接字在TIME_WAIT 一个客户端中的积累而最终导致连接问题。其他客户不会受到影响。 其次，快速打开和关闭TCP连接到同一台服务器是没有效率的，因此超出了问题的意义TIME_WAIT 尝试维持更长时间的连接而不是更短的时间。不要设计一个协议，客户端每分钟连接一次，并打开一个新的连接。而是使用持久连接设计，并且只有在连接失败时才重新连接，如果中间路由器拒绝在没有数据流的情况下保持连接处于打开状态，则可以实现应用程序级别ping，使用TCP保持活动状态或仅接受路由器重置连接; 好处是你没有积累TIME_WAIT 插座。如果你在连接上做的工作自然是短暂的，那么考虑某种形式的“连接池”设计，从而保持连接的开放性和重用性。 最后，如果您绝对必须快速地从客户端打开和关闭连接到同一台服务器，那么也许您可以设计一个可以使用的应用程序级别关闭顺序，然后按照此顺序关闭。您的客户可能会发送“我完成了”消息，您的服务器可能会发送“再见”消息，然后客户端可能会中止连接。 TIME_WAIT 存在原因并通过缩短2MSL周期或允许地址重用来解决这个问题SO_REUSEADDR 并不总是一个好主意。 如果你能够设计你的协议TIME_WAIT 避免在脑海中，那么你通常可以完全避免这个问题。 TIME_WAIT的4种查询方式 1、netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}' 2、ss -s 3、netstat -nat |awk '{print $6}'|sort|uniq -c|sort -rn 4、 统计TIME_WAIT 连接的本地地址 netstat -an | grep TIME_WAIT | awk '{print $4}' | sort | uniq -c | sort -n -k1 尝试抓取 tcp 包 tcpdump tcp -i any -nn port 8080 | grep \"172.11.11.11\" 系统参数优化 处理方法：需要修改内核参数开启重启： net.ipv4.tcp_tw_reuse = 1，开启快速回收 net.ipv4.tcp_tw_recycle = 1 （在NAT网络中不建议开启，要设置为0），并且开启 net.ipv4.tcp_timestamps = 1以上两个参数才生产。 具体操作方法如下： echo \"net.ipv4.tcp_tw_reuse = 1\" >> /etc/sysctl.conf; echo \"net.ipv4.tcp_tw_recycle = 1\" >> /etc/sysctl.conf; echo \"net.ipv4.tcp_timestamps = 1\" >> /etc/sysctl.conf; sysctl -p; nginx 配置优化 当使用nginx作为反向代理时，为了支持长连接，需要做到两点： 1. 从client到nginx的连接是长连接 2. 从nginx到server的连接是长连接 保持和client的长连接： http { keepalive_timeout 120s 120s; keepalive_requests 1000 ; } keepalive_timeout设置 语法 keepalive_timeout timeout [header_timeout]; 第一个参数：设置keep-alive客户端(浏览器)连接在服务器端(nginx端)保持开启的超时值（默认75s）； 值为0会禁用keep-alive客户端连接； 第二个参数：可选、在响应的header域中设置一个值“Keep-Alive: timeout=time”；通常可以不用设置； 这个keepalive_timeout针对的是浏览器和nginx建立的一个tcp通道，没有数据传输时最长等待该时候后就关闭. nginx和upstream中的keepalive_timeout则受到tomcat连接器的控制，tomcat中也有一个类似的keepalive_timeout参数 keepalive_requests理解设置 keepalive_requests指令用于设置一个keep-alive连接上可以服务的请求的最大数量，当最大请求数量达到时，连接被关闭。默认是100。 这个参数的真实含义，是指一个keep alive建立之后，nginx就会为这个连接设置一个计数器，记录这个keep alive的长连接上已经接收并处理的客户端请求的数量。如果达到这个参数设置的最大值时，则nginx会强行关闭这个长连接，逼迫客户端不得不重新建立新的长连接。 保持和server的长连接 为了让nginx和后端server（nginx称为upstream）之间保持长连接，典型设置如下：（默认nginx访问后端都是用的短连接(HTTP1.0)，一个请求来了，Nginx 新开一个端口和后端建立连接，后端执行完毕后主动关闭该链接） location / { proxy_http_version 1.1 ; proxy_set_header Connection keep-alive; proxy_pass http: //httpurl; } HTTP协议中对长连接的支持是从1.1版本之后才有的，因此最好通过proxy_http_version指令设置为”1.1”； 从client过来的http header，因为即使是client和nginx之间是短连接，nginx和upstream之间也是可以开启长连接的。 keepalive理解设置 此处keepalive的含义不是开启、关闭长连接的开关；也不是用来设置超时的timeout；更不是设置长连接池最大连接数。官方解释： 1. The connections parameter sets the maximum number of idle keepalive connections to upstream servers connections（设置到upstream服务器的空闲keepalive连接的最大数量） 2. When this number is exceeded, the least recently used connections are closed. （当这个数量 被突破时，最近使用最少的连接将被关闭） 3. It should be particularly noted that the keepalive directive does not limit the total number of connections to upstream servers that an nginx worker process can open.（特别提醒： keepalive指令不会限制一个nginx worker进程到upstream服务器连接的总数量） 总结： keepalive 这个参数一定要小心设置，尤其对于QPS比较高的场景，推荐先做一下估算，根据QPS和平均响应时间大体能计算出需要的长连接的数量。 比如前面10000 QPS和100毫秒响应时间就可以推算出需要的长连接数量大概是1000. 然后将keepalive设置为这个长连接数量的10%到30%。比较懒的同学，可以直接设置为keepalive=1000之类的，一般都OK的了。 综上，出现大量TIME_WAIT 的情况 1）导致 nginx端出现大量TIME_WAIT 的情况有两种： keepalive_requests设置比较小，高并发下超过此值后nginx会强制关闭和客户端保持的keepalive长连接；（主动关闭连接后导致nginx出现TIME_WAIT ） keepalive设置的比较小（空闲数太小），导致高并发下nginx会频繁出现连接数震荡（超过该值会关闭连接），不停的关闭、开启和后端server保持的keepalive长连接； 2）导致后端server端出现大量TIME_WAIT 的情况： nginx没有打开和后端的长连接，即：没有设置proxy_http_version 1.1; 和proxy_set_header Connection “”; 从而导致后端server每次关闭连接，高并发下就会出现server端出现大量TIME_WAIT"
+    }
+  ]
+}
