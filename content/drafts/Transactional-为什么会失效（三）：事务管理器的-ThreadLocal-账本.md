@@ -15,7 +15,7 @@ categories:
 
 换个说法：`@Transactional` 让方法"进了事务"，可事务本身既不是对象，也不是变量，它散落在当前线程的几个 `ThreadLocal` 里——连接、同步回调、只读标记、隔离级别、事务名。**这些账目一旦记错线程，事务就会在人眼皮底下消失**，不报错、不打日志。这一篇要做的，就是把这份账本翻开。
 
-> 本篇接[第二篇](/2026/10/16/Transactional-为什么会失效（二）：代理的生成与调用进链/)（事务属性已解析、调用已进链），覆盖第五部分：`TransactionManager` 的 ThreadLocal 账本、七种传播行为、内层属性的静默忽略、提交与回滚的完成逻辑、事务生命周期回调。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
+> 本篇接[第二篇](/posts/Transactional-为什么会失效（二）：代理的生成与调用进链)（事务属性已解析、调用已进链），覆盖第五部分：`TransactionManager` 的 ThreadLocal 账本、七种传播行为、内层属性的静默忽略、提交与回滚的完成逻辑、事务生命周期回调。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
 
 > 本篇要回答的问题：
 >
@@ -558,7 +558,7 @@ public class OrderCreatedListener {
 
 `@TransactionalEventListener` 默认就是 `AFTER_COMMIT`。它平时"注册"在 `synchronizations` 这个 ThreadLocal 里——也就是 5.1 节那张表的第二行——因此它天然受线程约束：**没有事务时默认不执行**（除非把 `fallbackExecution` 设为 `true`）。
 
-这条线和事件机制的交汇，在 [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/) 里已经出现过：代理负责拦截，事件负责解耦，而事务负责"什么时候才算真的成功"。
+这条线和事件机制的交汇，在 [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生) 里已经出现过：代理负责拦截，事件负责解耦，而事务负责"什么时候才算真的成功"。
 
 ## 小结
 
@@ -568,4 +568,4 @@ public class OrderCreatedListener {
 
 > **下一篇**
 >
-> [第四篇：失效原因映射与收束](/2026/10/16/Transactional-为什么会失效（四）：失效原因映射与收束/)——第六~八部分：十二种失效现象分别断在哪一环、自调用与 `@Async` 怎么修、事务切面与普通切面的四处本质差异、响应式与 AspectJ 两条支线。系列入口见[导读](/2026/10/16/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制/)。
+> [第四篇：失效原因映射与收束](/posts/Transactional-为什么会失效（四）：失效原因映射与收束)——第六~八部分：十二种失效现象分别断在哪一环、自调用与 `@Async` 怎么修、事务切面与普通切面的四处本质差异、响应式与 AspectJ 两条支线。系列入口见[导读](/posts/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制)。

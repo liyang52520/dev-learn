@@ -24,7 +24,7 @@ public void createOrder(OrderDTO dto) {
 
 失效的样子千奇百怪，断点却只有几个：自调用、`private`、接口注解、被吞的异常、被换的线程——都会落回同一张图。
 
-> 本篇接[第三篇](/2026/10/16/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本/)（账本已摊开），覆盖第六~八部分与延伸阅读：失效现象映射、自调用与 `@Async`、切面顺序、响应式与 AspectJ。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
+> 本篇接[第三篇](/posts/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本)（账本已摊开），覆盖第六~八部分与延伸阅读：失效现象映射、自调用与 `@Async`、切面顺序、响应式与 AspectJ。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
 
 > 本篇要回答的问题：
 >
@@ -353,7 +353,7 @@ if (this.reactiveAdapterRegistry != null && tm instanceof ReactiveTransactionMan
 
 **约束一：`@Transactional` 的返回值必须是响应式类型。** 上面那段 `throw new IllegalStateException("Cannot apply reactive transaction to non-reactive return type ...")` 就是防线。`WebFlux` 控制器里写一个返回 `void`、内部用 `JdbcTemplate` 的 `@Transactional` 方法，拿到的不是"事务跨线程丢了"，而是一开始就选错了事务管理器。
 
-**约束二：阻塞式的事务管理器和响应式的是两套账本，不能混用。** 线程池 + `ThreadLocal` 的组合在响应式链路里必然出错。这也是为什么 [深入理解 Spring WebFlux 与 Reactor Netty](/2026/09/15/深入理解-Spring-WebFlux-与-Reactor-Netty/) 里反复强调的"线程模型"在这里又一次成为决定因素——**事务问题的本质，一半是 AOP，另一半是线程模型。**
+**约束二：阻塞式的事务管理器和响应式的是两套账本，不能混用。** 线程池 + `ThreadLocal` 的组合在响应式链路里必然出错。这也是为什么 [深入理解 Spring WebFlux 与 Reactor Netty](/posts/深入理解-Spring-WebFlux-与-Reactor-Netty) 里反复强调的"线程模型"在这里又一次成为决定因素——**事务问题的本质，一半是 AOP，另一半是线程模型。**
 
 ### 7.4 AspectJ 模式：不走代理的那条路
 
@@ -407,10 +407,10 @@ if (this.reactiveAdapterRegistry != null && tm instanceof ReactiveTransactionMan
 
 ## 延伸阅读
 
-- [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/) —— `BeanPostProcessor` 在容器生命周期里的位置，是理解第三部分（第二篇）"代理在什么时候生成"的前置知识。
-- [Spring 中 MyBatis、MyBatis-Plus 是怎么样结合工作的？](/2026/09/10/Spring中Mybatis、MybatisPlus是怎么样结合工作的？/) —— 事务和 `SqlSession` 的复用关系：**没有 Spring 事务时，每次 Mapper 调用都是独立的 `SqlSession`；有事务时，`SqlSession` 跟着事务走。** 这是"事务影响的不只是 SQL 提交"的最好例子。
-- [Spring 自定义 MyBatis 数据源，到底发生了什么？](/2026/09/10/Spring自定义Mybatis数据源，到底发生了什么？/) —— 多数据源场景下，每个数据源要配一套 `DataSource` + `SqlSessionFactory` + `TransactionManager`，正好对应 4.5 节（第二篇）"按类型取管理器会炸"的问题。
-- [深入理解 Spring WebFlux 与 Reactor Netty](/2026/09/15/深入理解-Spring-WebFlux-与-Reactor-Netty/) —— 理解 7.3 节"为什么响应式事务必须换一套上下文"，得先理解 Reactor 的线程模型。
+- [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生) —— `BeanPostProcessor` 在容器生命周期里的位置，是理解第三部分（第二篇）"代理在什么时候生成"的前置知识。
+- [Spring 中 MyBatis、MyBatis-Plus 是怎么样结合工作的？](/posts/Spring中Mybatis、MybatisPlus是怎么样结合工作的？) —— 事务和 `SqlSession` 的复用关系：**没有 Spring 事务时，每次 Mapper 调用都是独立的 `SqlSession`；有事务时，`SqlSession` 跟着事务走。** 这是"事务影响的不只是 SQL 提交"的最好例子。
+- [Spring 自定义 MyBatis 数据源，到底发生了什么？](/posts/Spring自定义Mybatis数据源，到底发生了什么？) —— 多数据源场景下，每个数据源要配一套 `DataSource` + `SqlSessionFactory` + `TransactionManager`，正好对应 4.5 节（第二篇）"按类型取管理器会炸"的问题。
+- [深入理解 Spring WebFlux 与 Reactor Netty](/posts/深入理解-Spring-WebFlux-与-Reactor-Netty) —— 理解 7.3 节"为什么响应式事务必须换一套上下文"，得先理解 Reactor 的线程模型。
 
 接下来值得深挖的两个方向：
 
@@ -423,7 +423,7 @@ if (this.reactiveAdapterRegistry != null && tm instanceof ReactiveTransactionMan
 
 > **系列入口**
 >
-> - [系列导读](/2026/10/16/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制/)
-> - [第一篇](/2026/10/16/Transactional-为什么会失效（一）：从注解到-Advisor-的装配/)、[第二篇](/2026/10/16/Transactional-为什么会失效（二）：代理的生成与调用进链/)、[第三篇](/2026/10/16/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本/)、[第四篇](/2026/10/16/Transactional-为什么会失效（四）：失效原因映射与收束/)（本篇）
+> - [系列导读](/posts/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制)
+> - [第一篇](/posts/Transactional-为什么会失效（一）：从注解到-Advisor-的装配)、[第二篇](/posts/Transactional-为什么会失效（二）：代理的生成与调用进链)、[第三篇](/posts/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本)、[第四篇](/posts/Transactional-为什么会失效（四）：失效原因映射与收束)（本篇）
 >
 > 导读开头那 8 个问题到此合拢：注解怎么变成代理、事务与 `@Aspect` 是否同源，看第一、二篇；"当前事务"存在哪、内层 `readOnly` 为何失效，看第三篇；切面与事务谁先执行，见 7.2 节；失效断在哪一环，看第六部分那张表。

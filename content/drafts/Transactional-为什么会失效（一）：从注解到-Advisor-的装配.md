@@ -15,7 +15,7 @@ categories:
 
 日常卡住的地方，恰恰都在这三件事上：老文章说要加 `@EnableTransactionManagement`，可从没加过它，事务照样能用；`@Aspect` 切面和事务写在同一个项目里，说不清它们是不是各有一套代理创建器；读到"`protected` 方法上的 `@Transactional` 不生效"，自己试了一下居然回滚了。这些疑问的答案都不在运行期，而在启动时多出来的那几个 Bean 里。
 
-> 本篇接[系列导读](/2026/10/16/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制/)那张四阶段图，覆盖第一、二部分：事务的三个组件分别对应 AOP 的哪个概念、`@EnableTransactionManagement` 导入的两个类各做什么、`AutoProxyRegistrar` 与 `ProxyTransactionManagementConfiguration` 注册了哪些 Bean，以及 Boot 自动配置为什么默认用 CGLIB。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
+> 本篇接[系列导读](/posts/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制)那张四阶段图，覆盖第一、二部分：事务的三个组件分别对应 AOP 的哪个概念、`@EnableTransactionManagement` 导入的两个类各做什么、`AutoProxyRegistrar` 与 `ProxyTransactionManagementConfiguration` 注册了哪些 Bean，以及 Boot 自动配置为什么默认用 CGLIB。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
 
 > 本篇要回答的问题：
 >
@@ -398,4 +398,4 @@ static class ClassProxyingConfiguration {
 
 > **下一篇**
 >
-> [（二）：代理的生成与调用进链](/2026/10/16/Transactional-为什么会失效（二）：代理的生成与调用进链/)——从 `wrapIfNecessary` 一路读到 `invokeWithinTransaction`。系列入口见[导读](/2026/10/16/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制/)。
+> [（二）：代理的生成与调用进链](/posts/Transactional-为什么会失效（二）：代理的生成与调用进链)——从 `wrapIfNecessary` 一路读到 `invokeWithinTransaction`。系列入口见[导读](/posts/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制)。

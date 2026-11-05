@@ -14,7 +14,7 @@ categories:
 
 这时候"服务挂了"和"服务好好的"两个结论都不对。**端口通只说明内核里有程序在 `accept()`，不说明请求被谁接住、更不说明它被处理了。** 从 socket 到 Controller，中间要跨两次边界，每一次都会换掉执行它的线程；搞不清这两次跨界，报错就只能靠猜。
 
-> 本篇接[系列导读](/2026/08/26/SpringBoot的一次完整请求发生了什么？/)那张链路图，从第 ④ 步走到第 ⑥ 步（二~五节）：请求怎么从网卡进到 Tomcat 的 Worker 线程，`Filter` 链又是怎么把它送进 Spring 的。源码基准同导读——Spring Framework 6.1.8 / Spring Boot 3.3.x / Tomcat 10.1.x。
+> 本篇接[系列导读](/posts/SpringBoot的一次完整请求发生了什么？)那张链路图，从第 ④ 步走到第 ⑥ 步（二~五节）：请求怎么从网卡进到 Tomcat 的 Worker 线程，`Filter` 链又是怎么把它送进 Spring 的。源码基准同导读——Spring Framework 6.1.8 / Spring Boot 3.3.x / Tomcat 10.1.x。
 
 > 本篇要回答的问题：
 >
@@ -522,9 +522,9 @@ public class LoggingFilter implements Filter {
 
 > **下一篇**
 >
-> [SpringBoot 请求链路（二）：从 DispatcherServlet 到方法调用](/2026/08/26/SpringBoot请求链路2：从-DispatcherServlet-到方法调用/)——`doDispatch()` 逐行读完，再看路由表怎么建、27 个参数解析器按什么顺序认领参数、拦截器中断之后谁收到回调。
+> [SpringBoot 请求链路（二）：从 DispatcherServlet 到方法调用](/posts/SpringBoot请求链路2：从-DispatcherServlet-到方法调用)——`doDispatch()` 逐行读完，再看路由表怎么建、27 个参数解析器按什么顺序认领参数、拦截器中断之后谁收到回调。
 
 > **延伸阅读**
 >
-> - [一次下载失败排查：被 Filter 吞掉的异步响应流](/2026/10/14/一次下载失败排查：被 Filter 吞掉的异步响应流/)——Filter 把响应包起来却没写回的那类事故，这篇是一次完整复盘。
+> - [一次下载失败排查：被 Filter 吞掉的异步响应流](/posts/一次下载失败排查：被%20Filter%20吞掉的异步响应流)——Filter 把响应包起来却没写回的那类事故，这篇是一次完整复盘。
 

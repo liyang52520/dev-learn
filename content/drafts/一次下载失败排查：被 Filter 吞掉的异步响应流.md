@@ -20,7 +20,7 @@ categories:
 > - Filter 里判断一下 `DispatcherType.ASYNC`，能不能救回来？
 > - 正确写法是什么？Spring 自己是怎么处理这个问题的？
 
-这篇文章按排查的顺序走一遍：先定位到嫌疑对象，再从源码把时间线还原出来，最后给出几种修法。如果你对 `StreamingResponseBody` 的工作方式还不太熟，建议先看 [Spring 文件下载全方案深度解析](/2026/09/15/Spring-文件下载全方案深度解析/)的 3.4 节，以及 [Spring MVC 中那些“不走寻常路”的返回类型](/2026/09/14/Spring-MVC-中那些“不走寻常路”的返回类型/)的 3.4 与 8.3 节——这篇是它们的续集。
+这篇文章按排查的顺序走一遍：先定位到嫌疑对象，再从源码把时间线还原出来，最后给出几种修法。如果你对 `StreamingResponseBody` 的工作方式还不太熟，建议先看 [Spring 文件下载全方案深度解析](/posts/Spring-文件下载全方案深度解析)的 3.4 节，以及 [Spring MVC 中那些“不走寻常路”的返回类型](/posts/Spring-MVC-中那些“不走寻常路”的返回类型)的 3.4 与 8.3 节——这篇是它们的续集。
 
 ## 一、先把范围缩到最小
 
@@ -824,6 +824,6 @@ log.info("uri={} dispatcherType={} asyncStarted={} cachedSize={}",
 
 ## 延伸阅读
 
-- [Spring 文件下载全方案深度解析](/2026/09/15/Spring-文件下载全方案深度解析/)——3.4 节讲 `StreamingResponseBody` 把阻塞转移到哪里，3.5 节讲 `DeferredResult` 与它的叠加用法，正好是本文的前置知识。
-- [Spring MVC 中那些“不走寻常路”的返回类型](/2026/09/14/Spring-MVC-中那些“不走寻常路”的返回类型/)——8.3 节把 Servlet 3.0 `AsyncContext` 的两次派发讲透了，理解“ASYNC 派发只是回来收尾”要靠它。
-- [SpringBoot 的一次完整请求发生了什么？](/2026/08/26/SpringBoot的一次完整请求发生了什么？/)——第一篇的第五节是 Filter 层，第三篇的第十二节是异步请求，可以对着看 Filter 在请求生命周期里的位置。
+- [Spring 文件下载全方案深度解析](/posts/Spring-文件下载全方案深度解析)——3.4 节讲 `StreamingResponseBody` 把阻塞转移到哪里，3.5 节讲 `DeferredResult` 与它的叠加用法，正好是本文的前置知识。
+- [Spring MVC 中那些“不走寻常路”的返回类型](/posts/Spring-MVC-中那些“不走寻常路”的返回类型)——8.3 节把 Servlet 3.0 `AsyncContext` 的两次派发讲透了，理解“ASYNC 派发只是回来收尾”要靠它。
+- [SpringBoot 的一次完整请求发生了什么？](/posts/SpringBoot的一次完整请求发生了什么？)——第一篇的第五节是 Filter 层，第三篇的第十二节是异步请求，可以对着看 Filter 在请求生命周期里的位置。

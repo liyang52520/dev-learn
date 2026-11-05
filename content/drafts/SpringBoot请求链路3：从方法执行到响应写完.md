@@ -14,7 +14,7 @@ categories:
 
 **异常、返回值、异步、写回，这四件事常被当成"框架内部细节"，可线上事故恰恰密集地堆在这里。**
 
-> 本篇接[第二篇](/2026/08/26/SpringBoot请求链路2：从-DispatcherServlet-到方法调用/)（参数已就绪、拦截器已放行），覆盖系列导读里的第十~十五节和结语：反射调用与异常解析、返回值处理器与内容协商、异步请求的三根线程、响应从 `OutputBuffer` 到 Socket 的最后一跳，最后收在扩展点速查表和 Debug 指南上。
+> 本篇接[第二篇](/posts/SpringBoot请求链路2：从-DispatcherServlet-到方法调用)（参数已就绪、拦截器已放行），覆盖系列导读里的第十~十五节和结语：反射调用与异常解析、返回值处理器与内容协商、异步请求的三根线程、响应从 `OutputBuffer` 到 Socket 的最后一跳，最后收在扩展点速查表和 Debug 指南上。
 
 > 本篇要回答的问题：
 >
@@ -842,7 +842,7 @@ Poller 只负责"等数据可读"，然后从 Worker 池里取一根当前空闲
 
 `chain.doFilter()` 之后的代码此时才执行。这也是为什么 Filter 是最适合做"耗时统计"的位置——它天然包住了整个请求过程。
 
-> 但这里有一个必须避开的坑：**如果在 Filter 里把响应包装成了 `ContentCachingResponseWrapper`，一定要记得把内容写回去。** 忘了调用 `copyBodyToResponse()`，就是"状态码 200、响应头齐全、body 却是 0 字节"。这个案例的完整排查过程见 [一次下载失败排查：被 Filter 吞掉的异步响应流](/2026/10/14/一次下载失败排查：被 Filter 吞掉的异步响应流/)。
+> 但这里有一个必须避开的坑：**如果在 Filter 里把响应包装成了 `ContentCachingResponseWrapper`，一定要记得把内容写回去。** 忘了调用 `copyBodyToResponse()`，就是"状态码 200、响应头齐全、body 却是 0 字节"。这个案例的完整排查过程见 [一次下载失败排查：被 Filter 吞掉的异步响应流](/posts/一次下载失败排查：被%20Filter%20吞掉的异步响应流)。
 
 ### 13.5 对照：WebFlux 为什么完全不是这套东西
 
@@ -856,7 +856,7 @@ Poller 只负责"等数据可读"，然后从 Worker 池里取一根当前空闲
 | 线程模型 | 一请求一线程（Worker 池） | 事件循环，少量线程复用 |
 | 响应写回 | `OutputBuffer` + 收尾 flush | `Channel.writeAndFlush`，非阻塞 |
 
-`DispatcherHandler` 同样遵循"前端控制器"模式（`HandlerMapping` → `HandlerAdapter` → 结果处理），但**没有 `HttpServletRequest`，也没有 `HandlerMethodReturnValueHandler`**。这套差异值得单独讲，见 [深入理解 Spring WebFlux 与 Reactor Netty](/2026/09/15/深入理解-Spring-WebFlux-与-Reactor-Netty/) 和 [深入 WebFlux 与 Spring Cloud Gateway](/2026/09/21/深入-WebFlux-与-Spring-Cloud-Gateway：为什么网关没有-Controller，却是一个-WebFlux-应用？/)。
+`DispatcherHandler` 同样遵循"前端控制器"模式（`HandlerMapping` → `HandlerAdapter` → 结果处理），但**没有 `HttpServletRequest`，也没有 `HandlerMethodReturnValueHandler`**。这套差异值得单独讲，见 [深入理解 Spring WebFlux 与 Reactor Netty](/posts/深入理解-Spring-WebFlux-与-Reactor-Netty) 和 [深入 WebFlux 与 Spring Cloud Gateway](/posts/深入-WebFlux-与-Spring-Cloud-Gateway：为什么网关没有-Controller，却是一个-WebFlux-应用？)。
 
 ## 十四、扩展点速查表
 
@@ -951,7 +951,7 @@ logging.level.org.springframework.web.servlet.mvc.method.annotation=WARN
 
 ## 结语
 
-回到[系列开头那个引子](/2026/08/26/SpringBoot的一次完整请求发生了什么？/)。那行 `Resolved [MissingServletRequestParameterException]` 之所以把人骗到 Nginx 和网关上去，是因为它看起来像"请求出了问题"，而实际上它在说"**请求已经成功走到第二篇的第八节了**"。
+回到[系列开头那个引子](/posts/SpringBoot的一次完整请求发生了什么？)。那行 `Resolved [MissingServletRequestParameterException]` 之所以把人骗到 Nginx 和网关上去，是因为它看起来像"请求出了问题"，而实际上它在说"**请求已经成功走到第二篇的第八节了**"。
 
 现在，系列导读里那张问题清单可以逐条回答了：
 
@@ -968,10 +968,10 @@ logging.level.org.springframework.web.servlet.mvc.method.annotation=WARN
 
 > **延伸阅读**
 >
-> - [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/)——第一篇第四节讲的是"装好了什么"，那篇讲的是"容器在哪个阶段把它们装好"。
-> - [一次下载失败排查：被 Filter 吞掉的异步响应流](/2026/10/14/一次下载失败排查：被 Filter 吞掉的异步响应流/)——第十三节那个坑的完整排查过程。
-> - [Spring MVC 中那些"不走寻常路"的返回类型](/2026/09/14/Spring-MVC-中那些“不走寻常路”的返回类型/)——第十一节那张返回值处理器表的展开版。
-> - [深入理解 Spring WebFlux 与 Reactor Netty](/2026/09/15/深入理解-Spring-WebFlux-与-Reactor-Netty/)——把第一篇的 Tomcat 模型和 EventLoop 模型对照着看。
+> - [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生)——第一篇第四节讲的是"装好了什么"，那篇讲的是"容器在哪个阶段把它们装好"。
+> - [一次下载失败排查：被 Filter 吞掉的异步响应流](/posts/一次下载失败排查：被%20Filter%20吞掉的异步响应流)——第十三节那个坑的完整排查过程。
+> - [Spring MVC 中那些"不走寻常路"的返回类型](/posts/Spring-MVC-中那些“不走寻常路”的返回类型)——第十一节那张返回值处理器表的展开版。
+> - [深入理解 Spring WebFlux 与 Reactor Netty](/posts/深入理解-Spring-WebFlux-与-Reactor-Netty)——把第一篇的 Tomcat 模型和 EventLoop 模型对照着看。
 
-> 这一篇是系列的最后一篇。三篇的入口、以及那张全链路地图，都在[系列导读](/2026/08/26/SpringBoot的一次完整请求发生了什么？/)。
+> 这一篇是系列的最后一篇。三篇的入口、以及那张全链路地图，都在[系列导读](/posts/SpringBoot的一次完整请求发生了什么？)。
 

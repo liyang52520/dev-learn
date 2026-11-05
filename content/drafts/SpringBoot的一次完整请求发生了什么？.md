@@ -50,7 +50,7 @@ Required request parameter 'userId' for method parameter type String is not pres
 
 文中源码以 **Spring Framework 6.1.8 + Spring Boot 3.3.x + Tomcat 10.1.x + Java 17** 为基准，全部对照本地 sources jar 逐行核对。与 Spring 5.3 / Tomcat 9 行为不同的地方会单独标出——**这条链路上有好几处"广为流传但已经过时"的说法，这个系列会逐个纠正。**
 
-如果你还没读过 [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/)，建议先扫一眼：那里讲了容器启动期各类 `PostProcessor` 的执行位置，而第一篇第四节的"启动期装了什么"，正是那些机制的直接产物。
+如果你还没读过 [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生)，建议先扫一眼：那里讲了容器启动期各类 `PostProcessor` 的执行位置，而第一篇第四节的"启动期装了什么"，正是那些机制的直接产物。
 
 ## 一、先画一张全链路地图
 
@@ -141,15 +141,15 @@ Required request parameter 'userId' for method parameter type String is not pres
 
 | 篇目 | 节 | 这一篇回答什么 |
 |:---|:---|:---|
-| [第一篇：请求是怎么到 Tomcat 的](/2026/08/26/SpringBoot请求链路1：请求是怎么到-Tomcat-的/) | 二~五 | 内核的两个队列、Tomcat 的 Acceptor / Poller / Worker 三拨线程、启动期装好的组件、`FilterChain` 的真实结构 |
-| [第二篇：从 DispatcherServlet 到方法调用](/2026/08/26/SpringBoot请求链路2：从-DispatcherServlet-到方法调用/) | 六~九 | `doDispatch()` 逐行，路由表的建立与匹配、27 个参数解析器的顺序、拦截器的顺序与中断语义 |
-| [第三篇：方法执行、异步与响应写回](/2026/08/26/SpringBoot请求链路3：从方法执行到响应写完/) | 十~十五 | 反射调用与异常解析、返回值处理器与内容协商、异步的三根线程、`OutputBuffer` 到 Socket，外加速查表与 Debug 指南 |
+| [第一篇：请求是怎么到 Tomcat 的](/posts/SpringBoot请求链路1：请求是怎么到-Tomcat-的) | 二~五 | 内核的两个队列、Tomcat 的 Acceptor / Poller / Worker 三拨线程、启动期装好的组件、`FilterChain` 的真实结构 |
+| [第二篇：从 DispatcherServlet 到方法调用](/posts/SpringBoot请求链路2：从-DispatcherServlet-到方法调用) | 六~九 | `doDispatch()` 逐行，路由表的建立与匹配、27 个参数解析器的顺序、拦截器的顺序与中断语义 |
+| [第三篇：方法执行、异步与响应写回](/posts/SpringBoot请求链路3：从方法执行到响应写完) | 十~十五 | 反射调用与异常解析、返回值处理器与内容协商、异步的三根线程、`OutputBuffer` 到 Socket，外加速查表与 Debug 指南 |
 
 三个常用入口：
 
-- **只想给一个报错定位**：直接去[第三篇](/2026/08/26/SpringBoot请求链路3：从方法执行到响应写完/)的第十五节，那张"错误码 → 哪一层"的表基本能一步到位。
-- **想弄清线程模型**：[第一篇](/2026/08/26/SpringBoot请求链路1：请求是怎么到-Tomcat-的/)的第三、四节讲线程从哪来、什么时候建好，[第三篇](/2026/08/26/SpringBoot请求链路3：从方法执行到响应写完/)的第十二节讲异步为什么变成三根线程，对照着看最快。
-- **想弄清"参数为什么取不到"**：[第二篇](/2026/08/26/SpringBoot请求链路2：从-DispatcherServlet-到方法调用/)的第八节。这是整条链路上最不直观的一环，也是引子里那个 400 的答案。
+- **只想给一个报错定位**：直接去[第三篇](/posts/SpringBoot请求链路3：从方法执行到响应写完)的第十五节，那张"错误码 → 哪一层"的表基本能一步到位。
+- **想弄清线程模型**：[第一篇](/posts/SpringBoot请求链路1：请求是怎么到-Tomcat-的)的第三、四节讲线程从哪来、什么时候建好，[第三篇](/posts/SpringBoot请求链路3：从方法执行到响应写完)的第十二节讲异步为什么变成三根线程，对照着看最快。
+- **想弄清"参数为什么取不到"**：[第二篇](/posts/SpringBoot请求链路2：从-DispatcherServlet-到方法调用)的第八节。这是整条链路上最不直观的一环，也是引子里那个 400 的答案。
 
 > 三篇各自独立成文，但都建立在这张地图上。如果某一段读起来突兀，多半是它依赖了前一节；顺着读一遍，再回头查表。
 

@@ -651,7 +651,7 @@ spring:
 
 属性名不是我编的，它们来自 starter 自带的 `spring-configuration-metadata.json`（`spring.ai.openai.chat.api-key`、`spring.ai.openai.chat.base-url`、`spring.ai.openai.chat.options.model`、`spring.ai.openai.chat.options.temperature`……），所以**你在 IDE 里有自动补全**。
 
-自动配置的链路，和你在 [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/) 里看到的那套机制完全一致。`spring-ai-starter-model-openai` 的 POM 会拉进这几个模块：
+自动配置的链路，和你在 [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生) 里看到的那套机制完全一致。`spring-ai-starter-model-openai` 的 POM 会拉进这几个模块：
 
 ```text
 spring-ai-starter-model-openai 的直接依赖（摘自其 POM）
@@ -697,7 +697,7 @@ public interface CallAdvisor extends Advisor {
 
 流式场景对应 `StreamAdvisor.adviseStream(...)`，两者的链式继续方法分别是 `callAdvisorChain.nextCall(...)` 和 `streamAdvisorChain.nextStream(...)`。
 
-它的行为模式你在 [SpringBoot 的一次完整请求发生了什么？](/2026/08/26/SpringBoot的一次完整请求发生了什么？/) 的 Filter 一节里见过：**拿到请求 → 决定做点事 → 调下一个 → 拿到响应 → 决定再做点事**。官方文档对 Advisor 能力的描述里，"可以不往下走"这条最像 Filter：
+它的行为模式你在 [SpringBoot 的一次完整请求发生了什么？](/posts/SpringBoot的一次完整请求发生了什么？) 的 Filter 一节里见过：**拿到请求 → 决定做点事 → 调下一个 → 拿到响应 → 决定再做点事**。官方文档对 Advisor 能力的描述里，"可以不往下走"这条最像 Filter：
 
 > it can choose to **block the request** by not making the call to invoke the next entity. In the latter case, the advisor is responsible for filling out the response.
 
@@ -849,7 +849,7 @@ public class AgentController {
 这段代码里有两处值得停下来看一眼：
 
 - **`defaultSystem` 是一段 prompt，不是配置。** 它相当于给模型写的"岗位说明书"，也是约束模型行为最直接的手段。
-- **`.stream()` 返回 `Flux<String>`，所以需要 Reactive 栈。** 这一点和 Spring MVC 里的 `SseEmitter` 是同一件事的两种写法。区别在于模型侧的流式数据源本身就是 `Flux`，所以 Reactive 栈在这里更自然。如果你对 `Flux` 的订阅模型还不太放心，可以先看 [深入理解 Spring WebFlux 与 Reactor Netty](/2026/09/15/深入理解-Spring-WebFlux-与-Reactor-Netty/) 里"链式调用只是构建蓝图，订阅才让它活过来"那一节——流式接口的调试问题，八成出在订阅时机上。
+- **`.stream()` 返回 `Flux<String>`，所以需要 Reactive 栈。** 这一点和 Spring MVC 里的 `SseEmitter` 是同一件事的两种写法。区别在于模型侧的流式数据源本身就是 `Flux`，所以 Reactive 栈在这里更自然。如果你对 `Flux` 的订阅模型还不太放心，可以先看 [深入理解 Spring WebFlux 与 Reactor Netty](/posts/深入理解-Spring-WebFlux-与-Reactor-Netty) 里"链式调用只是构建蓝图，订阅才让它活过来"那一节——流式接口的调试问题，八成出在订阅时机上。
 
 ---
 
@@ -954,10 +954,10 @@ Spring AI 做的事，是用你熟悉的方式把这三样交到你手上：`@To
 
 ### 延伸阅读
 
-- [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/)——本文 5.2 节讲的 starter 与自动配置，那里有完整的容器启动时间线；想搞清 `ChatClient.Builder` 这类 Bean 是何时被造出来的，看它。
-- [SpringBoot 的一次完整请求发生了什么？](/2026/08/26/SpringBoot的一次完整请求发生了什么？/)——本文把 Advisor 类比成 Filter 链，那个系列的第一篇第五节和第三篇第十二节可以对着看，理解"链式拦截 + 末端执行"这个结构。
-- [深入理解 Spring WebFlux 与 Reactor Netty](/2026/09/15/深入理解-Spring-WebFlux-与-Reactor-Netty/)——本文 5.5 节的流式接口返回 `Flux<String>`，订阅模型、线程归属、为什么不能手动 `subscribe`，都在那里。
-- [一次下载失败排查：被 Filter 吞掉的异步响应流](/2026/10/14/一次下载失败排查：被 Filter 吞掉的异步响应流/)——同样是流式响应，同样卡在 Filter/Advisor 这一层。Agent 的流式接口出问题时，排查思路可以复用。
+- [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生)——本文 5.2 节讲的 starter 与自动配置，那里有完整的容器启动时间线；想搞清 `ChatClient.Builder` 这类 Bean 是何时被造出来的，看它。
+- [SpringBoot 的一次完整请求发生了什么？](/posts/SpringBoot的一次完整请求发生了什么？)——本文把 Advisor 类比成 Filter 链，那个系列的第一篇第五节和第三篇第十二节可以对着看，理解"链式拦截 + 末端执行"这个结构。
+- [深入理解 Spring WebFlux 与 Reactor Netty](/posts/深入理解-Spring-WebFlux-与-Reactor-Netty)——本文 5.5 节的流式接口返回 `Flux<String>`，订阅模型、线程归属、为什么不能手动 `subscribe`，都在那里。
+- [一次下载失败排查：被 Filter 吞掉的异步响应流](/posts/一次下载失败排查：被%20Filter%20吞掉的异步响应流)——同样是流式响应，同样卡在 Filter/Advisor 这一层。Agent 的流式接口出问题时，排查思路可以复用。
 - [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)（arXiv:2210.03629）——3.1 节引用的论文原文与失败案例分析都在这里。
 - [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)（Anthropic，2024-12-19，页面标题现已改为 "Building Effective AI Agents"）——3.4 节 workflow 与 agent 的区分、以及"什么时候不该用 Agent"的原文出处。
 - [Writing effective tools for agents](https://www.anthropic.com/engineering/writing-tools-for-agents)（Anthropic，2025-09-11）——2.3 节"工具即契约"与"不要一比一包装现有接口"的出处，做工具设计时值得整篇读。

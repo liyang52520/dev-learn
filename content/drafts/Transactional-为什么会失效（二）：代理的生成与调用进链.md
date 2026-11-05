@@ -15,7 +15,7 @@ categories:
 
 于是有了本篇特有的两类困惑：有的 Bean 被包了一层，有的没有，判断标准是什么？更隐蔽的是 `AopUtils.isAopProxy(bean)` 返回 `true`，`@Transactional` 却没生效——代理在，只是这个方法上一条通知都没有。
 
-> 本篇接[第一篇](/2026/10/16/Transactional-为什么会失效（一）：从注解到-Advisor-的装配/)，覆盖第三、四部分：`wrapIfNecessary` 的三道闸门、pointcut 如何判断"方法上有没有事务属性"、JDK 与 CGLIB 决定注解写在哪才有效、调用怎么进链。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
+> 本篇接[第一篇](/posts/Transactional-为什么会失效（一）：从注解到-Advisor-的装配)，覆盖第三、四部分：`wrapIfNecessary` 的三道闸门、pointcut 如何判断"方法上有没有事务属性"、JDK 与 CGLIB 决定注解写在哪才有效、调用怎么进链。口径同导读：Spring Framework 6.1.8 + Spring Boot 3.3.x（Java 17）。
 
 > 本篇要回答的问题：
 >
@@ -72,7 +72,7 @@ registry.registerBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME, beanDefinition);
 
 > 这也解释了为什么"在同一个 Bean 的方法里调用自己"必然绕过事务：`this` 在编译期就绑定到了目标对象，跟代理没有半毛钱关系。
 
-关于 `BeanPostProcessor` 在容器里的完整位置，可以对照 [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/) 里的第三幕——那里用几十行手写代理演示了同一个位置。
+关于 `BeanPostProcessor` 在容器里的完整位置，可以对照 [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生) 里的第三幕——那里用几十行手写代理演示了同一个位置。
 
 ### 3.2 `wrapIfNecessary`：三道闸门
 
@@ -603,7 +603,7 @@ protected TransactionManager determineTransactionManager(@Nullable TransactionAt
 
 优先级很清楚：**`@Transactional(transactionManager = "...")` → 拦截器上配的 Bean 名 → 容器里按类型取**。
 
-最后那个 `beanFactory.getBean(TransactionManager.class)` 是多数据源场景下的经典陷阱：**按类型取，容器里有多个候选就直接抛 `NoUniqueBeanDefinitionException`**。所以多数据源时必须用 `transactionManager` 属性显式指定——这和后端文章 [Spring 中 MyBatis、MyBatis-Plus 是怎么样结合工作的？](/2026/09/10/Spring中Mybatis、MybatisPlus是怎么样结合工作的？/) 里"每个数据源一套 `DataSource` + `SqlSessionFactory` + `TransactionManager`"的结论是同一件事的两面。
+最后那个 `beanFactory.getBean(TransactionManager.class)` 是多数据源场景下的经典陷阱：**按类型取，容器里有多个候选就直接抛 `NoUniqueBeanDefinitionException`**。所以多数据源时必须用 `transactionManager` 属性显式指定——这和后端文章 [Spring 中 MyBatis、MyBatis-Plus 是怎么样结合工作的？](/posts/Spring中Mybatis、MybatisPlus是怎么样结合工作的？) 里"每个数据源一套 `DataSource` + `SqlSessionFactory` + `TransactionManager`"的结论是同一件事的两面。
 
 到这里，调用确实进到事务了。接下来看事务管理器拿什么在记账。
 
@@ -613,4 +613,4 @@ protected TransactionManager determineTransactionManager(@Nullable TransactionAt
 
 > **下一篇**
 >
-> [（三）：事务管理器的 ThreadLocal 账本](/2026/10/16/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本/)。系列入口见[导读](/2026/10/16/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制/)。
+> [（三）：事务管理器的 ThreadLocal 账本](/posts/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本)。系列入口见[导读](/posts/Transactional-为什么会失效-从-AOP-代理链看-Spring-事务机制)。

@@ -14,7 +14,7 @@ categories:
 
 **你后来遇到的大部分现象——404、405、400、406，以及"拦截器没执行""参数解析器选了别人"——都是这一个方法内部某一步的结果。** 它值得逐行读，而不是背五个步骤的名字。
 
-> 本篇接[第一篇](/2026/08/26/SpringBoot请求链路1：请求是怎么到-Tomcat-的/)（`FilterChain` 已经放行），覆盖系列导读里的第六~九节：`doDispatch()` 的完整流程、`HandlerMapping` 如何把 URL 变成一个 `HandlerMethod`、27 个参数解析器怎么排队、拦截器的顺序与中断语义。
+> 本篇接[第一篇](/posts/SpringBoot请求链路1：请求是怎么到-Tomcat-的)（`FilterChain` 已经放行），覆盖系列导读里的第六~九节：`doDispatch()` 的完整流程、`HandlerMapping` 如何把 URL 变成一个 `HandlerMethod`、27 个参数解析器怎么排队、拦截器的顺序与中断语义。
 
 > 本篇要回答的问题：
 >
@@ -401,7 +401,7 @@ if (getPatternParser() != null) {
 
 ## 八、参数解析：注解决定"从哪里取值"
 
-这一节回到[系列导读](/2026/08/26/SpringBoot的一次完整请求发生了什么？/)里那个 400。
+这一节回到[系列导读](/posts/SpringBoot的一次完整请求发生了什么？)里那个 400。
 
 ### 8.1 从 HandlerAdapter 到方法调用
 
@@ -969,5 +969,5 @@ if (mappedHandler != null) {
 
 > **下一篇**
 >
-> [SpringBoot 请求链路（三）：方法执行、异步与响应写回](/2026/08/26/SpringBoot请求链路3：从方法执行到响应写完/)——异常解析器的优先级、15 个返回值处理器与内容协商、异步请求的三根线程，一路写到 `OutputBuffer` 和 Socket。
+> [SpringBoot 请求链路（三）：方法执行、异步与响应写回](/posts/SpringBoot请求链路3：从方法执行到响应写完)——异常解析器的优先级、15 个返回值处理器与内容协商、异步请求的三根线程，一路写到 `OutputBuffer` 和 Socket。
 

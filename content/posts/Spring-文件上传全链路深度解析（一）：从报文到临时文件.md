@@ -29,7 +29,7 @@ categories:
 
 源码与配置以 Boot 3.2.x 为基线（按 3.2.12 的依赖清单，对应 Spring Framework 6.1.15、Tomcat 10.1.33）。
 
-> 和[Spring 文件下载全方案深度解析](/2026/09/15/Spring-文件下载全方案深度解析/)对照着看会有意思：下载是"我们从磁盘往网卡推字节"，上传是"我们从网卡往磁盘收字节"。方向一反过来，主动权、内存模型、临时文件的生命周期全都不一样。
+> 和[Spring 文件下载全方案深度解析](/posts/Spring-文件下载全方案深度解析)对照着看会有意思：下载是"我们从磁盘往网卡推字节"，上传是"我们从网卡往磁盘收字节"。方向一反过来，主动权、内存模型、临时文件的生命周期全都不一样。
 
 
 ## 一、先看清报文：上传请求在网线上到底是什么
@@ -353,14 +353,14 @@ DispatcherServlet#doDispatch
 
 3MB 的 PDF 走 MVC：限制不来自你的代码，而来自 `spring.servlet.multipart.*` 映射出的 `MultipartConfigElement`，再被 Tomcat 在解析途中触发——`max-file-size` 默认 1MB，3MB 必然过不去。
 
-200MB 的视频走的是另一条链路：WebFlux。那里没有 `Part`、没有 `MultipartConfigElement`，也就没有这个 1MB 上限；限额换到 `spring.webflux.multipart` 前缀下，内存阈值默认 256KB、磁盘默认不限，收字节靠的是流和背压，而不是容器的临时文件。同一份 `application.yml`，两个前缀管两套完全不同的机制——这才是"同项目、两种表现"的真相。这条链路的模型（`Flux`、背压、订阅）在[深入理解 Spring WebFlux 与 Reactor Netty](/2026/09/15/深入理解-Spring-WebFlux-与-Reactor-Netty/) 里讲过，这里不重复。
+200MB 的视频走的是另一条链路：WebFlux。那里没有 `Part`、没有 `MultipartConfigElement`，也就没有这个 1MB 上限；限额换到 `spring.webflux.multipart` 前缀下，内存阈值默认 256KB、磁盘默认不限，收字节靠的是流和背压，而不是容器的临时文件。同一份 `application.yml`，两个前缀管两套完全不同的机制——这才是"同项目、两种表现"的真相。这条链路的模型（`Flux`、背压、订阅）在[深入理解 Spring WebFlux 与 Reactor Netty](/posts/深入理解-Spring-WebFlux-与-Reactor-Netty) 里讲过，这里不重复。
 
 下一篇接着往下走：`max-file-size` 与 `max-request-size` 到底在第几个字节被触发、抛出的是哪个异常、为什么有的场景客户端看到的是连接被断开；以及当下最常用的做法——不落盘直传（把 part 的流直接交给对象存储、预签名 URL 直传）该怎么选、各自的边界在哪。
 
 
 ## 延伸阅读
 
-- [（二）：限额、故障与不落盘直传](/2026/10/23/Spring-文件上传全链路深度解析（二）：限额、故障与不落盘直传/)
-- [Spring 文件下载全方案深度解析](/2026/09/15/Spring-文件下载全方案深度解析/)——同一个问题的反方向：线程、拷贝与零拷贝
-- [SpringBoot 请求链路（二）：从 DispatcherServlet 到方法调用](/2026/08/26/SpringBoot请求链路2：从-DispatcherServlet-到方法调用/)——`doDispatch` 与参数解析器的完整视角
+- [（二）：限额、故障与不落盘直传](/posts/Spring-文件上传全链路深度解析（二）：限额、故障与不落盘直传)
+- [Spring 文件下载全方案深度解析](/posts/Spring-文件下载全方案深度解析)——同一个问题的反方向：线程、拷贝与零拷贝
+- [SpringBoot 请求链路（二）：从 DispatcherServlet 到方法调用](/posts/SpringBoot请求链路2：从-DispatcherServlet-到方法调用)——`doDispatch` 与参数解析器的完整视角
 - Tomcat 10.1 Connector 配置文档：<https://tomcat.apache.org/tomcat-10.1-doc/config/http.html>

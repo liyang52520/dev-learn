@@ -18,7 +18,7 @@ categories:
 > - 预签名 URL 直传（服务端用存储凭证签出一个带时效的地址，客户端直接 PUT 到对象存储、不经过应用）和"应用流式转发"差在哪里，代价是什么？
 > - `MultipartFile.getOriginalFilename()` 到底能不能信？
 
-这篇接着 [（一）：从报文到临时文件](/2026/10/23/Spring-文件上传全链路深度解析（一）：从报文到临时文件/) 往下走。第一篇讲报文怎么被解析、`MultipartFile` 从哪里来；这一篇只关心一件事：**这套机制在真实系统里以什么方式失败，以及怎么绕开它。** 口径是 Spring Boot 3.2+ / Spring Framework 6.1 / Tomcat 10.1，2.x 与 3.0/3.1 的差异单独标注。
+这篇接着 [（一）：从报文到临时文件](/posts/Spring-文件上传全链路深度解析（一）：从报文到临时文件) 往下走。第一篇讲报文怎么被解析、`MultipartFile` 从哪里来；这一篇只关心一件事：**这套机制在真实系统里以什么方式失败，以及怎么绕开它。** 口径是 Spring Boot 3.2+ / Spring Framework 6.1 / Tomcat 10.1，2.x 与 3.0/3.1 的差异单独标注。
 
 文中源码来自 `tomcat-embed-core`（Tomcat 10.1.x）、`spring-web` / `spring-webmvc`（6.1.x）、`spring-boot-autoconfigure`（3.2.x），IDEA 里按类名搜索、下载源码即可打开。
 
@@ -544,7 +544,7 @@ try (InputStream in = file.getInputStream()) {
 
 ### 延伸阅读
 
-- [（一）：从报文到临时文件](/2026/10/23/Spring-文件上传全链路深度解析（一）：从报文到临时文件/)——multipart 报文格式、`parseParts` 内部实现、`MultipartFile` 的内存/磁盘阈值原理，以及 2.x→3.x 的解析器选型与配置前缀变化，本篇只做引用。
-- [Spring 文件下载全方案深度解析](/2026/09/15/Spring-文件下载全方案深度解析/)——「五、架构层」的三种模式与本篇「九」互为镜像。
-- [一次下载失败排查：被 Filter 吞掉的异步响应流](/2026/10/14/一次下载失败排查：被%20Filter%20吞掉的异步响应流/)——同样是"响应写了但客户端拿不到"，那边的元凶是缓存包装器，这边是连接被关闭。
-- [深入 WebFlux 与 Spring Cloud Gateway](/2026/09/21/深入-WebFlux-与-Spring-Cloud-Gateway：为什么网关没有-Controller，却是一个-WebFlux-应用？/)——如果网关是 Spring Cloud Gateway，上传体在 Reactor Netty 上的处理又是另一套机制。
+- [（一）：从报文到临时文件](/posts/Spring-文件上传全链路深度解析（一）：从报文到临时文件)——multipart 报文格式、`parseParts` 内部实现、`MultipartFile` 的内存/磁盘阈值原理，以及 2.x→3.x 的解析器选型与配置前缀变化，本篇只做引用。
+- [Spring 文件下载全方案深度解析](/posts/Spring-文件下载全方案深度解析)——「五、架构层」的三种模式与本篇「九」互为镜像。
+- [一次下载失败排查：被 Filter 吞掉的异步响应流](/posts/一次下载失败排查：被%20Filter%20吞掉的异步响应流)——同样是"响应写了但客户端拿不到"，那边的元凶是缓存包装器，这边是连接被关闭。
+- [深入 WebFlux 与 Spring Cloud Gateway](/posts/深入-WebFlux-与-Spring-Cloud-Gateway：为什么网关没有-Controller，却是一个-WebFlux-应用？)——如果网关是 Spring Cloud Gateway，上传体在 Reactor Netty 上的处理又是另一套机制。

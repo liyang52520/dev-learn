@@ -55,11 +55,11 @@ public class OrderService {
 > - 事务切面和普通切面，谁的代码先执行？
 > - 每一种"事务失效"，对应链条里的哪一环？
 
-文中源码以 **Spring Framework 6.1.8 + Spring Boot 3.3.x**（Java 17）为基准，与 5.3 行为不同的地方会单独标出。如果你还没读过 [Spring 接入点：跟着容器过一生](/2026/09/11/Spring-接入点：跟着容器过一生/)，建议先扫一眼——那里讲了 `BeanPostProcessor` 在容器里的位置，这正是本系列第三部分（[第二篇](/2026/10/16/Transactional-为什么会失效（二）：代理的生成与调用进链/)）的地基。
+文中源码以 **Spring Framework 6.1.8 + Spring Boot 3.3.x**（Java 17）为基准，与 5.3 行为不同的地方会单独标出。如果你还没读过 [Spring 接入点：跟着容器过一生](/posts/Spring-接入点：跟着容器过一生)，建议先扫一眼——那里讲了 `BeanPostProcessor` 在容器里的位置，这正是本系列第三部分（[第二篇](/posts/Transactional-为什么会失效（二）：代理的生成与调用进链)）的地基。
 
 ## 全链路图：一次事务调用的四个阶段
 
-这张图是后面四篇共同的坐标系——**装配 → 代理创建 → 链的匹配 → 执行**。图中的五个"失效点"会在[第四篇](/2026/10/16/Transactional-为什么会失效（四）：失效原因映射与收束/)里逐条对应到具体现象。
+这张图是后面四篇共同的坐标系——**装配 → 代理创建 → 链的匹配 → 执行**。图中的五个"失效点"会在[第四篇](/posts/Transactional-为什么会失效（四）：失效原因映射与收束)里逐条对应到具体现象。
 
 ```text
 启动阶段
@@ -105,15 +105,15 @@ public class OrderService {
 
 | 篇目 | 节 | 这一篇回答什么 |
 |:---|:---|:---|
-| [第一篇：从注解到 Advisor 的装配](/2026/10/16/Transactional-为什么会失效（一）：从注解到-Advisor-的装配/) | 一、二 | 事务的三个组件分别对应 AOP 的哪个概念；`@EnableTransactionManagement` 导入了什么；`AutoProxyRegistrar` 与 `ProxyTransactionManagementConfiguration` 注册了哪些 Bean；Boot 自动配置为什么默认 CGLIB |
-| [第二篇：代理的生成与调用进链](/2026/10/16/Transactional-为什么会失效（二）：代理的生成与调用进链/) | 三、四 | `wrapIfNecessary` 的三道闸门、pointcut 怎么判断"方法上有没有事务属性"、JDK 与 CGLIB 如何决定注解写在哪才有效、调用如何穿过拦截器链进入 `invokeWithinTransaction` |
-| [第三篇：事务管理器的 ThreadLocal 账本](/2026/10/16/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本/) | 五 | "当前事务"存在哪六个 ThreadLocal 里、七种传播行为对应哪几行分支、内层属性为什么被静默忽略、提交与回滚的完成逻辑、事务生命周期回调 |
-| [第四篇：失效原因映射与收束](/2026/10/16/Transactional-为什么会失效（四）：失效原因映射与收束/) | 六、七、八 | 十二种失效现象分别断在哪一环、自调用/`@Async` 的定位与修法、事务切面与普通切面的四处本质差异、响应式与 AspectJ 两条支线、全系列收束 |
+| [第一篇：从注解到 Advisor 的装配](/posts/Transactional-为什么会失效（一）：从注解到-Advisor-的装配) | 一、二 | 事务的三个组件分别对应 AOP 的哪个概念；`@EnableTransactionManagement` 导入了什么；`AutoProxyRegistrar` 与 `ProxyTransactionManagementConfiguration` 注册了哪些 Bean；Boot 自动配置为什么默认 CGLIB |
+| [第二篇：代理的生成与调用进链](/posts/Transactional-为什么会失效（二）：代理的生成与调用进链) | 三、四 | `wrapIfNecessary` 的三道闸门、pointcut 怎么判断"方法上有没有事务属性"、JDK 与 CGLIB 如何决定注解写在哪才有效、调用如何穿过拦截器链进入 `invokeWithinTransaction` |
+| [第三篇：事务管理器的 ThreadLocal 账本](/posts/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本) | 五 | "当前事务"存在哪六个 ThreadLocal 里、七种传播行为对应哪几行分支、内层属性为什么被静默忽略、提交与回滚的完成逻辑、事务生命周期回调 |
+| [第四篇：失效原因映射与收束](/posts/Transactional-为什么会失效（四）：失效原因映射与收束) | 六、七、八 | 十二种失效现象分别断在哪一环、自调用/`@Async` 的定位与修法、事务切面与普通切面的四处本质差异、响应式与 AspectJ 两条支线、全系列收束 |
 
 三个常用入口：
 
-- **只想给一个失效现象定位**：直接去[第四篇](/2026/10/16/Transactional-为什么会失效（四）：失效原因映射与收束/)第六部分那张"现象 → 断在哪一环"的表。
-- **想弄清"当前事务到底存在哪"**：[第三篇](/2026/10/16/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本/) 5.1 节那张六行 ThreadLocal 表是全系列的账本。
-- **想弄清"注解为什么没变成代理"**：[第一篇](/2026/10/16/Transactional-为什么会失效（一）：从注解到-Advisor-的装配/)的第二部分讲怎么装配出 Advisor，[第二篇](/2026/10/16/Transactional-为什么会失效（二）：代理的生成与调用进链/)的第三部分讲它怎么匹配到具体的 Bean。
+- **只想给一个失效现象定位**：直接去[第四篇](/posts/Transactional-为什么会失效（四）：失效原因映射与收束)第六部分那张"现象 → 断在哪一环"的表。
+- **想弄清"当前事务到底存在哪"**：[第三篇](/posts/Transactional-为什么会失效（三）：事务管理器的-ThreadLocal-账本) 5.1 节那张六行 ThreadLocal 表是全系列的账本。
+- **想弄清"注解为什么没变成代理"**：[第一篇](/posts/Transactional-为什么会失效（一）：从注解到-Advisor-的装配)的第二部分讲怎么装配出 Advisor，[第二篇](/posts/Transactional-为什么会失效（二）：代理的生成与调用进链)的第三部分讲它怎么匹配到具体的 Bean。
 
 > 四篇各自独立成文，但都建立在这张图上。如果某一段读起来突兀，多半是它依赖了前一节；顺着读一遍，再回头查表。
