@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { SearchResult } from '@/lib/search';
 import { IconClose, IconSearch } from '@/components/Icons';
+import { withBasePath } from '@/lib/base-path';
 
 export default function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState('');
@@ -39,7 +40,7 @@ export default function SearchDialog({ open, onClose }: { open: boolean; onClose
     setLoading(true);
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      fetch(`/api/search?q=${encodeURIComponent(keyword)}`, { signal: controller.signal })
+      fetch(withBasePath(`/api/search?q=${encodeURIComponent(keyword)}`), { signal: controller.signal })
         .then((res) => res.json())
         .then((data) => {
           setResults(data.results || []);

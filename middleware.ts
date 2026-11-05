@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ADMIN_COOKIE, isValidAdminCookie } from '@/lib/auth';
+import { withBasePath, requestOrigin } from '@/lib/base-path';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -12,7 +13,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/api/admin')) {
     return NextResponse.json({ error: '未登录' }, { status: 401 });
   }
-  return NextResponse.redirect(new URL('/admin/login', request.url));
+  return NextResponse.redirect(new URL(withBasePath('/admin/login'), requestOrigin(request.headers)));
 }
 
 export const config = {

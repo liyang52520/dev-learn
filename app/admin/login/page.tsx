@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { withBasePath } from '@/lib/base-path';
 
 export default function LoginPage() {
   const [password, setPassword] = useState('');
@@ -12,7 +13,7 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch(withBasePath('/api/admin/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -23,7 +24,7 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      window.location.href = '/admin';
+      window.location.href = withBasePath('/admin');
     } catch {
       setError('网络错误，请重试');
       setLoading(false);
@@ -70,7 +71,7 @@ export default function LoginPage() {
           <button type="submit" className="admin-button primary" disabled={loading}>
             {loading ? '登录中…' : '登录'}
           </button>
-          <a href="/" className="login-back">
+          <a href={withBasePath('/')} className="login-back">
             ← 返回博客
           </a>
         </form>

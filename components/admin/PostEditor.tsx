@@ -9,6 +9,7 @@ import { languages } from '@codemirror/language-data';
 import { oneDark } from '@codemirror/theme-one-dark';
 import type { PostMeta, PostType } from '@/lib/types';
 import { IconArrow } from '@/components/Icons';
+import { withBasePath } from '@/lib/base-path';
 
 interface Front {
   title: string;
@@ -90,7 +91,7 @@ export default function PostEditor({ type, initial }: { type: PostType; initial:
     setPreviewLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch('/api/admin/preview', {
+        const res = await fetch(withBasePath('/api/admin/preview'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ body: bodyRef.current }),
@@ -114,7 +115,7 @@ export default function PostEditor({ type, initial }: { type: PostType; initial:
     setSaving(true);
     setNotice('');
     try {
-      const res = await fetch('/api/admin/post', {
+      const res = await fetch(withBasePath('/api/admin/post'), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -152,7 +153,7 @@ export default function PostEditor({ type, initial }: { type: PostType; initial:
     const direction = kind === 'drafts' ? 'publish' : 'unpublish';
     setSaving(true);
     try {
-      const res = await fetch('/api/admin/publish', {
+      const res = await fetch(withBasePath('/api/admin/publish'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, direction }),
@@ -163,7 +164,7 @@ export default function PostEditor({ type, initial }: { type: PostType; initial:
       setSlug(data.slug);
       setDirty(false);
       setNotice(direction === 'publish' ? '已发布' : '已撤回为草稿');
-      window.history.replaceState(null, '', `/admin/edit/${data.type}/${encodeURIComponent(data.slug)}`);
+      window.history.replaceState(null, '', withBasePath(`/admin/edit/${data.type}/${encodeURIComponent(data.slug)}`));
     } catch (error) {
       setNotice(error instanceof Error ? error.message : '操作失败');
     } finally {
@@ -176,7 +177,7 @@ export default function PostEditor({ type, initial }: { type: PostType; initial:
     setSaving(true);
     try {
       const res = await fetch(
-        `/api/admin/post?type=${kind}&slug=${encodeURIComponent(slug)}`,
+        withBasePath(`/api/admin/post?type=${kind}&slug=${encodeURIComponent(slug)}`),
         { method: 'DELETE' },
       );
       if (!res.ok) throw new Error('删除失败');
@@ -193,7 +194,7 @@ export default function PostEditor({ type, initial }: { type: PostType; initial:
     try {
       const form = new FormData();
       form.append('file', file);
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
+      const res = await fetch(withBasePath('/api/admin/upload'), { method: 'POST', body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '上传失败');
       const snippet = `![${file.name}](${data.url})`;

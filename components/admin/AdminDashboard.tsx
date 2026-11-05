@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import type { PostMeta } from '@/lib/types';
 import { IconClose, IconSearch } from '@/components/Icons';
+import { withBasePath } from '@/lib/base-path';
 
 type Tab = 'all' | 'posts' | 'drafts';
 
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
   async function load(options: { silent?: boolean } = {}) {
     if (!options.silent) setLoading(true);
     try {
-      const res = await fetch('/api/admin/posts');
+      const res = await fetch(withBasePath('/api/admin/posts'));
       const data = await res.json();
       setRows([
         ...(data.posts || []).map((post: PostMeta) => ({ ...post, kind: 'posts' as const })),
@@ -63,7 +64,7 @@ export default function AdminDashboard() {
     setBusy(row.slug);
     setNotice('');
     try {
-      const res = await fetch('/api/admin/publish', {
+      const res = await fetch(withBasePath('/api/admin/publish'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug: row.slug, direction }),
@@ -85,7 +86,7 @@ export default function AdminDashboard() {
     setNotice('');
     try {
       const res = await fetch(
-        `/api/admin/post?type=${row.kind}&slug=${encodeURIComponent(row.slug)}`,
+        withBasePath(`/api/admin/post?type=${row.kind}&slug=${encodeURIComponent(row.slug)}`),
         { method: 'DELETE' },
       );
       if (!res.ok) throw new Error('删除失败');
@@ -103,7 +104,7 @@ export default function AdminDashboard() {
     setBusy('create');
     setNotice('');
     try {
-      const res = await fetch('/api/admin/post', {
+      const res = await fetch(withBasePath('/api/admin/post'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newTitle.trim() }),
