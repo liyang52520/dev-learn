@@ -63,6 +63,10 @@ html.dark {
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 96px;
+  /* 关掉 iOS Safari 的字号自动放大：代码块（min-width: max-content）比视口宽，
+     会被 WebKit 按块宽放大字号，导致手机上代码显示异常 */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
