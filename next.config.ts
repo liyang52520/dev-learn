@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ['shiki', 'codemirror'],
+    // 客户端路由缓存：前进/后退与短时间重复访问直接复用，不必每次回服务端取。
+    // dynamic 覆盖 force-dynamic 页面（本站绝大多数页面），static 覆盖默认预取。
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
   },
 };
 

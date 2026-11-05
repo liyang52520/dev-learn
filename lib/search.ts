@@ -1,5 +1,7 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { getPublishedPosts, getRawPost, plainText } from '@/lib/posts';
-import { getStudyIndex, getStudyTopic } from '@/lib/study';
+import { getStudyIndex } from '@/lib/study';
 
 export interface SearchResult {
   type: 'post' | 'study';
@@ -21,29 +23,6 @@ interface SearchRow {
   metaLower: string;
   body: string;
   bodyLower: string;
-}
-
-function decodeEntities(input: string) {
-  return input
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)));
-}
-
-function htmlToText(html: string) {
-  return decodeEntities(
-    html
-      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-      .replace(/<[^>]+>/g, ' '),
-  )
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 function countOccurrences(haystack: string, needle: string) {
@@ -76,10 +55,10 @@ function studyRows() {
   const rows: SearchRow[] = [];
 
   for (const topic of index.topics) {
-    const detail = getStudyTopic(topic.id);
-    if (!detail) continue;
-    for (const question of detail.questions) {
-      const answer = htmlToText(question.answer || '');
+    for (const question of topic.questions) {
+      // index.json 的 search 已预计算为 title + aliases + summary + note + answer 纯文本，
+      // 直接复用即可，无需再读 42 个专题 JSON 并剥离 HTML。
+      const body = question.search || '';
       const meta = [
         question.title,
         question.aliases.join(' '),
@@ -96,8 +75,8 @@ function studyRows() {
         badge: topic.label,
         titleLower: question.title.toLowerCase(),
         metaLower: meta.toLowerCase(),
-        body: answer,
-        bodyLower: answer.toLowerCase(),
+        body,
+        bodyLower: body.toLowerCase(),
       });
     }
   }
@@ -106,8 +85,35 @@ function studyRows() {
   return rows;
 }
 
+interface PostRowsCache {
+  key: string;
+  rows: SearchRow[];
+}
+
+let postRowsCache: PostRowsCache | null = null;
+
+function postsFingerprint() {
+  const dir = path.join(process.cwd(), 'content/posts');
+  try {
+    return fs
+      .readdirSync(dir)
+      .filter((name) => name.endsWith('.md'))
+      .sort()
+      .map((name) => {
+        const stat = fs.statSync(path.join(dir, name));
+        return `${name}:${stat.mtimeMs}:${stat.size}`;
+      })
+      .join('|');
+  } catch {
+    return '';
+  }
+}
+
 function postRows(): SearchRow[] {
-  return getPublishedPosts().map((post) => {
+  const key = postsFingerprint();
+  if (key && postRowsCache?.key === key) return postRowsCache.rows;
+
+  const rows = getPublishedPosts().map((post) => {
     const raw = getRawPost('posts', post.slug);
     const body = raw ? plainText(raw.body) : '';
     const meta = [
@@ -118,7 +124,7 @@ function postRows(): SearchRow[] {
       raw?.front.description || '',
     ].join(' ');
     return {
-      type: 'post',
+      type: 'post' as const,
       title: post.title,
       subtitle: `${post.displayDate} · ${post.tags.join(' / ') || '随笔'}`,
       fallbackSnippet: post.excerpt,
@@ -130,6 +136,9 @@ function postRows(): SearchRow[] {
       bodyLower: body.toLowerCase(),
     };
   });
+
+  if (key) postRowsCache = { key, rows };
+  return rows;
 }
 
 export function searchAll(query: string, limit = 16): SearchResult[] {

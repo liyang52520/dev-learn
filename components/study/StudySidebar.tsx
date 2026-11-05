@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { StudyQuestionIndex } from '@/lib/study';
+import type { StudyQuestionNav } from '@/lib/study';
 import { IconSearch } from '@/components/Icons';
 
 export interface TopicOption {
@@ -23,7 +23,7 @@ interface Props {
     count: number;
   };
   topics: TopicOption[];
-  questions: StudyQuestionIndex[];
+  questions: StudyQuestionNav[];
   activeId: string;
 }
 

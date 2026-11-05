@@ -154,6 +154,9 @@ npm run typecheck  # tsc --noEmit
 6. **中文文案**：读者可见文案、错误提示、后台提示全部中文。
 7. **动态数据页**：构建后仍可能变化的页面（首页、文章、归档、标签、分类）标 `export const dynamic = 'force-dynamic'`；题库页保持默认。
 8. **URL 编码**：slug / tag / category 含中文或空格，构造链接一律 `encodeURIComponent`，读取时 `decodeURIComponent`。
+9. **切换页面要有即时反馈**：每个动态数据路由旁配 `loading.tsx`（骨架统一用 `components/PageSkeleton.tsx`，新增路由时补），客户端路由缓存由 `next.config.ts` 的 `experimental.staleTimes` 控制（`dynamic: 30`，后退/前进 30 秒内不再回服务端）。
+10. **别把大字段塞进客户端组件 props**：Client Component 的 props 会整份序列化进 RSC payload，每次导航重新下发。题库侧栏这类只需要展示字段的组件用 `questionNav()` 裁到 `id/no/title/aliases`；`answer`、`evidence` 这类大字段只留在 Server Component 里。
+11. **重数据按 mtime 缓存**：`data/study/<id>.json` 单篇最大 2.4 MB，`getStudyTopic()` 已按 mtime + size 缓存最近 6 篇；新增读盘逻辑沿用同一思路，不要每次请求重新 `JSON.parse`。检索类数据优先用 `data/study/index.json` 里预计算的 `search`，不要为一次搜索遍历 42 个专题 JSON。
 
 ### 1.9 不要做的事
 
@@ -446,7 +449,7 @@ NODE
 
 ### 3.4 数据契约
 
-`index.json` = `{meta, topics[]}`（题目只含索引字段，含 `search`），`getStudyIndex()` 读取并模块级缓存；`data/study/<topic.id>.json` = 单专题完整数据（含 `answer`/`evidence`），`getStudyTopic(id)` 每次读盘。目录相对 `process.cwd()`。
+`index.json` = `{meta, topics[]}`（题目只含索引字段，含 `search`），`getStudyIndex()` 读取并模块级缓存；`data/study/<topic.id>.json` = 单专题完整数据（含 `answer`/`evidence`），`getStudyTopic(id)` 读盘并按 mtime + size 缓存最近 6 篇。目录相对 `process.cwd()`。
 
 ```json
 {"meta":{"pages":4120,"topics":42,"count":2521},

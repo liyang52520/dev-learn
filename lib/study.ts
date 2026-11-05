@@ -99,11 +99,60 @@ export function getStudyIndex(): StudyIndex {
   return indexCache;
 }
 
+/**
+ * 专题 JSON 单篇最大 2.4 MB，而一次题目渲染里 generateMetadata 和页面组件
+ * 会各取一次。按 mtime + size 缓存解析结果，重复读取只付出一次 stat 的代价；
+ * 文件被重新抽取（mtime 变化）时自动失效。
+ */
+interface TopicCacheEntry {
+  mtimeMs: number;
+  size: number;
+  data: StudyTopic;
+}
+
+const topicCache = new Map<string, TopicCacheEntry>();
+/** 只缓存最近访问的几篇，避免 42 篇（约 24 MB）全驻留内存。 */
+const TOPIC_CACHE_LIMIT = 6;
+
 export function getStudyTopic(id: string): StudyTopic | null {
   const decoded = decodeURIComponent(id);
   const file = path.join(DATA_DIR, `${decoded}.json`);
   if (!file.startsWith(DATA_DIR) || !fs.existsSync(file)) return null;
-  return JSON.parse(fs.readFileSync(file, 'utf8')) as StudyTopic;
+
+  const stat = fs.statSync(file);
+  const cached = topicCache.get(file);
+  if (cached && cached.mtimeMs === stat.mtimeMs && cached.size === stat.size) {
+    return cached.data;
+  }
+
+  const data = JSON.parse(fs.readFileSync(file, 'utf8')) as StudyTopic;
+  if (topicCache.size >= TOPIC_CACHE_LIMIT) {
+    const oldest = topicCache.keys().next().value;
+    if (oldest) topicCache.delete(oldest);
+  }
+  topicCache.set(file, { mtimeMs: stat.mtimeMs, size: stat.size, data });
+  return data;
+}
+
+/**
+ * 侧栏只需要题号、题干和同义题面。它是 Client Component，props 会被序列化进
+ * RSC payload；直接把 StudyQuestion[]（含 answer/evidence）传进去，每次切题都会
+ * 把整个专题的答案重新下发一遍（实测最高 2.3 MB/次）。这里只挑必要字段。
+ */
+export interface StudyQuestionNav {
+  id: string;
+  no: number;
+  title: string;
+  aliases: string[];
+}
+
+export function questionNav(topic: StudyTopic): StudyQuestionNav[] {
+  return topic.questions.map((question) => ({
+    id: question.id,
+    no: question.no,
+    title: question.title,
+    aliases: question.aliases,
+  }));
 }
 
 export function getStudyQuestion(topicId: string, qid: string) {

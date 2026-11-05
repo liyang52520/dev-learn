@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getStudyIndex, getStudyQuestion } from '@/lib/study';
+import { getStudyIndex, getStudyQuestion, questionNav } from '@/lib/study';
 import StudySidebar, { type TopicOption } from '@/components/study/StudySidebar';
 import StudyQuestionContent from '@/components/study/StudyQuestionContent';
 import EvidencePanel from '@/components/study/EvidencePanel';
@@ -49,7 +49,7 @@ export default async function StudyQuestionPage({
           count: topic.count,
         }}
         topics={topics}
-        questions={topic.questions}
+        questions={questionNav(topic)}
         activeId={question.id}
       />
       <StudyQuestionContent topic={topic} question={question} />
