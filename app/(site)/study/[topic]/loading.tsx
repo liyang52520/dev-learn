@@ -1,6 +1,6 @@
-// 路由切换时的即时骨架，避免白屏等待服务端渲染。
+// 专题层（/study/<topic> 重定向页）的骨架：左侧栏由 [topic]/layout.tsx 常驻，这里只盖两栏内容。
 import PageSkeleton from '@/components/PageSkeleton';
 
 export default function Loading() {
-  return <PageSkeleton variant="study" />;
+  return <PageSkeleton variant="study-content" />;
 }

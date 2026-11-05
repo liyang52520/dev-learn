@@ -2,9 +2,41 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { UIEvent } from 'react';
 import type { StudyQuestionNav } from '@/lib/study';
 import { IconSearch } from '@/components/Icons';
+
+// 切题时路由内容整体重建，左侧列表的滚动位置会归零。
+// 按专题把滚动位置记在 sessionStorage，重建后先恢复原位，再决定要不要把当前题滚进视野。
+const SCROLL_KEY_PREFIX = 'study-sidebar-scroll:';
+
+function readListScroll(topicId: string): number | null {
+  try {
+    const raw = window.sessionStorage.getItem(SCROLL_KEY_PREFIX + topicId);
+    if (raw === null) return null;
+    const value = Number(raw);
+    return Number.isFinite(value) && value >= 0 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeListScroll(topicId: string, scrollTop: number) {
+  try {
+    window.sessionStorage.setItem(SCROLL_KEY_PREFIX + topicId, String(Math.max(0, Math.round(scrollTop))));
+  } catch {
+    // 隐私模式等场景下 sessionStorage 不可用，退化为不缓存位置。
+  }
+}
+
+function clearListScroll(topicId: string) {
+  try {
+    window.sessionStorage.removeItem(SCROLL_KEY_PREFIX + topicId);
+  } catch {
+    // 同上。
+  }
+}
 
 export interface TopicOption {
   id: string;
@@ -24,15 +56,121 @@ interface Props {
   };
   topics: TopicOption[];
   questions: StudyQuestionNav[];
-  activeId: string;
 }
 
-export default function StudySidebar({ topic, topics, questions, activeId }: Props) {
+export default function StudySidebar({ topic, topics, questions }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const activeRef = useRef<HTMLAnchorElement>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const restoredRef = useRef(false);
+  const hadStoredScrollRef = useRef(false);
+  const preFilterScrollRef = useRef<number | null>(null);
+  const centerNextRef = useRef(false);
+  const pendingScrollRef = useRef<number | null>(null);
+  const writeFrameRef = useRef<number | null>(null);
+
+  const questionHrefOf = (qid: string) => `/study/${encodeURIComponent(topic.id)}/${encodeURIComponent(qid)}`;
+  const activeQuestion = questions.find((question) => pathname === questionHrefOf(question.id));
+  const activeId = activeQuestion?.id ?? '';
+  const activeIndex = activeQuestion ? questions.indexOf(activeQuestion) : -1;
+
+  // 让当前题待在视野里：已完整可见就不动；有历史位置时只做最小移动；否则居中。
+  // forceCenter 用于“从搜索结果跳进某题”：全量列表刚恢复，直接把这一题摆到列表中部。
+  const revealActive = useCallback((list: HTMLElement, forceCenter = false) => {
+    const active = list.querySelector<HTMLElement>('.question-item.active');
+    if (!active) return;
+    const listRect = list.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    if (!forceCenter) {
+      if (activeRect.top >= listRect.top && activeRect.bottom <= listRect.bottom) return;
+      if (hadStoredScrollRef.current) {
+        if (activeRect.top < listRect.top) {
+          list.scrollTop -= listRect.top - activeRect.top;
+        } else {
+          list.scrollTop += activeRect.bottom - listRect.bottom;
+        }
+        return;
+      }
+    }
+    // 首次进入或直接打开深链（没有历史位置）：把当前题放到列表中部，而不是贴在最底下。
+    list.scrollTop += (activeRect.top + activeRect.bottom - listRect.top - listRect.bottom) / 2;
+  }, []);
+
+  // 列表挂载时先恢复上次的滚动位置，再决定要不要把当前题滚进视野。
+  // ref 回调发生在浏览器绘制之前：客户端切题时不会出现“先画在顶部再跳过去”的闪动；
+  // 首次硬加载要先等 hydration，服务端已画出的列表无法在此时回滚。
+  const attachList = useCallback(
+    (node: HTMLDivElement | null) => {
+      listRef.current = node;
+      if (!node) {
+        restoredRef.current = false;
+        return;
+      }
+      if (restoredRef.current) return;
+      restoredRef.current = true;
+      const stored = readListScroll(topic.id);
+      hadStoredScrollRef.current = stored !== null;
+      if (stored !== null) node.scrollTop = stored;
+      revealActive(node);
+    },
+    [revealActive, topic.id],
+  );
+
+  function handleListScroll(event: UIEvent<HTMLDivElement>) {
+    // 过滤状态下滚的是筛选后的列表，不能拿来覆盖全量列表的位置。
+    if (query.trim()) return;
+    hadStoredScrollRef.current = true;
+    pendingScrollRef.current = event.currentTarget.scrollTop;
+    if (writeFrameRef.current !== null) return;
+    // 滚动很密集，攒到下一帧再写，避免每个 scroll 事件都同步落一次 sessionStorage。
+    writeFrameRef.current = window.requestAnimationFrame(() => {
+      writeFrameRef.current = null;
+      const value = pendingScrollRef.current;
+      pendingScrollRef.current = null;
+      if (value !== null) writeListScroll(topic.id, value);
+    });
+  }
+
+  // 卸载（切题重建）时把最后一帧没写进去的位置补上。
+  useEffect(
+    () => () => {
+      if (writeFrameRef.current === null) return;
+      window.cancelAnimationFrame(writeFrameRef.current);
+      writeFrameRef.current = null;
+      const value = pendingScrollRef.current;
+      pendingScrollRef.current = null;
+      if (value !== null) writeListScroll(topic.id, value);
+    },
+    [topic.id],
+  );
+
+  // 搜索会改变列表内容：进入搜索时清掉缓存（点搜索结果时按“无历史位置”重新居中），
+  // 清空搜索时恢复搜索前的位置，并保证当前题回到视野里。
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    if (query.trim()) {
+      clearListScroll(topic.id);
+      return;
+    }
+    const saved = preFilterScrollRef.current;
+    preFilterScrollRef.current = null;
+    if (saved !== null) list.scrollTop = saved;
+    const forceCenter = centerNextRef.current;
+    centerNextRef.current = false;
+    revealActive(list, forceCenter);
+  }, [query, topic.id, revealActive]);
+
+  // 侧栏跨题常驻，切题后要收掉搜索：否则新题可能不在筛选结果里，左侧没有高亮。
+  // 从筛选结果点进来的，相当于“跳转到这一题”，全量列表恢复后把它居中。
+  useEffect(() => {
+    if (!query.trim()) return;
+    preFilterScrollRef.current = null;
+    centerNextRef.current = true;
+    setQuery('');
+  }, [pathname]);
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -42,20 +180,11 @@ export default function StudySidebar({ topic, topics, questions, activeId }: Pro
     );
   }, [questions, query]);
 
-  const activeIndex = questions.findIndex((question) => question.id === activeId);
-
+  // 组件跨题常驻时（activeId 变化）也要把当前题带回视野。
   useEffect(() => {
-    const link = activeRef.current;
-    const list = link?.closest('.question-list');
-    if (!link || !(list instanceof HTMLElement)) return;
-    const listRect = list.getBoundingClientRect();
-    const linkRect = link.getBoundingClientRect();
-    if (linkRect.top < listRect.top) {
-      list.scrollTop -= listRect.top - linkRect.top;
-    } else if (linkRect.bottom > listRect.bottom) {
-      list.scrollTop += linkRect.bottom - listRect.bottom;
-    }
-  }, [activeId]);
+    const list = listRef.current;
+    if (list) revealActive(list);
+  }, [activeId, topic.id, revealActive]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -119,7 +248,14 @@ export default function StudySidebar({ topic, topics, questions, activeId }: Pro
           <input
             ref={inputRef}
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              const value = event.target.value;
+              // 进入搜索前记住全量列表的位置，清空搜索时恢复。
+              if (!query.trim() && value.trim()) {
+                preFilterScrollRef.current = listRef.current?.scrollTop ?? null;
+              }
+              setQuery(value);
+            }}
             placeholder="搜索本题库…"
             aria-label="搜索题目"
           />
@@ -127,7 +263,7 @@ export default function StudySidebar({ topic, topics, questions, activeId }: Pro
         </div>
       </div>
 
-      <div className="question-list" role="list">
+      <div className="question-list" role="list" ref={attachList} onScroll={handleListScroll}>
         {filtered.map((question) => {
           const href = `/study/${encodeURIComponent(topic.id)}/${encodeURIComponent(question.id)}`;
           const active = pathname === href;
@@ -135,7 +271,6 @@ export default function StudySidebar({ topic, topics, questions, activeId }: Pro
             <Link
               key={question.id}
               href={href}
-              ref={active ? activeRef : undefined}
               className={active ? 'question-item active' : 'question-item'}
             >
               <span className="question-no">{String(question.no).padStart(2, '0')}</span>

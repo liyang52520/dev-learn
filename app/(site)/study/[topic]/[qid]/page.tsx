@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getStudyIndex, getStudyQuestion, questionNav } from '@/lib/study';
-import StudySidebar, { type TopicOption } from '@/components/study/StudySidebar';
+import { getStudyQuestion } from '@/lib/study';
 import StudyQuestionContent from '@/components/study/StudyQuestionContent';
 import EvidencePanel from '@/components/study/EvidencePanel';
 
@@ -29,31 +28,12 @@ export default async function StudyQuestionPage({
   if (!found) notFound();
 
   const { topic, question } = found;
-  const index = getStudyIndex();
-  const topics: TopicOption[] = index.topics.map((item) => ({
-    id: item.id,
-    title: item.title,
-    accent: item.accent,
-    count: item.count,
-    firstQid: item.questions[0]?.id || '',
-  }));
 
+  // 外层的 .study-page 与左侧栏由 [topic]/layout.tsx 提供，这里只负责中间与右侧两栏。
   return (
-    <div className="study-page">
-      <StudySidebar
-        topic={{
-          id: topic.id,
-          no: topic.no,
-          title: topic.title,
-          label: topic.label,
-          count: topic.count,
-        }}
-        topics={topics}
-        questions={questionNav(topic)}
-        activeId={question.id}
-      />
+    <>
       <StudyQuestionContent topic={topic} question={question} />
       <EvidencePanel groups={question.evidence} />
-    </div>
+    </>
   );
 }
