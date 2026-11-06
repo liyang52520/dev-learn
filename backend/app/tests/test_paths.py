@@ -38,5 +38,5 @@ def test_stays_inside_base(tmp_path: Path) -> None:
 
 def test_repo_root_points_to_project() -> None:
     root = repo_root()
-    assert (root / "backend" / "data" / "content").is_dir()
+    assert (root / "backend" / "data" / "blog").is_dir()
     assert (root / "backend" / "data" / "study" / "index.json").is_file()

@@ -25,7 +25,7 @@ export function AdminStatsRow({ posts, drafts, categories }: Props) {
       </div>
       <div className="admin-stats-note">
         <span>存储位置</span>
-        <code>content/posts · content/drafts</code>
+        <code>blog/posts · blog/drafts</code>
       </div>
     </div>
   )

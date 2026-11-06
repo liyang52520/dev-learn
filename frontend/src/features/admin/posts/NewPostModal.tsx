@@ -25,7 +25,7 @@ export function NewPostModal({ title, busy, onTitleChange, onClose, onCreate }: 
             autoFocus
           />
         </label>
-        <p className="admin-modal-hint">创建后会写入 content/drafts，随后进入编辑器。</p>
+        <p className="admin-modal-hint">创建后会写入 blog/drafts，随后进入编辑器。</p>
         <div className="admin-modal-actions">
           <button type="button" className="admin-button" onClick={onClose}>
             取消

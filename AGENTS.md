@@ -23,7 +23,7 @@
 
 `dev-learn` 是「YG's Blog」个人站与「Java 面试宝典」学习站的合并体，一套文件驱动的前后端分离站点：
 
-- **博客**：`backend/data/content/posts/*.md` 写文章；首页、归档、标签、分类、文章页由 React 渲染。
+- **博客**：`backend/data/blog/posts/*.md` 写文章；首页、归档、标签、分类、文章页由 React 渲染。
 - **学习**：`backend/data/study/*.json` 存专题与题目，配套 `backend/data/study/` 下 8000 多张 PDF 原文截图。
 - **后台**：`/admin` 自带本地 CMS，可新建、编辑、预览、发布文章并上传图片。
 - **复习**：可选的 Anki 调度，已并入后端进程，学习状态放在 `backend/anki/data/`。
@@ -83,7 +83,7 @@ dev-learn/
 │   │   │   └── review/             # 复习调度、快照、统计
 │   │   └── tests/                  # 跨模块测试
 │   ├── data/
-│   │   ├── content/posts|drafts/   # 已发布文章 / 草稿
+│   │   ├── blog/posts|drafts/   # 已发布文章 / 草稿
 │   │   └── study/                  # index.json + 专题 JSON + PDF 截图
 │   ├── scripts/
 │   │   ├── dev.py                  # 一条命令起前后端
@@ -136,11 +136,11 @@ dev-learn/
 
 ### 1.5 数据流
 
-**博客**：`backend/data/content/posts/*.md` → `features/posts/repository.py`（frontmatter 解析、目录缓存）→ `features/posts/service.py`（排序、分页、上一篇/下一篇）→ `rendering/markdown.py`（Markdown → HTML + TOC）→ JSON → 前端 `HtmlContent`（KaTeX 渲染 + 代码复制事件委托）。
+**博客**：`backend/data/blog/posts/*.md` → `features/posts/repository.py`（frontmatter 解析、目录缓存）→ `features/posts/service.py`（排序、分页、上一篇/下一篇）→ `rendering/markdown.py`（Markdown → HTML + TOC）→ JSON → 前端 `HtmlContent`（KaTeX 渲染 + 代码复制事件委托）。
 
 **题库**：`backend/data/study/index.json` → 专题列表；`backend/data/study/<id>.json` → 题目与答案 HTML；`rendering/answers.py` 把答案里的 `<pre class='code'>` 高亮成 `.code-block`（按 sha1 缓存）；`rendering/images.py` 读文件头注入 `width/height`。
 
-**后台**：`/admin` → `/api/admin/*` → `features/posts/repository.py` 原子写（临时文件 + `os.replace`）；发布/撤回 = 在 `backend/data/content/posts` 与 `backend/data/content/drafts` 间移动；删除 = 移入 `backend/.trash/<type>/<时间戳>-<slug>.md`；上传 = 落 `frontend/public/images/uploads/<年>/<月>/`。
+**后台**：`/admin` → `/api/admin/*` → `features/posts/repository.py` 原子写（临时文件 + `os.replace`）；发布/撤回 = 在 `backend/data/blog/posts` 与 `backend/data/blog/drafts` 间移动；删除 = 移入 `backend/.trash/<type>/<时间戳>-<slug>.md`；上传 = 落 `frontend/public/images/uploads/<年>/<月>/`。
 
 ### 1.6 本地运行与验证
 
@@ -188,7 +188,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 ### 1.7 内容管理后台
 
 1. `/admin/login` 校验密码后写入 httpOnly cookie（7 天），服务端用签名 cookie 保存登录态。
-2. `/admin` 支持「全部 / 已发布 / 草稿」筛选与关键词过滤；「新建文章」默认建在 `backend/data/content/drafts`，文件名由标题 slug 化。
+2. `/admin` 支持「全部 / 已发布 / 草稿」筛选与关键词过滤；「新建文章」默认建在 `backend/data/blog/drafts`，文件名由标题 slug 化。
 3. 编辑器字段：`title`、`date`、`tags`（逗号分隔）、`categories`（逗号分隔）、`description`、`cover`；正文用 CodeMirror，`⌘/Ctrl+S` 保存，右侧实时预览。
 4. 「整页预览」复用同一渲染管线；「发布/撤回」只移动文件；「删除」移到 `backend/.trash/`。
 5. 上传仅支持 png/jpeg/webp/gif、≤ 20 MB，服务端会校验真实图片头，返回 `/images/uploads/YYYY/MM/…`。
@@ -275,7 +275,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 5. **只写给读者**：不出现"根据你的要求…""补充了 XX"这类面向需求方的元叙述。
 6. **改旧文当重写整篇**：结构反映当前全部内容，不留"更新于…"等修订痕迹。
 7. **篇幅 ≤ 2 万非空白字符（≈ 33 KB）**，再多拆系列。
-8. **新文章只写 `backend/data/content/drafts/`**；发布 = 移入 `backend/data/content/posts/`，未经许可不发布、不 `git commit` / `git push`。
+8. **新文章只写 `backend/data/blog/drafts/`**；发布 = 移入 `backend/data/blog/posts/`，未经许可不发布、不 `git commit` / `git push`。
 
 ---
 
@@ -306,7 +306,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
    | 改页面、接口、样式、后台 | 站点代码 | 第一章（1.3–1.8） |
    | 换框架、加依赖、改构建 | 基础设施 | 第一章，且先与用户确认 |
 
-2. 看清现场：`git status`；文章数量用 `ls backend/data/content/posts backend/data/content/drafts`；题库数量读 `backend/data/study/index.json`，不要凭记忆。改代码前先读要改的文件。
+2. 看清现场：`git status`；文章数量用 `ls backend/data/blog/posts backend/data/blog/drafts`；题库数量读 `backend/data/study/index.json`，不要凭记忆。改代码前先读要改的文件。
 3. 需求含糊就问，一次问清：新分类、新标签、新专题、是否发布、是否加 front matter 字段。
 4. 不顺手重构：只改任务相关文件；无关问题记下来告诉用户。
 
@@ -361,9 +361,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 
 ## 五、一句话总结
 
-> **项目**：文件即数据库——`backend/data/content/` 是文章，`backend/data/study/` 是题库与截图，`frontend/public/images/` 是图片资产；FastAPI 只出 JSON，React 负责页面。
+> **项目**：文件即数据库——`backend/data/blog/` 是文章，`backend/data/study/` 是题库与截图，`frontend/public/images/` 是图片资产；FastAPI 只出 JSON，React 负责页面。
 >
-> **博客**：先问清楚，再找关联，按「引子 → 问题 → 分层递进 → 收口」写；正文不写 `#` 一级标题，技术经得起查证，语言写给读者；新文章先进 `backend/data/content/drafts/`。
+> **博客**：先问清楚，再找关联，按「引子 → 问题 → 分层递进 → 收口」写；正文不写 `#` 一级标题，技术经得起查证，语言写给读者；新文章先进 `backend/data/blog/drafts/`。
 >
 > **题库**：题干、答案、代码、截图逐字照录、以图为证；本仓库 JSON 是派生产物；改数据必须过自检、页面验收与独立审计。
 >

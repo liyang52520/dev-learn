@@ -40,7 +40,7 @@ class Settings:
 
     @property
     def content_dir(self) -> Path:
-        return self.backend_dir / "data" / "content"
+        return self.backend_dir / "data" / "blog"
 
     @property
     def study_dir(self) -> Path:
