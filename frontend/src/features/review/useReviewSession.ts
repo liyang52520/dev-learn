@@ -228,7 +228,7 @@ export function useReviewSession() {
 
   const continueRound = useCallback(() => {
     const hasRemaining = counts.new + counts.learning + counts.review > 0
-    // 没有剩余卡时的「再检查一次」不能清空本轮小结。
+    // 没有剩余卡时的「看看有没有新卡」不能清空本轮小结。
     if (hasRemaining) reset()
     setPhase('loading')
     setCard(null)

@@ -117,7 +117,7 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
 
       <div className="review-done-actions">
         <button type="button" className="review-btn" onClick={onContinue}>
-          {remaining > 0 ? `继续复习 · 还剩 ${remaining} 张` : '再检查一次'}
+          {remaining > 0 ? `继续复习 · 还剩 ${remaining} 张` : '看看有没有新卡'}
         </button>
         <Link to="/study" className="review-btn ghost">回到学习</Link>
       </div>

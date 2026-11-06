@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 
 import { errorMessage } from '@/shared/api/client'
 import type { ReviewConfig, ReviewStats } from '@/types/models'
@@ -58,16 +57,6 @@ export function StudySettings() {
         <LimitsForm config={config} stats={stats} onSaved={() => void load()} />
         <div>
           <BackupCard stats={stats} />
-          <div className="study-admin-card">
-            <h3>开始复习</h3>
-            <p className="study-admin-hint">
-              复习页只显示题面与原文答案，调度与统计都在服务端完成。当前连续 {stats.streak} 天，
-              累计 {stats.totalAnswers} 次作答。
-            </p>
-            <Link to="/review" className="admin-button primary">
-              进入复习页
-            </Link>
-          </div>
         </div>
       </div>
     </>
