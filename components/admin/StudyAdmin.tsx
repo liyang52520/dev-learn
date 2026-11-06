@@ -88,7 +88,12 @@ export default function StudyAdmin() {
       const res = await fetch(withBasePath('/api/review/sync'), { method: 'POST' });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || '备份失败');
-      setBackupNotice(data.backup ? `已快照 ${data.backup} 并推送到 dev-anki` : '已推送 dev-anki');
+      setBackupNotice(
+        data.backup
+          ? `已快照 ${data.backup}；git：${data.git || '已同步'}`
+          : `git：${data.git || '已同步'}`,
+      );
+      await load();
     } catch (err) {
       setBackupNotice(err instanceof Error ? err.message : '备份失败');
     } finally {
@@ -117,7 +122,7 @@ export default function StudyAdmin() {
     <div className="study-admin">
       <section className="admin-stats study-admin-stats">
         <div>
-          <span>今日卡片</span>
+          <span>今日学过（张）</span>
           <strong>{stats?.today ?? '—'}</strong>
         </div>
         <div>
@@ -125,20 +130,20 @@ export default function StudyAdmin() {
           <strong>{stats?.streak ?? '—'}</strong>
         </div>
         <div>
-          <span>累计复习</span>
+          <span>累计复习（次）</span>
           <strong>{stats?.total_reviews ?? '—'}</strong>
         </div>
         <div>
-          <span>今日可学</span>
+          <span>到期总量</span>
+          <strong>{stats?.due_total ?? '—'}</strong>
+        </div>
+        <div>
+          <span>限额内可学</span>
           <strong>{due}</strong>
         </div>
         <div>
-          <span>新卡</span>
-          <strong>{stats?.counts.new ?? '—'}</strong>
-        </div>
-        <div>
-          <span>学习中</span>
-          <strong>{stats?.counts.learning ?? '—'}</strong>
+          <span>未学新卡</span>
+          <strong>{stats?.new_remaining ?? '—'}</strong>
         </div>
       </section>
 
@@ -149,6 +154,13 @@ export default function StudyAdmin() {
             写入本机 collection 的 deck 配置（{config?.deck}），与 Anki 桌面版 Deck Options 是同一份设置。<br />
             这是<b>每天的上限，不是每天的任务</b>；设成 0 等于暂停；改小立刻生效，改大当天也会补回。
           </p>
+          {config && (
+            <p className="study-admin-hint study-admin-sched">
+              学习步骤：{config.learning_steps?.length ? `${config.learning_steps.join(' / ')} 分钟` : '默认'}
+              {' · '}
+              调度：{config.fsrs_enabled ? 'FSRS 已启用' : 'SM-2（FSRS 未启用）'}
+            </p>
+          )}
           <label>
             <span>新卡 / 天</span>
             <input
@@ -171,10 +183,17 @@ export default function StudyAdmin() {
           </label>
           {stats && config && (
             <p className="study-admin-hint study-admin-pace">
-              今天已学 {stats.today_new} 张新卡 · 队列里还有 {stats.counts.new} 张新卡可发 ·{' '}
-              剩余 {stats.new_remaining} 张没学过，
-              按 {config.new_per_day || 1}/天 约需{' '}
+              今天已学 {stats.today_new} 张新卡 · 队列里还有 {stats.counts.new} 张可发 ·{' '}
+              剩余 {stats.new_remaining} 张没学过，按 {config.new_per_day || 1}/天 约需{' '}
               {Math.ceil(stats.new_remaining / Math.max(1, config.new_per_day))} 天过完一遍。
+              {stats.due_total > 0 && (
+                <>
+                  <br />
+                  另有 {stats.due_total} 张到期，按 {config.rev_per_day || 1}/天 约需{' '}
+                  {Math.ceil(stats.due_total / Math.max(1, config.rev_per_day))} 天清完；两笔债是叠加的，
+                  实际每天要同时做。
+                </>
+              )}
             </p>
           )}
           <button type="button" className="admin-button primary" disabled={busy} onClick={() => void save()}>
@@ -192,6 +211,13 @@ export default function StudyAdmin() {
           <ul className="study-admin-list">
             <li>本地快照：保留最近 30 份</li>
             <li>远端：git@github.com:liyang52520/dev-anki.git</li>
+            {stats?.last_backup && (
+              <li>
+                最近快照：{stats.last_backup.name} · {(stats.last_backup.size / 1024 / 1024).toFixed(1)} MB
+                {' · '}{new Date(stats.last_backup.at * 1000).toLocaleString('zh-CN', { hour12: false })}
+                {'（共 '}{stats.last_backup.count} 份）
+              </li>
+            )}
           </ul>
           <button type="button" className="admin-button" disabled={busy} onClick={() => void backup()}>
             立即快照并推送
@@ -200,7 +226,7 @@ export default function StudyAdmin() {
         </div>
       </section>
 
-      {stats && stats.days.length > 2 && (
+      {stats && stats.days.length > 0 && (
         <section className="study-admin-card study-admin-heatmap">
           <h3>最近 26 周</h3>
           <Heatmap days={stats.days} />

@@ -118,6 +118,11 @@ def main() -> int:
 
     # 让父 deck 成为当前 deck，队列即可覆盖全部子 deck
     col.decks.select(parent)
+    # 新卡必须按导入顺序（课程序）出队；Anki 默认的 deck/随机 gather order 会先出字母序靠后的专题
+    cfg = col.decks.config_dict_for_deck_id(parent)
+    cfg["newGatherPriority"] = 1  # LOWEST_POSITION
+    cfg["newSortOrder"] = 1       # NO_SORT
+    col.decks.update_config(cfg)
 
     total = len(existing_qids(col))
     print(f"\n新增 {added}，跳过已存在 {skipped}，collection 内共 {total} 个 note")

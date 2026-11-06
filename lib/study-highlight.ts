@@ -15,7 +15,40 @@ import { highlightCodeToHtml, isShikiLang } from '@/lib/shiki';
 
 const CODE_BLOCK_RE = /<pre class='code' data-lang='([^']*)'><code>([\s\S]*?)<\/code><\/pre>/g;
 const CACHE_LIMIT = 240;
+// 只限条数不够：长答案一条就上百 KB，240 条能把进程内存顶到几十 MB。
+const CACHE_MAX_BYTES = 8 * 1024 * 1024;
 const cache = new Map<string, string>();
+const cacheSizes = new Map<string, number>();
+let cacheBytes = 0;
+
+function cacheGet(key: string): string | undefined {
+  const hit = cache.get(key);
+  if (hit === undefined) return undefined;
+  // 命中后挪到队尾，保证淘汰的是最久没用的那条
+  cache.delete(key);
+  cache.set(key, hit);
+  return hit;
+}
+
+function cacheSet(key: string, value: string): void {
+  const size = Buffer.byteLength(value, 'utf8');
+  const existing = cacheSizes.get(key);
+  if (existing !== undefined) {
+    cacheBytes -= existing;
+    cache.delete(key);
+    cacheSizes.delete(key);
+  }
+  cache.set(key, value);
+  cacheSizes.set(key, size);
+  cacheBytes += size;
+  while (cache.size > CACHE_LIMIT || cacheBytes > CACHE_MAX_BYTES) {
+    const oldest = cache.keys().next().value;
+    if (!oldest) break;
+    cache.delete(oldest);
+    cacheBytes -= cacheSizes.get(oldest) ?? 0;
+    cacheSizes.delete(oldest);
+  }
+}
 
 function decodeCodeText(text: string): string {
   return text.replace(/&(lt|gt|amp);/g, (_, name: string) => {
@@ -55,7 +88,7 @@ export async function highlightStudyAnswer(answerHtml: string): Promise<string> 
   if (!answerHtml.includes("<pre class='code'")) return answerHtml;
 
   const cacheKey = createHash('sha1').update(answerHtml).digest('hex');
-  const cached = cache.get(cacheKey);
+  const cached = cacheGet(cacheKey);
   if (cached) return cached;
 
   const matches = [...answerHtml.matchAll(CODE_BLOCK_RE)];
@@ -90,10 +123,6 @@ export async function highlightStudyAnswer(answerHtml: string): Promise<string> 
   });
   out += answerHtml.slice(cursor);
 
-  if (cache.size >= CACHE_LIMIT) {
-    const oldest = cache.keys().next().value;
-    if (oldest) cache.delete(oldest);
-  }
-  cache.set(cacheKey, out);
+  cacheSet(cacheKey, out);
   return out;
 }

@@ -213,9 +213,9 @@
 .admin-stats span {
   display: block;
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-  color: var(--faint);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
 }
 
 .admin-stats strong {
