@@ -1,0 +1,130 @@
+/* —— 结算页：把「今天结束了」这件事做成一个收束动作 —— */
+
+.review-done {
+  padding-top: 44px;
+}
+
+.review-done-mark {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  animation: review-done-pop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+.review-done .eyebrow {
+  display: flex;
+  justify-content: center;
+}
+
+.review-done h1 {
+  margin: 10px 0 8px;
+  animation: review-done-rise 0.5s ease 0.08s both;
+}
+
+.review-done-sub {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 14px;
+  animation: review-done-rise 0.5s ease 0.12s both;
+}
+
+.review-done-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 22px;
+  animation: review-done-rise 0.5s ease 0.16s both;
+}
+
+.review-done-count-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.review-done-count-num {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.review-done-count strong {
+  font-size: clamp(52px, 7vw, 68px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.review-done-count span {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.review-done-stats {
+  animation: review-done-rise 0.5s ease 0.2s both;
+}
+
+.review-done-topics {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+  animation: review-done-rise 0.5s ease 0.24s both;
+}
+
+.review-done-next {
+  display: flex;
+  width: fit-content;
+  margin: 8px auto 22px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  color: var(--ink-2);
+  font-size: 13px;
+  animation: review-done-rise 0.5s ease 0.28s both;
+}
+
+.review-done-next-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.review-done-actions {
+  animation: review-done-rise 0.5s ease 0.32s both;
+}
+
+@keyframes review-done-pop {
+  from {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes review-done-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

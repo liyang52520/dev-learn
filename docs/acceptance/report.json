@@ -1,0 +1,274 @@
+{
+  "started": "2026-11-06T13:31:04.080Z",
+  "checks": [
+    {
+      "name": "后端 /api/health",
+      "pass": true,
+      "detail": "{\"status\":\"ok\"}"
+    },
+    {
+      "name": "首页渲染",
+      "pass": true,
+      "detail": "YG's Blog"
+    },
+    {
+      "name": "文章详情渲染",
+      "pass": true,
+      "detail": "Spring-文件上传全链路深度解析（二）：限额、故障与不落盘直传 · 代码复制按钮 18"
+    },
+    {
+      "name": "归档页",
+      "pass": true
+    },
+    {
+      "name": "标签页",
+      "pass": true,
+      "detail": "3 个链接"
+    },
+    {
+      "name": "分类页",
+      "pass": true
+    },
+    {
+      "name": "题库总览 42 专题",
+      "pass": true,
+      "detail": "42 张卡片"
+    },
+    {
+      "name": "题目三栏页",
+      "pass": true,
+      "detail": "侧栏 95 题 · 答案 1567 字 · 证据图 3"
+    },
+    {
+      "name": "题目页图片无 404",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "搜索 JVM",
+      "pass": true,
+      "detail": "16 条结果"
+    },
+    {
+      "name": "后台登录",
+      "pass": true,
+      "detail": "进入 /admin"
+    },
+    {
+      "name": "新建草稿",
+      "pass": true,
+      "detail": "http://127.0.0.1:8000/admin/edit/drafts/Playwright-%E9%AA%8C%E6%94%B6%E4%B8%B4%E6%97%B6%E6%96%87%E7%AB%A0"
+    },
+    {
+      "name": "编辑并保存",
+      "pass": true,
+      "detail": "Playwright-验收临时文章"
+    },
+    {
+      "name": "整页预览",
+      "pass": true,
+      "detail": "代码块 1"
+    },
+    {
+      "name": "非法图片被拒绝",
+      "pass": true,
+      "detail": "400 invalid_image"
+    },
+    {
+      "name": "上传图片",
+      "pass": true,
+      "detail": "/images/uploads/2026/11/1793971887-1dc351b5.png"
+    },
+    {
+      "name": "发布草稿",
+      "pass": true,
+      "detail": "http://127.0.0.1:8000/admin/edit/posts/Playwright-%E9%AA%8C%E6%94%B6%E4%B8%B4%E6%97%B6%E6%96%87%E7%AB%A0"
+    },
+    {
+      "name": "发布后公开文章可访问",
+      "pass": true,
+      "detail": "Playwright 验收临时文章 · 代码块 1"
+    },
+    {
+      "name": "撤回文章",
+      "pass": true,
+      "detail": "http://127.0.0.1:8000/admin/edit/drafts/Playwright-%E9%AA%8C%E6%94%B6%E4%B8%B4%E6%97%B6%E6%96%87%E7%AB%A0"
+    },
+    {
+      "name": "删除文章",
+      "pass": true,
+      "detail": "列表已无该文"
+    },
+    {
+      "name": "学习设置页",
+      "pass": true,
+      "detail": "2 个上限输入框"
+    },
+    {
+      "name": "保存每日上限",
+      "pass": true
+    },
+    {
+      "name": "复习页取卡",
+      "pass": true,
+      "detail": "正常取卡"
+    },
+    {
+      "name": "显示答案",
+      "pass": true,
+      "detail": "1567 字"
+    },
+    {
+      "name": "评分进入下一张",
+      "pass": true,
+      "detail": "下一张卡 1"
+    },
+    {
+      "name": "撤销评分",
+      "pass": true,
+      "detail": "回到同一张卡"
+    },
+    {
+      "name": "结束本轮进入结算",
+      "pass": true,
+      "detail": "这一轮结束了"
+    },
+    {
+      "name": "移动端无横向溢出",
+      "pass": true,
+      "detail": "溢出 0px"
+    },
+    {
+      "name": "性能 /api/posts",
+      "pass": true,
+      "detail": "median 7ms · 2305 B"
+    },
+    {
+      "name": "性能 /api/posts/Spring-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E5%85%A8%E9%93%BE%E8%B7%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E9%99%90%E9%A2%9D%E3%80%81%E6%95%85%E9%9A%9C%E4%B8%8E%E4%B8%8D%E8%90%BD%E7%9B%98%E7%9B%B4%E4%BC%A0",
+      "pass": true,
+      "detail": "median 13ms · 93687 B"
+    },
+    {
+      "name": "性能 /api/blog/archive",
+      "pass": true,
+      "detail": "median 4ms · 2306 B"
+    },
+    {
+      "name": "性能 /api/study",
+      "pass": true,
+      "detail": "median 4ms · 8987 B"
+    },
+    {
+      "name": "性能 /api/study/jvm",
+      "pass": true,
+      "detail": "median 5ms · 14889 B"
+    },
+    {
+      "name": "性能 /api/study/jvm/q001",
+      "pass": true,
+      "detail": "median 8ms · 10503 B"
+    },
+    {
+      "name": "性能 /api/search?q=JVM",
+      "pass": true,
+      "detail": "median 9ms · 6416 B"
+    },
+    {
+      "name": "首页加载性能",
+      "pass": true,
+      "detail": "{\"domContentLoaded\":35,\"load\":35,\"resources\":12,\"transferKB\":3}"
+    },
+    {
+      "name": "控制台无报错",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "资源无 4xx/5xx",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "01-home",
+    "02-article",
+    "03-archive",
+    "04-tags",
+    "05-categories",
+    "06-study-index",
+    "07-study-question",
+    "08-search",
+    "09-admin-login",
+    "10-admin-list",
+    "11-admin-preview",
+    "12-admin-editor",
+    "13-published-article",
+    "14-admin-study",
+    "15-review-question",
+    "16-review-answer",
+    "17-review-done",
+    "18-mobile-home",
+    "19-mobile-question"
+  ],
+  "perf": {
+    "/api/posts": {
+      "status": 200,
+      "bytes": 2305,
+      "min": 5,
+      "median": 7,
+      "max": 10
+    },
+    "/api/posts/Spring-%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E5%85%A8%E9%93%BE%E8%B7%AF%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E9%99%90%E9%A2%9D%E3%80%81%E6%95%85%E9%9A%9C%E4%B8%8E%E4%B8%8D%E8%90%BD%E7%9B%98%E7%9B%B4%E4%BC%A0": {
+      "status": 200,
+      "bytes": 93687,
+      "min": 11,
+      "median": 13,
+      "max": 57
+    },
+    "/api/blog/archive": {
+      "status": 200,
+      "bytes": 2306,
+      "min": 4,
+      "median": 4,
+      "max": 5
+    },
+    "/api/study": {
+      "status": 200,
+      "bytes": 8987,
+      "min": 3,
+      "median": 4,
+      "max": 4
+    },
+    "/api/study/jvm": {
+      "status": 200,
+      "bytes": 14889,
+      "min": 5,
+      "median": 5,
+      "max": 6
+    },
+    "/api/study/jvm/q001": {
+      "status": 200,
+      "bytes": 10503,
+      "min": 6,
+      "median": 8,
+      "max": 8
+    },
+    "/api/search?q=JVM": {
+      "status": 200,
+      "bytes": 6416,
+      "min": 8,
+      "median": 9,
+      "max": 10
+    },
+    "homeLoad": {
+      "domContentLoaded": 35,
+      "load": 35,
+      "resources": 12,
+      "transferKB": 3
+    }
+  },
+  "consoleErrors": [],
+  "httpErrors": [],
+  "finished": "2026-11-06T13:31:46.088Z"
+}

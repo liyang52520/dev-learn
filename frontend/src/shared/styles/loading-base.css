@@ -1,0 +1,51 @@
+/* ---------------- Loading skeleton ---------------- */
+
+.skeleton {
+  display: block;
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--ink) 7%, var(--bg-elev));
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--ink) 6%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 220px 100%;
+  background-repeat: no-repeat;
+  background-position: -220px 0;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+html.dark .skeleton {
+  background-color: color-mix(in srgb, var(--ink) 8%, var(--bg-elev));
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--ink) 10%, transparent) 50%,
+    transparent 100%
+  );
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: -220px 0;
+  }
+
+  to {
+    background-position: calc(100% + 220px) 0;
+  }
+}
+
+.sk-page-shell {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sk-line {
+  height: 10px;
+  border-radius: 999px;
+}
+
+.sk-block {
+  border-radius: 8px;
+}

@@ -1,0 +1,2961 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "dev-learn",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "tags": [
+          "posts"
+        ],
+        "summary": "List Posts",
+        "operationId": "list_posts_api_posts_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 8,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_PostMeta_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/posts/{slug}": {
+      "get": {
+        "tags": [
+          "posts"
+        ],
+        "summary": "Get Post",
+        "operationId": "get_post_api_posts__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/posts": {
+      "get": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "List All",
+        "operationId": "list_all_api_admin_posts_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "Create Post",
+        "operationId": "create_post_api_admin_posts_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RawPost"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/posts/{post_type}/{slug}": {
+      "get": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "Get Raw",
+        "operationId": "get_raw_api_admin_posts__post_type___slug__get",
+        "parameters": [
+          {
+            "name": "post_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "posts",
+                "drafts"
+              ],
+              "type": "string",
+              "title": "Post Type"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RawPostResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "Save Post",
+        "operationId": "save_post_api_admin_posts__post_type___slug__put",
+        "parameters": [
+          {
+            "name": "post_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "posts",
+                "drafts"
+              ],
+              "type": "string",
+              "title": "Post Type"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Save Post Api Admin Posts  Post Type   Slug  Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "Delete Post",
+        "operationId": "delete_post_api_admin_posts__post_type___slug__delete",
+        "parameters": [
+          {
+            "name": "post_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "posts",
+                "drafts"
+              ],
+              "type": "string",
+              "title": "Post Type"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Delete Post Api Admin Posts  Post Type   Slug  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/posts/{post_type}/{slug}/publish": {
+      "post": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "Publish",
+        "operationId": "publish_api_admin_posts__post_type___slug__publish_post",
+        "parameters": [
+          {
+            "name": "post_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "posts",
+                "drafts"
+              ],
+              "type": "string",
+              "title": "Post Type"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/posts/{post_type}/{slug}/unpublish": {
+      "post": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "Unpublish",
+        "operationId": "unpublish_api_admin_posts__post_type___slug__unpublish_post",
+        "parameters": [
+          {
+            "name": "post_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "posts",
+                "drafts"
+              ],
+              "type": "string",
+              "title": "Post Type"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/preview": {
+      "post": {
+        "tags": [
+          "admin-posts"
+        ],
+        "summary": "Preview",
+        "operationId": "preview_api_admin_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/blog/archive": {
+      "get": {
+        "tags": [
+          "blog"
+        ],
+        "summary": "Archive",
+        "operationId": "archive_api_blog_archive_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Archive"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/blog/tags": {
+      "get": {
+        "tags": [
+          "blog"
+        ],
+        "summary": "Tags",
+        "operationId": "tags_api_blog_tags_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/blog/tags/{tag}": {
+      "get": {
+        "tags": [
+          "blog"
+        ],
+        "summary": "By Tag",
+        "operationId": "by_tag_api_blog_tags__tag__get",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tag"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/blog/categories": {
+      "get": {
+        "tags": [
+          "blog"
+        ],
+        "summary": "Categories",
+        "operationId": "categories_api_blog_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/blog/categories/{category}": {
+      "get": {
+        "tags": [
+          "blog"
+        ],
+        "summary": "By Category",
+        "operationId": "by_category_api_blog_categories__category__get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/study": {
+      "get": {
+        "tags": [
+          "study"
+        ],
+        "summary": "List Topics",
+        "operationId": "list_topics_api_study_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudyIndexResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/study/{topic_id}": {
+      "get": {
+        "tags": [
+          "study"
+        ],
+        "summary": "Get Topic",
+        "operationId": "get_topic_api_study__topic_id__get",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/study/{topic_id}/{qid}": {
+      "get": {
+        "tags": [
+          "study"
+        ],
+        "summary": "Get Question",
+        "operationId": "get_question_api_study__topic_id___qid__get",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "qid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Qid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Search",
+        "operationId": "search_api_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120,
+              "default": "",
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_admin_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_admin_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Me",
+        "operationId": "me_api_admin_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/upload": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Upload",
+        "operationId": "upload_api_admin_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_admin_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/queue": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Get Queue",
+        "operationId": "get_queue_api_review_queue_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 1,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewQueue"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/stats": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Get Stats",
+        "operationId": "get_stats_api_review_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/config": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Get Config",
+        "operationId": "get_config_api_review_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/lapses": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Get Lapses",
+        "operationId": "get_lapses_api_review_lapses_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LapseList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/card-answer": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Get Card Answer",
+        "operationId": "get_card_answer_api_review_card_answer_get",
+        "parameters": [
+          {
+            "name": "qid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Qid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardAnswer"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/answer": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Post Answer",
+        "operationId": "post_answer_api_review_answer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/undo": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Post Undo",
+        "operationId": "post_undo_api_review_undo_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UndoResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/study/config": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Read Config",
+        "operationId": "read_config_api_admin_study_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewConfig"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Write Config",
+        "operationId": "write_config_api_admin_study_config_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewConfigUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewConfig"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/study/stats": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Read Stats",
+        "operationId": "read_stats_api_admin_study_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/study/sync": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Run Sync",
+        "operationId": "run_sync_api_admin_study_sync_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnswerPayload": {
+        "properties": {
+          "cardId": {
+            "type": "integer",
+            "title": "Cardid"
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Rating"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cardId",
+          "rating"
+        ],
+        "title": "AnswerPayload"
+      },
+      "AnswerResult": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/ReviewCounts"
+          },
+          "dueTotal": {
+            "type": "integer",
+            "title": "Duetotal"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/ReviewProgress"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewCard"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts",
+          "dueTotal",
+          "progress",
+          "next"
+        ],
+        "title": "AnswerResult"
+      },
+      "Archive": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "years": {
+            "items": {
+              "$ref": "#/components/schemas/YearGroup"
+            },
+            "type": "array",
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "years"
+        ],
+        "title": "Archive"
+      },
+      "AuthState": {
+        "properties": {
+          "authenticated": {
+            "type": "boolean",
+            "title": "Authenticated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "authenticated"
+        ],
+        "title": "AuthState"
+      },
+      "Body_upload_api_admin_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_api_admin_upload_post"
+      },
+      "CardAnswer": {
+        "properties": {
+          "answerHtml": {
+            "type": "string",
+            "title": "Answerhtml"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answerHtml"
+        ],
+        "title": "CardAnswer"
+      },
+      "CreatePostRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "CreatePostRequest"
+      },
+      "EvidenceFile": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page",
+          "file"
+        ],
+        "title": "EvidenceFile"
+      },
+      "EvidenceGroup": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "from": {
+            "type": "integer",
+            "title": "From"
+          },
+          "to": {
+            "type": "integer",
+            "title": "To"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceFile"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "from",
+          "to",
+          "files"
+        ],
+        "title": "EvidenceGroup"
+      },
+      "FilterResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PostMeta"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "total",
+          "items"
+        ],
+        "title": "FilterResponse"
+      },
+      "FrontMatter": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "default": []
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories",
+            "default": []
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "cover": {
+            "type": "string",
+            "title": "Cover",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "date"
+        ],
+        "title": "FrontMatter"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Lapse": {
+        "properties": {
+          "qid": {
+            "type": "string",
+            "title": "Qid"
+          },
+          "cardId": {
+            "type": "integer",
+            "title": "Cardid"
+          },
+          "topicId": {
+            "type": "string",
+            "title": "Topicid"
+          },
+          "questionId": {
+            "type": "string",
+            "title": "Questionid"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "qid",
+          "cardId",
+          "topicId",
+          "questionId",
+          "title",
+          "topic"
+        ],
+        "title": "Lapse"
+      },
+      "LapseList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Lapse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "LapseList"
+      },
+      "LoginRequest": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "Page_PostMeta_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PostMeta"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "hasNext": {
+            "type": "boolean",
+            "title": "Hasnext"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "limit",
+          "total",
+          "hasNext"
+        ],
+        "title": "Page[PostMeta]"
+      },
+      "PostDetail": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PostMeta"
+          },
+          "html": {
+            "type": "string",
+            "title": "Html"
+          },
+          "toc": {
+            "items": {
+              "$ref": "#/components/schemas/TocItem"
+            },
+            "type": "array",
+            "title": "Toc"
+          },
+          "prev": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PostRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "next": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PostRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "html",
+          "toc"
+        ],
+        "title": "PostDetail"
+      },
+      "PostListResponse": {
+        "properties": {
+          "posts": {
+            "items": {
+              "$ref": "#/components/schemas/PostMeta"
+            },
+            "type": "array",
+            "title": "Posts"
+          },
+          "drafts": {
+            "items": {
+              "$ref": "#/components/schemas/PostMeta"
+            },
+            "type": "array",
+            "title": "Drafts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "posts",
+          "drafts"
+        ],
+        "title": "PostListResponse"
+      },
+      "PostMeta": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "dateRaw": {
+            "type": "string",
+            "title": "Dateraw"
+          },
+          "dateIso": {
+            "type": "string",
+            "title": "Dateiso"
+          },
+          "displayDate": {
+            "type": "string",
+            "title": "Displaydate"
+          },
+          "displayDateTime": {
+            "type": "string",
+            "title": "Displaydatetime"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "excerpt": {
+            "type": "string",
+            "title": "Excerpt"
+          },
+          "cover": {
+            "type": "string",
+            "title": "Cover"
+          },
+          "readingTime": {
+            "type": "integer",
+            "title": "Readingtime"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "drafts"
+            ],
+            "title": "Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "title",
+          "dateRaw",
+          "dateIso",
+          "displayDate",
+          "displayDateTime",
+          "tags",
+          "categories",
+          "excerpt",
+          "cover",
+          "readingTime",
+          "type"
+        ],
+        "title": "PostMeta"
+      },
+      "PostRef": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "title"
+        ],
+        "title": "PostRef"
+      },
+      "PreviewRequest": {
+        "properties": {
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "PreviewRequest"
+      },
+      "PreviewResponse": {
+        "properties": {
+          "html": {
+            "type": "string",
+            "title": "Html"
+          },
+          "toc": {
+            "items": {
+              "$ref": "#/components/schemas/TocItem"
+            },
+            "type": "array",
+            "title": "Toc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "html",
+          "toc"
+        ],
+        "title": "PreviewResponse"
+      },
+      "PublishResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "drafts"
+            ],
+            "title": "Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "type"
+        ],
+        "title": "PublishResponse"
+      },
+      "QuestionDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "no": {
+            "type": "integer",
+            "title": "No"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "summary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Summary"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "pages": {
+            "type": "string",
+            "title": "Pages"
+          },
+          "firstPage": {
+            "type": "integer",
+            "title": "Firstpage"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceGroup"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "topic": {
+            "$ref": "#/components/schemas/TopicSummary"
+          },
+          "prev": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionNav"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "next": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionNav"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "no",
+          "title",
+          "aliases",
+          "summary",
+          "note",
+          "pages",
+          "firstPage",
+          "answer",
+          "evidence",
+          "topic"
+        ],
+        "title": "QuestionDetail"
+      },
+      "QuestionNav": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "no": {
+            "type": "integer",
+            "title": "No"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "no",
+          "title",
+          "aliases"
+        ],
+        "title": "QuestionNav"
+      },
+      "RawPost": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PostMeta"
+          },
+          "front": {
+            "$ref": "#/components/schemas/FrontMatter"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "front",
+          "body"
+        ],
+        "title": "RawPost"
+      },
+      "RawPostResponse": {
+        "properties": {
+          "post": {
+            "$ref": "#/components/schemas/RawPost"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "drafts"
+            ],
+            "title": "Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "post",
+          "type"
+        ],
+        "title": "RawPostResponse"
+      },
+      "ReviewBackup": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "at": {
+            "type": "integer",
+            "title": "At"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "size",
+          "at",
+          "count"
+        ],
+        "title": "ReviewBackup"
+      },
+      "ReviewCard": {
+        "properties": {
+          "cardId": {
+            "type": "integer",
+            "title": "Cardid"
+          },
+          "qid": {
+            "type": "string",
+            "title": "Qid"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewQuestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "cardId",
+          "qid",
+          "state",
+          "labels"
+        ],
+        "title": "ReviewCard"
+      },
+      "ReviewConfig": {
+        "properties": {
+          "deck": {
+            "type": "string",
+            "title": "Deck"
+          },
+          "newPerDay": {
+            "type": "integer",
+            "title": "Newperday"
+          },
+          "revPerDay": {
+            "type": "integer",
+            "title": "Revperday"
+          },
+          "learningSteps": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Learningsteps"
+          },
+          "fsrsEnabled": {
+            "type": "boolean",
+            "title": "Fsrsenabled"
+          },
+          "newOrder": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Neworder"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deck",
+          "newPerDay",
+          "revPerDay",
+          "learningSteps",
+          "fsrsEnabled",
+          "newOrder"
+        ],
+        "title": "ReviewConfig"
+      },
+      "ReviewConfigUpdate": {
+        "properties": {
+          "newPerDay": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9999.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newperday"
+          },
+          "revPerDay": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 9999.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revperday"
+          }
+        },
+        "type": "object",
+        "title": "ReviewConfigUpdate"
+      },
+      "ReviewCounts": {
+        "properties": {
+          "new": {
+            "type": "integer",
+            "title": "New"
+          },
+          "learning": {
+            "type": "integer",
+            "title": "Learning"
+          },
+          "review": {
+            "type": "integer",
+            "title": "Review"
+          }
+        },
+        "type": "object",
+        "required": [
+          "new",
+          "learning",
+          "review"
+        ],
+        "title": "ReviewCounts"
+      },
+      "ReviewDay": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "count"
+        ],
+        "title": "ReviewDay"
+      },
+      "ReviewProgress": {
+        "properties": {
+          "today": {
+            "type": "integer",
+            "title": "Today"
+          },
+          "todayNew": {
+            "type": "integer",
+            "title": "Todaynew"
+          },
+          "todayReview": {
+            "type": "integer",
+            "title": "Todayreview"
+          },
+          "todayRelearn": {
+            "type": "integer",
+            "title": "Todayrelearn"
+          },
+          "newRemaining": {
+            "type": "integer",
+            "title": "Newremaining"
+          },
+          "canUndo": {
+            "type": "boolean",
+            "title": "Canundo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "today",
+          "todayNew",
+          "todayReview",
+          "todayRelearn",
+          "newRemaining",
+          "canUndo"
+        ],
+        "title": "ReviewProgress"
+      },
+      "ReviewQuestion": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "summary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Summary"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "pages": {
+            "type": "string",
+            "title": "Pages"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "topicId": {
+            "type": "string",
+            "title": "Topicid"
+          },
+          "hasAnswer": {
+            "type": "boolean",
+            "title": "Hasanswer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "aliases",
+          "summary",
+          "note",
+          "pages",
+          "topic",
+          "topicId",
+          "hasAnswer"
+        ],
+        "title": "ReviewQuestion"
+      },
+      "ReviewQueue": {
+        "properties": {
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewCard"
+            },
+            "type": "array",
+            "title": "Cards"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/ReviewCounts"
+          },
+          "dueTotal": {
+            "type": "integer",
+            "title": "Duetotal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cards",
+          "counts",
+          "dueTotal"
+        ],
+        "title": "ReviewQueue"
+      },
+      "ReviewStats": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/ReviewCounts"
+          },
+          "dueTotal": {
+            "type": "integer",
+            "title": "Duetotal"
+          },
+          "today": {
+            "type": "integer",
+            "title": "Today"
+          },
+          "todayNew": {
+            "type": "integer",
+            "title": "Todaynew"
+          },
+          "todayReview": {
+            "type": "integer",
+            "title": "Todayreview"
+          },
+          "todayRelearn": {
+            "type": "integer",
+            "title": "Todayrelearn"
+          },
+          "newPerDay": {
+            "type": "integer",
+            "title": "Newperday"
+          },
+          "revPerDay": {
+            "type": "integer",
+            "title": "Revperday"
+          },
+          "streak": {
+            "type": "integer",
+            "title": "Streak"
+          },
+          "totalReviews": {
+            "type": "integer",
+            "title": "Totalreviews"
+          },
+          "totalAnswers": {
+            "type": "integer",
+            "title": "Totalanswers"
+          },
+          "totalCards": {
+            "type": "integer",
+            "title": "Totalcards"
+          },
+          "learnedCards": {
+            "type": "integer",
+            "title": "Learnedcards"
+          },
+          "dueTomorrow": {
+            "type": "integer",
+            "title": "Duetomorrow"
+          },
+          "nextDueEpoch": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nextdueepoch"
+          },
+          "canUndo": {
+            "type": "boolean",
+            "title": "Canundo"
+          },
+          "newRemaining": {
+            "type": "integer",
+            "title": "Newremaining"
+          },
+          "lastBackup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewBackup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewDay"
+            },
+            "type": "array",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts",
+          "dueTotal",
+          "today",
+          "todayNew",
+          "todayReview",
+          "todayRelearn",
+          "newPerDay",
+          "revPerDay",
+          "streak",
+          "totalReviews",
+          "totalAnswers",
+          "totalCards",
+          "learnedCards",
+          "dueTomorrow",
+          "nextDueEpoch",
+          "canUndo",
+          "newRemaining",
+          "lastBackup",
+          "days"
+        ],
+        "title": "ReviewStats"
+      },
+      "SavePostRequest": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "drafts"
+            ],
+            "title": "Type"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "front": {
+            "$ref": "#/components/schemas/FrontMatter"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "slug",
+          "front"
+        ],
+        "title": "SavePostRequest"
+      },
+      "SearchResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results"
+        ],
+        "title": "SearchResponse"
+      },
+      "SearchResult": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "href": {
+            "type": "string",
+            "title": "Href"
+          },
+          "badge": {
+            "type": "string",
+            "title": "Badge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "subtitle",
+          "snippet",
+          "href",
+          "badge"
+        ],
+        "title": "SearchResult"
+      },
+      "StudyIndexResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/TopicMeta"
+          },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicSummary"
+            },
+            "type": "array",
+            "title": "Topics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta",
+          "topics"
+        ],
+        "title": "StudyIndexResponse"
+      },
+      "SyncResult": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "backup": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backup"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "backup",
+          "message"
+        ],
+        "title": "SyncResult"
+      },
+      "TermCount": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "count"
+        ],
+        "title": "TermCount"
+      },
+      "TermsResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TermCount"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "TermsResponse"
+      },
+      "TocItem": {
+        "properties": {
+          "depth": {
+            "type": "integer",
+            "title": "Depth"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "depth",
+          "text",
+          "id"
+        ],
+        "title": "TocItem"
+      },
+      "TopicDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "no": {
+            "type": "string",
+            "title": "No"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle"
+          },
+          "accent": {
+            "type": "string",
+            "title": "Accent"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "pdf": {
+            "type": "string",
+            "title": "Pdf"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/QuestionNav"
+            },
+            "type": "array",
+            "title": "Questions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "no",
+          "slug",
+          "title",
+          "label",
+          "subtitle",
+          "accent",
+          "pages",
+          "count",
+          "pdf",
+          "questions"
+        ],
+        "title": "TopicDetail"
+      },
+      "TopicMeta": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "topics": {
+            "type": "integer",
+            "title": "Topics"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "subtitle",
+          "pages",
+          "topics",
+          "count"
+        ],
+        "title": "TopicMeta"
+      },
+      "TopicSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "no": {
+            "type": "string",
+            "title": "No"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle"
+          },
+          "accent": {
+            "type": "string",
+            "title": "Accent"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "firstQid": {
+            "type": "string",
+            "title": "Firstqid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "no",
+          "slug",
+          "title",
+          "label",
+          "subtitle",
+          "accent",
+          "pages",
+          "count",
+          "firstQid"
+        ],
+        "title": "TopicSummary"
+      },
+      "UndoResult": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/ReviewCounts"
+          },
+          "dueTotal": {
+            "type": "integer",
+            "title": "Duetotal"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/ReviewProgress"
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts",
+          "dueTotal",
+          "progress"
+        ],
+        "title": "UndoResult"
+      },
+      "UploadResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "UploadResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "YearGroup": {
+        "properties": {
+          "year": {
+            "type": "string",
+            "title": "Year"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "posts": {
+            "items": {
+              "$ref": "#/components/schemas/PostMeta"
+            },
+            "type": "array",
+            "title": "Posts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "count",
+          "posts"
+        ],
+        "title": "YearGroup"
+      }
+    }
+  }
+}

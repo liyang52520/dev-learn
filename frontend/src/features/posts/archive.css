@@ -1,0 +1,140 @@
+/* ---------------- Page hero / archive / tags ---------------- */
+
+.page-hero {
+  padding: 68px 0 44px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 42px;
+}
+
+.page-hero h1 {
+  margin-top: 16px;
+  font-size: clamp(40px, 5vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  font-weight: 650;
+}
+
+.page-hero > p:last-child {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.page-hero .hash {
+  color: var(--accent);
+}
+
+.archive {
+  max-width: 920px;
+}
+
+.archive-year {
+  margin-bottom: 44px;
+}
+
+.archive-year h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.archive-year h2 span {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.archive-year ul {
+  list-style: none;
+}
+
+.archive-year li {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 18px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.archive-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--faint);
+  padding-top: 4px;
+}
+
+.archive-year li a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 15px;
+  transition: color 0.18s ease;
+}
+
+.archive-year li a > span:first-child {
+  flex: 1;
+}
+
+.archive-year li a:hover {
+  color: var(--accent);
+}
+
+.archive-tags {
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.archive-year li a svg {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.archive-year li a:hover svg {
+  opacity: 1;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13.5px;
+  transition: border-color 0.18s ease, transform 0.18s ease, color 0.18s ease;
+}
+
+.tag-chip em {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+}
+
+.tag-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.category-chip {
+  border-color: transparent;
+  background: var(--accent-soft);
+}
+
+.category-chip:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}

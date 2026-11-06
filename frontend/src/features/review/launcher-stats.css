@@ -1,0 +1,108 @@
+/* 总进度：已学 / 全部卡片，和上面的日额度分开，避免把「今天」当「全部」 */
+.review-launcher-overall {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 10px;
+}
+
+.review-launcher-text .review-launcher-overall-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.review-launcher-overall-head strong {
+  font-size: 13.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.review-launcher-text .review-launcher-overall-pct {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.review-launcher-track.is-overall {
+  max-width: none;
+  width: calc(100% - 84px);
+  height: 5px;
+  margin-top: 2px;
+  /* 和上面两条日额度进度条左对齐：标签宽 76 + 间距 8 */
+  margin-left: 84px;
+}
+
+.review-launcher-fill.is-overall {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.review-launcher-text .review-launcher-overall-note {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+/* 最近答错：给一个回看入口，而不是只让用户记住「今天错过了什么」 */
+.review-lapses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.review-launcher-text .review-lapses-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+
+.review-lapse-link {
+  max-width: 220px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.review-lapse-link:hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+}
+
+/* 双进度条：新卡 / 复习各一条，别让 200 张复习日看起来像没在学 */
+.review-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.review-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-progress-track {
+  flex: none;
+  width: 84px;
+  height: 5px;
+}
+
+.review-progress-fill-soft {
+  background: var(--accent-2);
+}
+
+.review-progress-label {
+  font-size: 12px;
+}

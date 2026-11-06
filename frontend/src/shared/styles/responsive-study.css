@@ -1,0 +1,15 @@
+@media (min-width: 1025px) {
+  body.header-hidden .study-sidebar,
+  body.header-hidden .study-evidence {
+    top: 0;
+    height: 100vh;
+  }
+
+  body.header-hidden .article-aside {
+    top: 16px;
+  }
+
+  body.header-hidden .toc {
+    max-height: calc(100vh - 40px);
+  }
+}

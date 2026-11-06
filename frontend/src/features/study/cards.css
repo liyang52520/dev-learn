@@ -1,0 +1,123 @@
+/* ---------------- Study cards ---------------- */
+
+.study-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.study-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 208px;
+  padding: 20px 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.study-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--card-accent);
+  opacity: 0.9;
+}
+
+.study-card::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  top: -70px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card-accent) 10%, transparent);
+  transition: transform 0.3s ease;
+}
+
+.study-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--card-accent) 35%, var(--line));
+  box-shadow: var(--shadow-md);
+}
+
+.study-card:hover::after {
+  transform: scale(1.15);
+}
+
+.study-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.study-card-no {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  letter-spacing: 0.1em;
+}
+
+.study-card-label {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--card-accent);
+  background: color-mix(in srgb, var(--card-accent) 10%, transparent);
+}
+
+.study-card h3 {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  font-size: 19px;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.study-card p {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.study-card-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  position: relative;
+  z-index: 1;
+}
+
+.study-card-arrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+
+.study-card:hover .study-card-arrow {
+  color: var(--card-accent);
+  border-color: var(--card-accent);
+}

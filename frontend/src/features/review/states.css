@@ -1,0 +1,81 @@
+.review-loading,
+.review-error,
+.review-done {
+  text-align: center;
+}
+
+.review-done h1,
+.review-error h1 {
+  font-size: clamp(20px, 2.4vw, 25px);
+  margin: 10px 0 18px;
+}
+
+.review-done-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 26px;
+}
+
+.review-done-stats strong {
+  display: block;
+  font-size: 22px;
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.review-hint {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.review-hint code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--code);
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.review-done-actions,
+.review-error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.review-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.review-btn.ghost {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--ink-2);
+}
+
+.review-btn.ghost:hover {
+  border-color: var(--line-2);
+  color: var(--ink);
+}

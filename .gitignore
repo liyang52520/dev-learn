@@ -1,7 +1,7 @@
+# 构建产物与依赖
 node_modules
-.next
-out
-build
+frontend/node_modules
+frontend/dist
 *.tsbuildinfo
 *.log
 .DS_Store
@@ -9,8 +9,16 @@ build
 .trash
 .env*.local
 
-# 本地 Anki 复习服务：虚拟环境与学习状态都不入库
+# Python
+.venv
+backend/.venv
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# 本地 Anki 复习数据：虚拟环境与学习状态都不入库
 anki-svc/.venv
 anki-svc/.token
 anki-svc/data
-anki-svc/__pycache__

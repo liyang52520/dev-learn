@@ -1,0 +1,151 @@
+/* 复习页顶部：今日进度条 + 拆开的三类计数 + 结束本轮 */
+.review-head {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.review-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-progress-track {
+  flex: 1;
+  max-width: 200px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.review-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+.review-progress-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.review-progress-label strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.review-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.review-chips strong {
+  color: var(--ink-2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.review-end {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.review-end:hover:not(:disabled) {
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+
+.review-end:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* 吸底评分条会盖住正文最后一段，给正文留出等高的空档 */
+.review-answer {
+  padding-bottom: 96px;
+}
+
+.review-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  padding: 9px 17px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  box-shadow: var(--shadow-md);
+  z-index: 60;
+}
+
+.review-done-help {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+.review-done-help a {
+  color: var(--accent);
+  margin-left: 4px;
+}
+
+.review-launcher-off {
+  border-style: dashed;
+  background: transparent;
+}
+
+.review-launcher-off strong {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.review-launcher-off code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--code);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.review-launcher-btn.ghost {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--ink-2);
+}
+
+.review-launcher-track {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.review-launcher-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}

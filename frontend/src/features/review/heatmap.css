@@ -1,0 +1,128 @@
+/* —— 热力图 —— */
+
+.heatmap-wrap {
+  --hm-gap: 3px;
+  --hm-label: 18px;
+  margin: 6px auto 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+  width: 100%;
+  max-width: 430px;
+  text-align: left;
+}
+
+.heatmap-months {
+  display: grid;
+  grid-template-columns: repeat(26, minmax(0, 1fr));
+  gap: var(--hm-gap);
+  padding-left: calc(var(--hm-label) + 6px);
+  height: 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1;
+  color: var(--faint);
+}
+
+.heatmap-months span {
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.heatmap-body {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.heatmap-days {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: var(--hm-gap);
+  width: var(--hm-label);
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--faint);
+}
+
+.heatmap-days span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  line-height: 1;
+}
+
+/* 26 列等分容器宽度：手机上自动缩到 8px 左右，
+   不再用固定 11px 把 412px 的表格顶出视口。 */
+.heatmap {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: repeat(26, minmax(0, 1fr));
+  grid-template-rows: repeat(7, auto);
+  gap: var(--hm-gap);
+  width: 100%;
+  min-width: 0;
+}
+
+.heatmap-cell {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: var(--hm-0);
+}
+
+button.heatmap-cell {
+  cursor: pointer;
+}
+
+.heatmap-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.heatmap-cell.is-selected {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.heatmap-l1 { background: var(--hm-1); }
+.heatmap-l2 { background: var(--hm-2); }
+.heatmap-l3 { background: var(--hm-3); }
+.heatmap-l4 { background: var(--hm-4); }
+.heatmap-lfuture,
+.heatmap-cell.is-future { background: transparent; cursor: default; }
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--faint);
+  font-size: 11px;
+  padding-left: calc(var(--hm-label) + 6px);
+}
+
+.heatmap-legend .heatmap-cell {
+  width: 9px;
+  height: 9px;
+  aspect-ratio: auto;
+  flex: none;
+}
+
+.heatmap-summary {
+  margin-left: auto;
+}
+
+.heatmap-detail {
+  margin: 0;
+  padding-left: calc(var(--hm-label) + 6px);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--faint);
+  min-height: 1.4em;
+}

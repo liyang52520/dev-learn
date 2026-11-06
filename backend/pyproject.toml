@@ -1,0 +1,40 @@
+[project]
+name = "dev-learn-backend"
+version = "1.0.0"
+description = "dev-learn 后端：FastAPI + 文件驱动的 JSON 接口"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-frontmatter>=1.1",
+    "markdown-it-py>=3.0",
+    "mdit-py-plugins>=0.4",
+    "pygments>=2.18",
+    "pillow>=10.0",
+    "itsdangerous>=2.2",
+    "python-multipart>=0.0.9",
+    "anki>=25.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C901"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+exclude = ["app/tests/", "app/features/.*/tests/"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["app/tests", "app/features"]
+pythonpath = ["."]
+addopts = "-q"

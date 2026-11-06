@@ -16,11 +16,13 @@ description: 维护 dev-learn 题库（data/study/*.json 与 public/study 截图
   → scripts/extract-study.cjs → data/study/*.json（只搬数据，不搬图）
   → 手工 rsync site/<slug>/assets/ → public/study/<slug>/assets/
   → scripts/enhance-answers/*（答案格式增强，见 3.5）
-  → lib/study.ts（读盘）→ lib/study-highlight.ts（服务端 Shiki）→ app/(site)/study/** 三栏页
+  → backend/app/features/study/*（读盘、导航、证据）
+  → backend/app/rendering/answers.py（答案代码高亮）+ images.py（注入宽高）
+  → frontend/src/features/study/** 三栏页
 ```
 
 - **源与派生物**：题目的源是上游 `questions.p*.json` + PDF；`data/study/*.json` 是抽取产物，手改会在下次抽取时被整体覆盖。
-- 上游是 Python + pymupdf，本仓库只有 Node（内置 `fs`/`path`）。本仓库无法切题、无法重截 PDF 图；上游 `tools/`、`build/`、`site/` 都不在本仓库。
+- 上游是 Python + pymupdf；本仓库的抽取脚本 `scripts/extract-study.cjs` 仍是 Node（内置 `fs`/`path`）。本仓库无法切题、无法重截 PDF 图；上游 `tools/`、`build/`、`site/` 都不在本仓库。
 
 ## 3.2 上游管线速查（PDF → 静态站）
 
@@ -97,12 +99,12 @@ node scripts/extract-study.cjs   # 每个专题一行 + done: 42 topics
 
 ### answer 的 HTML 契约
 
-class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得注入 `<script>`/`onclick`：
+class 依赖 `frontend/src/shared/styles/*.css`（题库区块见 `cards.css` 等），由 `HtmlContent` 的 `dangerouslySetInnerHTML` 渲染，不得注入 `<script>`/`onclick`：
 
 - `<p>` 段落；`<ul class='pdf-list'><li>…`；`<table class='pdf-table'>`（首行表头）
-- 代码块：`<pre class='code' data-lang='java'><code>逐行代码（已 HTML 转义）</code></pre>`；`data-lang` 取 `lib/shiki.ts` 的 `COMMON_LANGS`，判断不了用 `text`。渲染时由 `lib/study-highlight.ts` 用 Shiki 高亮成与文章页一致的 `.code-block`，**不要在 JSON 里塞 `<span class='tk-*'>` 之类的 token 标记**。
+- 代码块：`<pre class='code' data-lang='java'><code>逐行代码（已 HTML 转义）</code></pre>`；`data-lang` 取 `backend/app/rendering/highlight.py` 的 `COMMON_LANGS`，判断不了用 `text`。渲染时由 `backend/app/rendering/answers.py` 用 Pygments 高亮成与文章页一致的 `.code-block`，**不要在 JSON 里塞 `<span class='tk-*'>` 之类的 token 标记**。
 - `<figure class='pdf-img zoomable' data-cap='原文配图 · 第 3 页 / 共 102 页'><img loading='lazy' src='/study/topic-01-jvm/assets/img/p3_0.jpg'><figcaption>…</figcaption></figure>`
-- 图片必须 `/study/…` 站内绝对路径（页面在 `/study/[topic]/[qid]` 两层下）。
+- 图片必须 `/study/…` 站内绝对路径（页面在 `/study/:topic/:qid` 两层下）。
 - PDF 编辑器自带的**行号不是正文**，增强时已剔除；`answer` 的文字仍然逐字可核对（见 3.6、3.7）。
 
 ### evidence 结构
@@ -114,21 +116,21 @@ class 依赖 `app/globals.css`，用 `dangerouslySetInnerHTML` 渲染，不得�
 
 - 单出处 `label` 为 `原文出处`，多出处为 `出处 1`…`出处 N`（最大 32，见 `bigtech/q001`；`jvm/q005` 3 组、`os/q074` 7 组）。
 - 文件命名 `q<题号>_<rangeIndex>_<page>.jpg`（rangeIndex 0 起）；共 5762 张、0 缺失；每题至少一组。
-- **`files[].width` / `files[].height` 不在 JSON 里**：`lib/study.ts` 的 `getStudyQuestion()` 在内存中按文件头补（同时给 `answer` 里 `/study/` 图片注入 `width/height`），只用于 `<img>` 预留版面。别把它们写进 `data/study/*.json`（抽取会覆盖），也别手动维护。
+- **`files[].width` / `files[].height` 不在 JSON 里**：`backend/app/features/study/service.py` 在内存中按文件头补（`rendering/images.py` 同时给 `answer` 里 `/study/` 图片注入 `width/height`），只用于 `<img>` 预留版面。别把它们写进 `data/study/*.json`（抽取会覆盖），也别手动维护。
 
 ### slug、id 与 URL
 
 | URL | 行为 |
 | --- | --- |
-| `/study` | 42 张卡片 + 统计 + 前端筛选（构建期预渲染） |
-| `/study/jvm` | 307 → `/study/jvm/q001` |
-| `/study/jvm/q001` | 三栏单题页（按需 SSR） |
-| `/study/topic-01-jvm` | 404：路由把 URL 段直接当 `topic.id`，会去找 `data/study/topic-01-jvm.json`（不存在）；slug 只用于资产路径 |
+| `/study` | 专题卡片 + 统计 + 前端筛选（由 `/api/study` 驱动） |
+| `/study/jvm` | 前端重定向到 `/study/jvm/q001` |
+| `/study/jvm/q001` | 三栏单题页 |
+| `/study/topic-01-jvm` | 404：接口把 URL 段直接当 `topic.id`，会去找 `data/study/topic-01-jvm.json`（不存在）；slug 只用于资产路径 |
 | `/study/jvm/q999` | 404 |
 
 ### 改字段前必读
 
-- 索引与专题是两套映射：同时改 `extract-study.cjs`、`lib/study.ts`（`StudyQuestionIndex`/`StudyQuestion`/`StudyTopic`）与消费方（`components/study/*`、`lib/search.ts`、`StudyTopicCard`）。
+- 索引与专题是两套映射：同时改 `extract-study.cjs`、`backend/app/features/study/schemas.py` 与消费方（`frontend/src/features/study/*`、`backend/app/features/search/service.py`）。
 - `answer`/`evidence` 只在专题 JSON；塞进 index 会放大列表页开销。
 - 字段名是上游契约，改名会被下次抽取覆盖。
 
@@ -164,7 +166,7 @@ node scripts/enhance-answers/verify.cjs
 
 1. 改专题 JSON 对应字段；2. 同步改 `index.json` 的索引字段（其中无 `answer`/`evidence`）；3. 新题**只能追加末尾**，`id` 取 `q(count+1)`、`no` 同步，否则 qid 连续性、`key`、截图文件名全错位；4. 新截图放 `public/study/<slug>/assets/ev/`，命名 `qNNN_<rangeIndex>_<page>.jpg`，`file` 写 `/study/…`；5. 重算 `search`；重启 dev（缓存）、硬刷新、跑自检。
 
-写法细则：**题干**逐字还原（标点/重复问法都保留，与截图一致）；**aliases** 是原文其它问法，不与 title 重复；**summary** 是 3–4 条要点提炼，不是答案替代；**pages** 用 `p<from>–<to>`，`firstPage = evidence[0].from`；**answer** 整段搬上游 HTML，不重排/不改写；**search** 非空，规则=`title + aliases + summary + note + answer 纯文本`（`lib/search.ts` 仅在 summary 为空时拿它兜底，仍须与正文同步）；**note** 只解释「原文为何如此」（空壳外链、错字/重复），不补知识。
+写法细则：**题干**逐字还原（标点/重复问法都保留，与截图一致）；**aliases** 是原文其它问法，不与 title 重复；**summary** 是 3–4 条要点提炼，不是答案替代；**pages** 用 `p<from>–<to>`，`firstPage = evidence[0].from`；**answer** 整段搬上游 HTML，不重排/不改写；**search** 非空，规则=`title + aliases + summary + note + answer 纯文本`（`backend/app/features/search/service.py` 仅在 summary 为空时拿它兜底，仍须与正文同步）；**note** 只解释「原文为何如此」（空壳外链、错字/重复），不补知识。
 
 ## 3.6 内容取舍约定
 
@@ -182,18 +184,18 @@ node scripts/enhance-answers/verify.cjs
 ### 自动校验
 
 - 跑 `node scripts/enhance-answers/verify.cjs`：结构与题号、代码块契约（`data-lang` 合法、无 `.cl`/`tk-*`）、逐题可见文字哈希（对照 `scripts/enhance-answers/fidelity.json`，代码题已扣行号）、`search` 与规则重算、证据/配图；必须输出 `OK`。
-- `npm run typecheck && npm run build`（先 `npm ci`）；`git status --short data/study public/study` 确认只有预期变化。
+- `cd frontend && npm run typecheck && npm run lint && npm run test && npm run build`；`cd backend && python -m pytest`；`git status --short data/study public/study` 确认只有预期变化。
 
 ### 页面手工与视觉验收
 
-- `/study`：42 张卡片、`42 专题 / 2,521 题目 / 4,120 页原文`、筛选可用；`/study/jvm` 307 到 `/study/jvm/q001`；`/study/topic-01-jvm` 与 `/study/jvm/q999` 应 404。
+- `/study`：42 张卡片、`42 专题 / 2,521 题目 / 4,120 页原文`、筛选可用；`/study/jvm` 前端跳到 `/study/jvm/q001`；`/study/topic-01-jvm` 与 `/study/jvm/q999` 应 404。
 - `/study/jvm/q001`：三栏、别名、要点卡、原文备注、答案、上下题；右栏截图组数/页码与 evidence 一致、可放大、`Esc` 关闭；侧栏 `/` 搜索、`↑↓` 切题、专题下拉切换；全局搜索（`/api/search?q=`）能命中答案正文。
-- 视觉：`npm run dev` 后逐张读图，确认三栏不塌、红框在题干、插图位置正确、答案结尾无下一题标题；截图命令：
+- 视觉：`python scripts/dev.py` 后逐张读图，确认三栏不塌、红框在题干、插图位置正确、答案结尾无下一题标题；截图命令：
   ```bash
   mkdir -p /tmp/study-shots
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
     --disable-gpu --hide-scrollbars --window-size=1680,1100 --virtual-time-budget=8000 \
-    --screenshot=/tmp/study-shots/jvm-q005.png http://localhost:3000/study/jvm/q005
+    --screenshot=/tmp/study-shots/jvm-q005.png http://localhost:5173/study/jvm/q005
   ```
 - **独立审计**：每批改动派两个只读 agent——① 抽 6–10 题把 `answer` 与 `evidence` 截图/上游 `dump.txt` 对照，报缺段/串题/改写；② 统计上游题目级 heading（通常 14.6pt）与含「？」行，确认无漏题。结论写进交付说明。
 
@@ -208,8 +210,8 @@ node scripts/enhance-answers/verify.cjs
 | 5 | 上游 | 删旧 `site/topic-43-xxx/assets/{ev,img}`；`shots.py build/topic-43 "Topic-43-XXX.pdf" site/topic-43-xxx` |
 | 6 | 上游 | `tools/site.json` 增 `id/no/slug/build/title/label/subtitle/pdf/accent`，`site.pages` 手填则加页数；`build_site.py`；跑上游三套验收 |
 | 7 | 本仓库 | `rsync -a --delete <上游>/site/topic-43-xxx/assets/ public/study/topic-43-xxx/assets/`（只同步 assets） |
-| 8 | 本仓库 | 改硬编码 3 处：`scripts/extract-study.cjs` 的 `meta.subtitle`（「42 个专题」）、`app/(site)/study/page.tsx` 的 metadata description（42/2521）、`app/admin/login/page.tsx` 文案（42/2521）；再 `node scripts/extract-study.cjs`（应 `done: 43 topics`） |
-| 9 | 本仓库 | 跑自检 + `npm run typecheck && npm run build` + 重启 dev 看列表/首末题 + 抽查截图 + 两个只读 agent 审计 + `git status` |
+| 8 | 本仓库 | 改硬编码 2 处：`scripts/extract-study.cjs` 的 `meta.subtitle`（「42 个专题」）、`frontend/src/features/admin/auth/AdminLoginPage.tsx` 的 42/2521 文案；再 `node scripts/extract-study.cjs`（应 `done: 43 topics`） |
+| 9 | 本仓库 | 跑自检 + 前端 `typecheck/lint/test/build` + 后端 `pytest` + `python scripts/dev.py` 看列表/首末题 + 抽查截图 + 两个只读 agent 审计 + `git status` |
 
 `meta.pages` 来自上游 `site.pages`，`meta.topics/count` 由脚本重算。
 
@@ -228,7 +230,7 @@ node scripts/enhance-answers/verify.cjs
 | 代码里夹着 1/2/3 行号 | PDF 代码编辑器截图的行号被当正文抽取 | `reconstruct.cjs` 按坐标/行宽识别并剔除；非空白文字哈希校验兜底 |
 | 答案里的代码被拆成 pre→列表→pre | 中文注释行字体不同，上游按正文/列表抽取 | `reconstruct.cjs` 合并回同一代码块；模型审阅兜底（见 3.5） |
 | 改 answer 后 search 与正文不一致 / 索引旧 | `search` 是预计算字段，index 与专题两份 | 跑 `node scripts/enhance-answers/sync-search.cjs`（或重抽）重算并同步 |
-| 代码块被压成一行 / 重抽后格式退回旧样 | 只有 token span；`extract-study.cjs` 会覆盖 data/study | 统一成 `data-lang` + 服务端 Shiki（`AGENTS.md` 1.8.16、3.4），重抽后重跑 3.5 的增强流水线 |
+| 代码块被压成一行 / 重抽后格式退回旧样 | 只有 token span；`extract-study.cjs` 会覆盖 data/study | 统一成 `data-lang` + 后端 Pygments（`AGENTS.md` 1.8、3.4），重抽后重跑 3.5 的增强流水线 |
 
 ## 3.10 硬性禁止
 
@@ -239,4 +241,4 @@ node scripts/enhance-answers/verify.cjs
 - 不伪造证据：无对应页截图不出现该题，不 P 图、不裁掉红框题干。
 - 不跳过自检与页面/视觉验收；批量改题必须走两个只读 agent 审计。
 - 不把不可信 HTML 写进 `answer`（页面用 `dangerouslySetInnerHTML` 渲染）。
-- 不提交 `.next/`、临时截图、`/tmp` 产物；`public/study` 约 755 MB，不复制第二份。
+- 不提交 `frontend/dist/`、临时截图、`/tmp` 产物；`public/study` 约 755 MB，不复制第二份。

@@ -1,0 +1,92 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+  /* 关掉 iOS Safari 的字号自动放大：代码块（min-width: max-content）比视口宽，
+     会被 WebKit 按块宽放大字号，导致手机上代码显示异常 */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1100px 560px at 8% -8%, rgba(54, 89, 227, 0.035), transparent 62%),
+    radial-gradient(900px 480px at 96% 2%, rgba(124, 92, 255, 0.025), transparent 58%),
+    var(--bg);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark body {
+  background:
+    radial-gradient(1100px 560px at 8% -8%, rgba(124, 149, 255, 0.08), transparent 62%),
+    radial-gradient(900px 480px at 96% 2%, rgba(240, 138, 93, 0.04), transparent 58%),
+    var(--bg);
+}
+
+::selection {
+  background: rgba(54, 89, 227, 0.22);
+  color: var(--ink);
+}
+
+html.dark ::selection {
+  background: rgba(124, 149, 255, 0.35);
+  color: #ffffff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* 带 width/height 属性的图片（PDF 原文截图、正文配图）靠属性里的宽高比由浏览器预留空间，
+   加载完成前后不跳版。别在图片上覆盖 height:100%，那会取消预留。 */
+img[width][height] {
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}

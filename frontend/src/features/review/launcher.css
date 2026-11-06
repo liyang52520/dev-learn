@@ -1,0 +1,108 @@
+/* —— 学习首页入口 —— */
+
+.review-launcher {
+  margin: 26px 0 10px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+}
+
+.review-launcher-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.review-launcher-text .eyebrow {
+  margin: 0 0 2px;
+}
+
+.review-launcher-text strong {
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.review-launcher-text span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 日额度：每条进度条带自己的标签，0 值时也不会像两条占位骨架 */
+.review-launcher-text .review-launcher-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 300px;
+  max-width: 100%;
+  margin-top: 4px;
+}
+
+.review-launcher-text .review-launcher-meter-label {
+  flex: none;
+  min-width: 76px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.review-launcher-text .review-launcher-meter .review-launcher-track {
+  flex: 1;
+  max-width: none;
+  margin-top: 0;
+}
+
+.review-launcher-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.review-launcher-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+/* 四个评分按钮吸底：原文答案经常很长，读完不用再滚回底部找按钮 */
+.review-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 24px -14px -18px;
+  padding: 12px 14px 10px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 14px 14px;
+  backdrop-filter: blur(6px);
+}
+
+.review-bottom .review-actions {
+  margin-top: 0;
+}
+
+.review-bottom .review-undo-row {
+  margin-top: 8px;
+}
+
+.review-page kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--faint);
+}

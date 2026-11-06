@@ -1,0 +1,180 @@
+/* 题库三栏页 */
+
+.sk-study {
+  min-width: 0;
+}
+
+.sk-study .study-sidebar,
+.sk-study .study-main,
+.sk-study .study-evidence {
+  min-width: 0;
+}
+
+.sk-sidebar-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sk-back {
+  width: 74px;
+  height: 9px;
+}
+
+.sk-select {
+  height: 34px;
+}
+
+.sk-topic-title {
+  width: 84%;
+  height: 16px;
+}
+
+.sk-topic-sub {
+  width: 56%;
+  height: 9px;
+}
+
+.sk-search {
+  height: 34px;
+}
+
+.sk-question-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 8px;
+  overflow: hidden;
+}
+
+.sk-question-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
+  padding: 9px 10px;
+}
+
+.sk-qno {
+  width: 20px;
+  height: 9px;
+  margin-top: 3px;
+}
+
+.sk-qtitle {
+  width: 100%;
+  height: 11px;
+}
+
+.sk-question-item:nth-child(3n) .sk-qtitle {
+  width: 76%;
+}
+
+.sk-question-item:nth-child(3n + 2) .sk-qtitle {
+  width: 88%;
+}
+
+.sk-question-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sk-crumb {
+  width: 148px;
+  height: 9px;
+}
+
+.sk-kicker {
+  width: 112px;
+  height: 9px;
+}
+
+.sk-question-title {
+  width: 94%;
+  height: 30px;
+  border-radius: 10px;
+}
+
+.sk-question-title-short {
+  width: 62%;
+}
+
+.sk-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 28px 0;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.sk-summary-title {
+  width: 92px;
+  height: 12px;
+  margin-bottom: 4px;
+}
+
+.sk-summary-line {
+  width: 100%;
+  height: 11px;
+}
+
+.sk-summary-line-short {
+  width: 74%;
+}
+
+.sk-answer {
+  margin-top: 26px;
+}
+
+.sk-answer-h2 {
+  width: 42%;
+  height: 22px;
+  margin: 30px 0 20px;
+}
+
+.sk-answer-code {
+  width: 100%;
+  height: 150px;
+  border-radius: 12px;
+  margin: 24px 0 26px;
+}
+
+.sk-evidence-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.sk-evidence-title {
+  width: 72px;
+  height: 13px;
+}
+
+.sk-evidence-count {
+  width: 30px;
+  height: 9px;
+}
+
+.sk-evidence-hint {
+  width: 70%;
+  height: 9px;
+  margin-bottom: 22px;
+}
+
+.sk-evidence-shot {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}

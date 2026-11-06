@@ -1,0 +1,190 @@
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 1160px) {
+  .admin-table-head,
+  .admin-row {
+    grid-template-columns: 82px minmax(0, 1fr) 96px 160px;
+  }
+
+  .admin-row-tags,
+  .admin-table-head span:nth-child(4) {
+    display: none;
+  }
+
+  .editor-layout {
+    grid-template-columns: 236px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-page {
+    width: calc(100% - 32px);
+    padding-top: 30px;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-stats-note {
+    grid-column: 1 / -1;
+  }
+
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-poster {
+    display: none;
+  }
+
+  .editor-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+
+  .editor-meta {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .editor-meta .admin-field {
+    display: inline-flex;
+    width: calc(50% - 8px);
+    margin-right: 12px;
+    vertical-align: top;
+  }
+
+  .editor-body {
+    flex: none;
+    height: 62vh;
+  }
+
+  .editor-topbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 14px;
+  }
+
+  .editor-actions {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-search {
+    width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-topbar {
+    height: 54px;
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .admin-brand {
+    gap: 7px;
+  }
+
+  .admin-brand strong {
+    font-size: 13px;
+  }
+
+  .admin-brand em {
+    display: none;
+  }
+
+  .admin-topbar nav {
+    margin-left: 0;
+    gap: 0;
+  }
+
+  .admin-topbar nav a {
+    padding: 6px 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .admin-topbar nav a:last-child,
+  .admin-env {
+    display: none;
+  }
+
+  .admin-topbar-right {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .admin-topbar-right a {
+    white-space: nowrap;
+  }
+
+  .admin-page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-page-head h1 {
+    font-size: 30px;
+  }
+
+  .admin-table-head {
+    display: none;
+  }
+
+  .admin-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 16px 6px;
+  }
+
+  .admin-row-date {
+    display: none;
+  }
+
+  .admin-row-actions {
+    padding-top: 4px;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .login-form-wrap {
+    padding: 24px;
+  }
+
+  .editor-meta .admin-field {
+    display: flex;
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .editor-statusbar {
+    gap: 12px;
+    padding: 0 12px;
+    font-size: 10px;
+  }
+
+  .editor-statusbar span:nth-child(3),
+  .editor-statusbar span:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .study-admin-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .study-admin-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

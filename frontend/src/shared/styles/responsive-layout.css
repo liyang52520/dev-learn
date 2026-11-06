@@ -1,0 +1,257 @@
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 1180px) {
+  .study-page {
+    grid-template-columns: 248px minmax(0, 1fr) 324px;
+  }
+
+  .article-header {
+    grid-template-columns: minmax(0, 720px) 190px;
+    column-gap: 44px;
+  }
+
+  .article-footer {
+    grid-template-columns: minmax(0, 720px) 190px;
+    column-gap: 44px;
+  }
+
+  .article-shell {
+    grid-template-columns: minmax(0, 720px) 190px;
+    gap: 44px;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* 1024 下仍保留三栏：把证据栏挤到正文下方会让右侧一片空白，
+     看起来像页面少了一块。窄一点也要并排，直到 940 才降成两栏。 */
+  .study-page {
+    grid-template-columns: 232px minmax(0, 1fr) 296px;
+  }
+
+  .article-shell {
+    grid-template-columns: 1fr;
+    max-width: 780px;
+  }
+
+  .article-header {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 780px;
+  }
+
+  .article-footer {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 780px;
+  }
+
+  .article-aside {
+    display: none;
+  }
+}
+
+@media (max-width: 940px) {
+  .study-page {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .study-evidence {
+    grid-column: 1 / -1;
+    position: static;
+    height: auto;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 28px max(24px, 6vw) 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+  }
+
+  .study-evidence > .evidence-head,
+  .study-evidence > .evidence-hint {
+    grid-column: 1 / -1;
+  }
+
+  .evidence-group {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .study-page {
+    grid-template-columns: 1fr;
+  }
+
+  .study-sidebar {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* 手机上整列题目会把首屏占满：默认收起，只留一条「题目列表」按钮 */
+  .study-sidebar-title,
+  .study-sidebar-foot {
+    display: none;
+  }
+
+  .study-sidebar-head {
+    padding: 12px 16px;
+  }
+
+  .topic-select-wrap {
+    margin-top: 8px;
+  }
+
+  .study-search {
+    margin-top: 8px;
+  }
+
+  .study-nav-toggle {
+    display: flex;
+  }
+
+  .question-list {
+    display: none;
+    max-height: 46vh;
+  }
+
+  .study-sidebar.is-open .question-list {
+    display: block;
+  }
+
+  .study-main {
+    padding-top: 18px;
+  }
+
+  .study-grid,
+  .study-all-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .about-band {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-links {
+    order: 2;
+  }
+}
+
+@media (max-width: 680px) {
+  .header-inner {
+    width: calc(100% - 32px);
+    gap: 8px;
+  }
+
+  .brand-text small {
+    display: none;
+  }
+
+  .brand-text strong {
+    font-size: 14px;
+  }
+
+  .main-nav {
+    margin-left: 6px;
+  }
+
+  .nav-link {
+    padding: 7px 11px;
+    font-size: 13.5px;
+  }
+
+  .search-trigger span,
+  .search-trigger kbd {
+    display: none;
+  }
+
+  .search-trigger {
+    width: 35px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .page-shell,
+  .home-page,
+  .study-home,
+  .article-page {
+    width: calc(100% - 32px);
+  }
+
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .section-head h2 {
+    font-size: 28px;
+  }
+
+  .post-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .post-row-arrow {
+    display: none;
+  }
+
+  .post-row h3 {
+    font-size: 20px;
+  }
+
+  .post-row-day {
+    font-size: 24px;
+  }
+
+  .study-grid,
+  .study-all-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .article-header {
+    padding-top: 48px;
+  }
+
+  .article-header h1 {
+    font-size: 34px;
+  }
+
+  .article-tags {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .article-pager,
+  .question-pager {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .pager-link.next {
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .study-hero h1 {
+    font-size: 38px;
+  }
+
+  .study-hero-stats {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .search-footer {
+    flex-wrap: wrap;
+  }
+
+  .footer-inner {
+    width: calc(100% - 32px);
+  }
+}

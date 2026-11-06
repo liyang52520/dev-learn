@@ -1,0 +1,136 @@
+/* —— 审查修复（第二轮）：可读性、状态语义与布局 —— */
+
+/* 问题态只有一行标题时，整块内容贴顶，下方一半是死白；把面板放到剩余空间中间 */
+.focus-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.focus-main .review-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.focus-main .review-page > .review-panel {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* 问题态不要悬浮在页面中间：撑满一屏高度，把「显示答案」压到底部，
+   视线从上往下是 题目 → 操作，留白变成呼吸区而不是空洞。 */
+.focus-main .review-page > .review-panel.is-question {
+  margin-top: 0;
+  margin-bottom: auto;
+  min-height: min(46vh, 460px);
+  display: flex;
+  flex-direction: column;
+}
+
+.review-panel.is-question .review-reveal {
+  margin-top: auto;
+}
+
+.review-panel.is-question .review-undo-row {
+  margin-top: 10px;
+}
+
+/* 把原来纯空白的底部变成快捷键提示：新手不用猜，老手也确认得上 */
+.review-shortcuts {
+  margin: 18px 2px 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+
+/* 中文正文一行 52 字太宽，眼睛回行会丢行；限制到约 42 字 */
+.review-answer {
+  max-width: 42em;
+}
+
+/* 学习入口加载骨架：和成功态同高，避免 stats 回来时整页下移 */
+.review-launcher.is-loading {
+  min-height: 96px;
+}
+
+.review-launcher-skel {
+  display: block;
+  border-radius: 6px;
+  background: var(--line);
+  animation: review-skel 1.2s ease-in-out infinite;
+}
+
+.review-launcher-skel.skel-eyebrow {
+  width: 118px;
+  height: 9px;
+}
+
+.review-launcher-skel.skel-title {
+  width: 176px;
+  height: 18px;
+}
+
+.review-launcher-skel.skel-line {
+  width: min(380px, 100%);
+  height: 12px;
+}
+
+.review-launcher-skel.skel-track {
+  width: min(420px, 100%);
+  height: 6px;
+  margin-top: 4px;
+}
+
+.review-launcher-btn.is-skeleton {
+  min-width: 108px;
+  min-height: 42px;
+  background: var(--line);
+  color: transparent;
+  pointer-events: none;
+}
+
+@keyframes review-skel {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* 提前结束不是「完成」，别用对勾和 COMPLETE 骗人 */
+.review-done-mark.is-paused {
+  background: var(--bg-elev);
+  color: var(--muted);
+  border: 1px solid var(--line-2);
+}
+
+/* 撤销按钮：桌面图标，移动端 48×48 且带文字，别让拇指猜 */
+.review-undo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.review-undo-text {
+  display: none;
+}
+
+/* 第二根进度条（复习）用来和「新卡」区分，不要一样黑 */
+.review-launcher-track.is-soft {
+  margin-top: 4px;
+}
+
+.review-launcher-fill.is-soft {
+  opacity: 0.45;
+}
+
+.review-launcher-note {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.heatmap-summary {
+  margin-left: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}

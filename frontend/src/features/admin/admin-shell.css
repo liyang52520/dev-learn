@@ -1,0 +1,242 @@
+/* ---------------- Admin shell ---------------- */
+
+.admin-root {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 58px;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-brand span {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.admin-brand strong {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.admin-brand em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--faint);
+  padding-left: 8px;
+  border-left: 1px solid var(--line);
+}
+
+.admin-topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 14px;
+}
+
+.admin-topbar nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.admin-topbar nav a:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.admin-topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.admin-env {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.admin-topbar-right a:hover {
+  color: var(--ink);
+}
+
+.admin-page {
+  width: min(1380px, 100% - 64px);
+  margin: 0 auto;
+  padding: 42px 0 80px;
+}
+
+.admin-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.admin-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+}
+
+.admin-page-head h1 {
+  margin-top: 10px;
+  font-size: 38px;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+}
+
+.admin-lede {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.admin-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-button {
+  height: 36px;
+  padding: 0 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.16s ease;
+}
+
+.admin-button:hover {
+  border-color: var(--line-2);
+  background: var(--surface-solid);
+}
+
+.admin-button.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.admin-button.primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.admin-button.danger {
+  color: #c2413a;
+  border-color: color-mix(in srgb, #c2413a 25%, var(--line));
+}
+
+.admin-button.danger:hover {
+  background: color-mix(in srgb, #c2413a 8%, transparent);
+}
+
+.admin-button.ghost {
+  background: transparent;
+}
+
+.admin-button.small {
+  height: 30px;
+  padding: 0 11px;
+  font-size: 11.5px;
+}
+
+.admin-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 150px)) minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.admin-stats > div {
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.admin-stats span {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.admin-stats strong {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.admin-stats-note {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.admin-stats-note code {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}

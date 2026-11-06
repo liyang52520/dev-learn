@@ -1,0 +1,128 @@
+/* ---------------- Article ---------------- */
+
+.article-page {
+  width: min(1180px, 100% - 48px);
+}
+
+.article-header {
+  display: grid;
+  grid-template-columns: minmax(0, 760px) 210px;
+  column-gap: 64px;
+  justify-content: center;
+  padding: 72px 0 46px;
+}
+
+.article-header > .eyebrow,
+.article-header > h1,
+.article-header > .article-meta {
+  grid-column: 1;
+}
+
+.article-header h1 {
+  margin-top: 20px;
+  font-size: clamp(38px, 4.6vw, 56px);
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+}
+
+.article-toc-mobile {
+  display: none;
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.article-date {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.article-category {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.article-category a:hover {
+  text-decoration: underline;
+}
+
+.article-tags {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.article-tag {
+  color: var(--faint);
+  transition: color 0.18s ease;
+}
+
+.article-tag:hover {
+  color: var(--accent);
+}
+
+.article-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 760px) 210px;
+  gap: 64px;
+  justify-content: center;
+  align-items: start;
+}
+
+.article-main {
+  min-width: 0;
+}
+
+.article-cover {
+  margin: 0 0 32px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.article-cover img {
+  display: block;
+  width: 100%;
+}
+
+.article-aside {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+}
+
+.aside-author {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.aside-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.aside-author p {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}

@@ -1,0 +1,79 @@
+/* ---------------- Article footer ---------------- */
+
+.article-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 760px) 210px;
+  column-gap: 64px;
+  justify-content: center;
+  padding: 48px 0 0;
+}
+
+.article-footer > .article-pager {
+  grid-column: 1;
+}
+
+.article-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.pager-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 1 42%;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.pager-link:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.pager-link small {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+.pager-link strong {
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pager-link.next {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.pager-link.next svg {
+  color: var(--accent);
+}
+
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 90;
+  background: transparent;
+}
+
+.reading-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.08s linear;
+}

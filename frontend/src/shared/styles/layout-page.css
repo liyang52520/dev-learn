@@ -1,0 +1,15 @@
+.site {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.site-main {
+  flex: 1;
+}
+
+.page-shell {
+  width: min(1180px, 100% - 48px);
+  margin: 0 auto;
+  padding-bottom: 100px;
+}

@@ -61,7 +61,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 ---
 ```
 
-`lib/posts.ts` 只识别 6 个字段：
+`backend/app/features/posts/frontmatter.py` 只识别 6 个字段：
 
 | 字段 | 必填 | 行为 |
 |---|:---:|---|
@@ -125,7 +125,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 
 ### 标题层级：正文禁止一级标题
 
-🚫 正文不允许出现 `#` 一级标题——文章页大标题由 Front Matter 的 `title` 渲染（`ArticleView` 的 `<h1>`），否则两个标题。正文从 `##` 起，分部用 `## 第一部分：…` / `### 1.1 …`；**TOC 自动取 `##`/`###`**（`lib/markdown.ts` 只提取 h2/h3），锚点 id 由 github-slugger 生成。不用 HTML/加粗模拟标题；代码块内的 `#`（Shell 注释、`# application.yml`）是注释不是标题。自查（无输出即通过）：
+🚫 正文不允许出现 `#` 一级标题——文章页大标题由 Front Matter 的 `title` 渲染（`PostPage` 的 `<h1>`），否则两个标题。正文从 `##` 起，分部用 `## 第一部分：…` / `### 1.1 …`；**TOC 自动取 `##`/`###`**（`backend/app/rendering/markdown.py` 只提取 h2/h3），锚点 id 与 github-slugger 兼容。不用 HTML/加粗模拟标题；代码块内的 `#`（Shell 注释、`# application.yml`）是注释不是标题。自查（无输出即通过）：
 
 ```bash
 awk 'BEGIN{inb=0} /^```/{inb=!inb; next} inb==0 && /^# /{print FILENAME":"FNR": "$0}' content/drafts/*.md content/posts/*.md
@@ -133,19 +133,19 @@ awk 'BEGIN{inb=0} /^```/{inb=!inb; next} inb==0 && /^# /{print FILENAME":"FNR": 
 
 ### 数学公式
 
-remark-math + rehype-katex，直接写 LaTeX：行内 `$E = mc^2$`（`$` 内侧不留空格，`$ E $` 不解析）；块级 `$$ … $$` 前后空行；多行推导用 `\begin{aligned} … \end{aligned}`。写错**不会 500**，KaTeX 渲染成红色报错文本——**预览里必须逐条看公式**。金额或字面 `$` 写 `\$`；不用 `\(...\)` / `\[...\]`（本管线不认），统一 `$`/`$$`。
+后端把 `$…$` / `$$…$$` 解析成 `data-tex` 占位，浏览器用 KaTeX 渲染，正文直接写 LaTeX：行内 `$E = mc^2$`（`$` 内侧不留空格，`$ E $` 不解析）；块级 `$$ … $$` 前后空行；多行推导用 `\begin{aligned} … \end{aligned}`。写错**不会 500**，KaTeX 渲染成红色报错文本——**预览里必须逐条看公式**。金额或字面 `$` 写 `\$`；不用 `\(...\)` / `\[...\]`（本管线不认），统一 `$`/`$$`。
 
 ### 代码块
 
-必须标语言（`java`、`yaml`、`bash`、`xml`、`properties`、`sql`、`text`、`json`、`ts`、`js`、`html`、`nginx`、`dockerfile`、`diff` 等 Shiki 支持项）；语言拼错**不报错但不高亮**（静默降级），看预览有没有配色；目录树/调用链用 `text`；突出行用注释（`// ← 关键：…`）；省略处写 `# ...`/`// ...`；单块尽量 ≤ 40 行，超长行会横向滚动，尽量手动折行。
+必须标语言（`java`、`yaml`、`bash`、`xml`、`properties`、`sql`、`text`、`json`、`ts`、`js`、`html`、`nginx`、`dockerfile`、`diff` 等 Pygments 支持项），后端以 `rendering/highlight.py` 的语言表为准；语言拼错**不报错但不高亮**（静默降级），看预览有没有配色；目录树/调用链用 `text`；突出行用注释（`// ← 关键：…`）；省略处写 `# ...`/`// ...`；单块尽量 ≤ 40 行，超长行会横向滚动，尽量手动折行。
 
 ### 表格、引用、HTML
 
-GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表横向滚动）；引用块（`>`）放读者疑问/误区/问题清单；行内 HTML 可用（`rehype-raw`，`<details>`、`<br>` 可救急），但不拿来模拟标题或大段样式。**不支持 mermaid**（` ```mermaid ` 只显示成源码，改用 `text` 目录树/表格/截图）、Hexo 标签语法（`{% note %}`）、`<!--more-->`（摘要来自 `description` 或正文前 150 字纯文本）。
+GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表横向滚动）；引用块（`>`）放读者疑问/误区/问题清单；行内 HTML 可用（渲染器开启 `html`，`<details>`、`<br>` 可救急），但不拿来模拟标题或大段样式。**不支持 mermaid**（` ```mermaid ` 只显示成源码，改用 `text` 目录树/表格/截图）、Hexo 标签语法（`{% note %}`）、`<!--more-->`（摘要来自 `description` 或正文前 150 字纯文本）。
 
 ### 链接
 
-站内：`/posts/<文件名去掉 .md>`，空格写 `%20`；**不要写 Hexo permalink `/2026/09/11/xxx/`**；目标还在 `content/drafts` 时线上 404，交付时说明；锚点由 github-slugger 生成，不确定就引用整篇；每个链接交付前点一遍。站外直接写 URL——正文链接不在新标签打开，别写"在新窗口打开"。
+站内：`/posts/<文件名去掉 .md>`，空格写 `%20`；**不要写 Hexo permalink `/2026/09/11/xxx/`**；目标还在 `content/drafts` 时线上 404，交付时说明；锚点与 github-slugger 兼容，不确定就引用整篇；每个链接交付前点一遍。站外直接写 URL——正文链接不在新标签打开，别写"在新窗口打开"。
 
 ### 图片
 
@@ -169,7 +169,7 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 - **文件与 Front Matter**：草稿在 `content/drafts/`（发布才移入 `content/posts/`）；六字段齐全、`---` 成对、之后空一行；`date` 为 `YYYY-MM-DD HH:mm:ss` 北京时间；`tags`/`categories` 是列表且大小写一致；含 ASCII `: `、` #`、`- ` 开头的值加引号；文件名不含 `%`/`/`/`?`/`#`。
 - **标题与内容**：正文无 `#` 一级标题；结构标题用 `##`/`###`，TOC 对得上；开头 3 行切入问题；每节有"为什么读"的铺垫；章/节标题是论点、无陌生名词、一章一论点；小节"结论→论证→细节"；无无关堆砌与裸名词；源码块交代"在哪/为什么看"；代码标语言且预览有高亮；公式渲染正常；图片 `/images/` 可加载、alt 有意义。
 - **关联与语言**：已检索现有文章；站内链接全为 `/posts/<slug>`、无 `/20xx/…/`（`grep -rn "](/20" content/`）；链接都点过且目标已发布；全文无"和需求方对话"的元叙述；单篇 ≤ 2 万非空白字符，改动净字符数不增。
-- **交付**：`/admin` 的「预览」与「整页预览」各看一遍；手机上滚到底；大改跑**冷读 + 事实核查**（不可合并）；说明路径/slug/标题/分类/标签/关联/预览方式；停在 drafts、未擅自发布/commit/push；动过代码则 `npm run typecheck && npm run build` 通过。
+- **交付**：`/admin` 的「预览」与「整页预览」各看一遍；手机上滚到底；大改跑**冷读 + 事实核查**（不可合并）；说明路径/slug/标题/分类/标签/关联/预览方式；停在 drafts、未擅自发布/commit/push；动过代码则 `cd frontend && npm run typecheck && npm run build`、`cd backend && python -m pytest` 通过。
 
 ## 2.11 常见坑
 
@@ -180,14 +180,14 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 | 文章不出现在站点 | 还在 `content/drafts`；或放进了 `content/` 根目录；或 `date` 在未来 |
 | 发布后 URL 变了 / 旧链接 404 | 改了文件名（slug = URL）；或发布时 `posts/` 已有同名文件被追加时间戳 |
 | 站内链接 404 | 旧 permalink `/20xx/…/`（迁移后应为 0，可用 grep 自查）、目标仍在 drafts、路径不是 `/posts/<slug>`；文件名带 `%` 则是 500（`URIError`） |
-| 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错，或不在 `COMMON_LANGS`/仓库围栏扫描集里（Shiki 静默降级为纯文本，不报错）。补 `lib/shiki.ts` 的 `COMMON_LANGS` 并重启 dev |
-| 文章页代码块没有复制按钮 / 表格横向溢出 | 服务端 rehype 没产出 `.code-block`/`.table-wrap`（检查 `lib/markdown.ts` 的插件顺序是否在 `rehypeShiki` 之前），或客户端 `ArticleTools` 又开始在 hydration 后动 DOM |
-| 题目页滚动时截图"跳版"、CLS 变高 | 证据图 `<img>` 缺 `width/height`（由 `lib/study.ts` 从文件头注入），或 CSS 把图片覆盖成 `height:100%` |
-| 题库页多出 24 KB 无用 CSS / 文章公式样式丢失 | KaTeX 样式必须在文章页与后台预览 import，不能放回根布局（见 `AGENTS.md` 1.8.13） |
+| 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错，或不在 `backend/app/rendering/highlight.py` 的 `COMMON_LANGS` 里（Pygments 静默降级为纯文本，不报错）。补语言表并重启后端 |
+| 文章页代码块没有复制按钮 / 表格横向溢出 | 服务端插件没产出 `.code-block`/`.table-wrap`（检查 `backend/app/rendering/plugins.py` 是否在 Pygments 高亮之前包裹），或前端 `HtmlContent` 又开始在 hydration 后移动 DOM |
+| 题目页滚动时截图"跳版"、CLS 变高 | 证据图 `<img>` 缺 `width/height`（由 `backend/app/rendering/images.py` 从文件头注入），或 CSS 把图片覆盖成 `height:100%` |
+| 公式样式丢失 / 非文章页多了 KaTeX CSS | 公式由 `HtmlContent` 用 KaTeX 在浏览器渲染，样式随组件引入；只有用到它的页面才付这份体积 |
 | 图片裂图 | 写成 `public/images/…` 或 `source/images/…`，应为 `/images/…`；路径大小写敏感；上传只收 png/jpeg/webp/gif 且 ≤ 20MB |
 | mermaid 变成一段源码 | 本仓库不支持 mermaid；改用 `text` 图形、表格或截图 |
-| 后台保存后 front matter 被重排、注释消失 | `serializePost` 用 js-yaml 重新序列化，正常；未知字段保留但不生效；删除可到 `.trash/<type>/` 找回 |
-| 改了 `.md` / Markdown 页面没变化 | dev 缓存按 mtime+size 判定，同一毫秒同尺寸写入会漏判；页面 `force-dynamic`，刷新或重启 dev 兜底 |
+| 后台保存后 front matter 被重排、注释消失 | 后端按固定字段重新序列化，正常；未知字段保留但不生效；删除可到 `.trash/<type>/` 找回 |
+| 改了 `.md` / Markdown 页面没变化 | 后端缓存按 mtime+size 判定，同一毫秒同尺寸写入会漏判；重启后端或重新保存兜底 |
 | 手机先闪一下随即"网页已崩溃" | 单页超过 3.1 万字符 / 50 KB 已验证区间，手机渲染进程被杀；拆系列 |
 | 读者中途看懵 / 每个字都认识却不懂 | 缺"为什么要想"的铺垫，或出现裸名词；见「写作结构要求」 |
 

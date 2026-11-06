@@ -1,0 +1,112 @@
+/* ---------------- Study home ---------------- */
+
+/* 学习首页的复习入口：不依赖 review 路由才会加载的 launcher.css */
+.review-launcher {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 26px 0 10px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.review-launcher:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.review-launcher > .icon {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.review-launcher span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.review-launcher strong {
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.review-launcher small {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.review-launcher::after {
+  content: '→';
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.study-home {
+  width: min(1200px, 100% - 48px);
+}
+
+.study-hero h1 {
+  font-size: clamp(44px, 5.4vw, 68px);
+}
+
+.study-hero-stats {
+  display: flex;
+  gap: 38px;
+  margin-top: 30px;
+}
+
+.study-hero-stats span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.study-hero-stats strong {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--ink);
+  margin-right: 4px;
+}
+
+.study-browser-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+
+.study-browser-search {
+  flex: 1;
+  max-width: 440px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.study-browser-search input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13.5px;
+}
+
+.study-browser-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.study-all-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}

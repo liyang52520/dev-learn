@@ -1,0 +1,254 @@
+/* ---------------- Home hero ---------------- */
+
+.home-page {
+  width: min(1200px, 100% - 48px);
+}
+
+.home-page .home-hero h1 {
+  font-size: clamp(44px, 5.4vw, 68px);
+}
+
+.hero-stats {
+  display: flex;
+  gap: 38px;
+  margin-top: 30px;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 5px;
+  color: inherit;
+  transition: color 0.18s ease;
+}
+
+.hero-stat:hover strong {
+  color: var(--accent);
+}
+
+.hero-stats strong {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.hero-stats span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.home-page .section {
+  padding-top: 0;
+}
+
+.home-page .post-list {
+  border-top: 0;
+}
+
+/* ---------------- Post list ---------------- */
+
+.post-list {
+  border-top: 1px solid var(--line);
+}
+
+.post-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) 40px;
+  gap: 28px;
+  align-items: start;
+  padding: 30px 8px 30px 0;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.2s ease;
+}
+
+.post-row:hover {
+  background: linear-gradient(90deg, var(--accent-soft), transparent 70%);
+}
+
+.post-row-date {
+  display: flex;
+  flex-direction: column;
+  padding-top: 4px;
+}
+
+.post-row-day {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.post-row-month {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  letter-spacing: 0.04em;
+}
+
+.post-row-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.post-row-index {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--accent);
+}
+
+.post-row h3 {
+  font-size: 25px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  transition: color 0.18s ease;
+}
+
+.post-row:hover h3 {
+  color: var(--accent);
+}
+
+.post-row-main > p {
+  margin-top: 10px;
+  max-width: 760px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+.post-row-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.meta-pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.meta-tag {
+  color: var(--faint);
+}
+
+.meta-time {
+  color: var(--faint);
+}
+
+.meta-time::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--line-2);
+}
+
+.post-row-arrow {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+
+.post-row:hover .post-row-arrow {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateX(3px);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 34px;
+}
+
+.pagination-link {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.pagination-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pagination-link.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.pagination-link.disabled {
+  border-color: transparent;
+  background: transparent;
+  color: var(--faint);
+  cursor: default;
+}
+
+.pagination-gap {
+  padding: 0 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* ---------------- About band ---------------- */
+
+.about-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 42px;
+  margin-top: 78px;
+  padding: 44px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.about-band span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.about-band h3 {
+  margin-top: 10px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.about-band p {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+}

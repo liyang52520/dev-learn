@@ -1,0 +1,105 @@
+import { Link } from 'react-router-dom'
+
+import { HtmlContent } from '@/shared/components/HtmlContent'
+import type { ReviewCard } from '@/types/models'
+
+import { RatingBar } from './RatingBar'
+import { STATE_LABELS, type Phase } from '../types'
+
+type Props = {
+  card: ReviewCard
+  phase: Phase
+  answerHtml: string
+  revealing: boolean
+  canUndo: boolean
+  busy: boolean
+  onReveal: () => void
+  onUndo: () => void
+  onRate: (rating: number) => void
+}
+
+function originHref(card: ReviewCard): string | null {
+  const topicId = card.question?.topicId
+  if (!topicId) return null
+  const questionId = card.qid.split('/').slice(1).join('/')
+  if (!questionId) return null
+  return `/study/${encodeURIComponent(topicId)}/${encodeURIComponent(questionId)}`
+}
+
+export function QuestionCard(props: Props) {
+  const { card, phase, answerHtml, revealing, canUndo, busy } = props
+  const origin = originHref(card)
+  const waiting = phase === 'loading' || !card
+
+  return (
+    <div className={`review-panel${phase === 'question' ? ' is-question' : ''}`} aria-live="polite" aria-busy={busy}>
+      <div className="review-meta">
+        <span>{card.question?.topic || card.qid}</span>
+        {card.question?.pages && <span>{card.question.pages}</span>}
+        {origin && (
+          <Link className="review-origin" to={origin} target="_blank" rel="noreferrer">
+            查看原文 ↗
+          </Link>
+        )}
+        <span className="review-state">{STATE_LABELS[card.state] || card.state}</span>
+      </div>
+
+      <h1 className="review-question">{card.question?.title || '（题目内容缺失）'}</h1>
+      {card.question?.aliases && card.question.aliases.length > 0 && (
+        <p className="review-alias">别名：{card.question.aliases.join('；')}</p>
+      )}
+
+      {waiting ? null : phase === 'question' ? (
+        <>
+          <button type="button" className="review-reveal" onClick={props.onReveal} disabled={revealing}>
+            {revealing ? '正在载入原文…' : '显示答案'}
+            {!revealing && <kbd>空格</kbd>}
+          </button>
+          <div className="review-undo-row">
+            <button
+              type="button"
+              className="review-undo"
+              onClick={props.onUndo}
+              disabled={!canUndo}
+              title={canUndo ? '撤销最近一次评分' : '还没有可撤销的评分'}
+            >
+              撤销上一张 <kbd>U</kbd>
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          {card.question?.summary && card.question.summary.length > 0 && (
+            <>
+              <p className="review-section-title">要点</p>
+              <ul className="review-points">
+                {card.question.summary.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          <p className="review-section-title">
+            原文答案{card.question?.pages ? ` · ${card.question.pages}` : ''}
+          </p>
+          <HtmlContent className="prose study-answer review-answer" html={answerHtml} />
+
+          <div className="review-bottom">
+            <button
+              type="button"
+              className="review-undo-icon"
+              onClick={props.onUndo}
+              disabled={!canUndo}
+              title="撤销上一张 (U)"
+              aria-label="撤销上一张"
+            >
+              <span aria-hidden>↩</span>
+              <span className="review-undo-text">撤销</span>
+            </button>
+            <RatingBar labels={card.labels} busy={busy} onRate={props.onRate} />
+          </div>
+        </>
+      )}
+    </div>
+  )
+}

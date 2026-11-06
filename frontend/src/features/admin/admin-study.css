@@ -1,0 +1,160 @@
+/* —— 学习设置 —— */
+
+.study-admin-stats {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.study-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 22px 0;
+  /* 两张卡内容量不同，别强行拉成等高留出大片空白 */
+  align-items: start;
+}
+
+.study-admin-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 22px 24px;
+}
+
+/* 右列是把两张卡竖着叠起来，中间要留出和网格一致的间距 */
+.study-admin-grid > div > .study-admin-card + .study-admin-card {
+  margin-top: 18px;
+}
+
+.study-admin-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.study-admin-hint {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.study-admin-hint code,
+.study-admin-offline code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--code);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.study-admin-card label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.study-admin-card input[type='number'] {
+  width: 110px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.study-admin-card input[type='number']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* 改过的输入框要能看出来，不然用户不知道哪一项还没保存 */
+.study-admin-card label.is-changed span {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.study-admin-card label.is-changed input[type='number'] {
+  border-color: var(--accent);
+}
+
+.study-admin-preview {
+  margin: 2px 0 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: var(--bg-elev);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.study-admin-list {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.study-admin-notice {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.study-admin-notice.is-warn {
+  color: #c2413a;
+}
+
+.study-admin-heatmap {
+  margin: 22px 0 0;
+  padding: 18px 24px 16px;
+}
+
+.study-admin-heatmap-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.study-admin-heatmap-head h3 {
+  margin: 0;
+}
+
+.study-admin-heatmap-head span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* 设置页宽度充足，热力图铺开但不至于变成一排大方块 */
+.study-admin-heatmap .heatmap-wrap {
+  margin: 4px 0 0;
+  max-width: 900px;
+}
+
+.study-admin-offline {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 30px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.study-admin-offline h2 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.study-admin-offline p {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+}

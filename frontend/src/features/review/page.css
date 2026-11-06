@@ -1,0 +1,260 @@
+/* ==========================================================================
+   复习（/review）：专注模式页面 + 学习首页入口
+   —— 数据来自本机 anki-svc，题目内容仍由本站 data/study 渲染，样式与题目页共用。
+   ========================================================================== */
+
+.focus-main {
+  min-height: 100dvh;
+  background: var(--bg);
+  padding: 18px 0 40px;
+}
+
+.review-page {
+  width: min(880px, 100% - 40px);
+  margin: 0 auto;
+}
+
+.review-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 6px 2px 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.review-back {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: var(--surface);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.review-back:hover {
+  border-color: var(--line-2);
+  transform: translateX(-2px);
+}
+
+.review-counts {
+  display: flex;
+  gap: 14px;
+}
+
+.review-counts strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.review-summary-line {
+  margin-left: auto;
+}
+
+.review-due {
+  color: var(--faint);
+}
+
+.review-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 30px clamp(20px, 4vw, 38px) 34px;
+  box-shadow: var(--shadow-sm);
+}
+
+.review-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+
+.review-state {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-transform: none;
+}
+
+.review-origin {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  text-transform: none;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.review-origin:hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+}
+
+.review-question {
+  font-size: clamp(21px, 2.6vw, 27px);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  margin: 14px 0 10px;
+  color: var(--ink);
+}
+
+.review-alias {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.review-reveal {
+  margin-top: 26px;
+  width: 100%;
+  padding: 26px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px dashed var(--line-2);
+  border-radius: 12px;
+  background: var(--bg-elev);
+  /* 原来的 --muted 在浅灰底上只有 4.26:1，正文级小字低于 AA；
+     用 --ink-2 拉到 10:1 以上，主操作按钮不该是最淡的文字。 */
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.review-reveal:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.review-reveal:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.review-points {
+  margin: 18px 0 6px;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.review-points li + li {
+  margin-top: 6px;
+}
+
+.review-answer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.review-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.review-rate {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  padding: 12px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.review-rate:hover:not(:disabled) {
+  border-color: var(--line-2);
+  transform: translateY(-1px);
+  background: var(--bg-elev);
+}
+
+.review-rate:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.rate-hint {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rate-1 .rate-hint { color: var(--ember); }
+.rate-2 .rate-hint { color: var(--muted); }
+.rate-3 .rate-hint { color: var(--ink); }
+.rate-4 .rate-hint { color: var(--accent); }
+
+.rate-label {
+  font-size: 12px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.rate-key {
+  align-self: flex-end;
+  font-size: 10.5px;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.review-undo-row {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.review-undo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--faint);
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+/* 可用 / 禁用必须一眼能看出来：禁用态灰掉，可用态给边框和底色 */
+.review-undo:not(:disabled) {
+  color: var(--ink-2);
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.review-undo:not(:disabled):hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+  background: var(--accent-soft);
+}
+
+.review-undo:disabled {
+  color: var(--faint);
+  opacity: 0.55;
+  cursor: default;
+}

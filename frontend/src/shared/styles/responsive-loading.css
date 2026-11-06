@@ -1,0 +1,89 @@
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background-image: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .sk-hero-title {
+    width: min(320px, 82%);
+  }
+
+  .sk-hero-sub {
+    width: min(240px, 68%);
+  }
+
+  .sk-post-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .sk-post-row .sk-arrow {
+    display: none;
+  }
+
+  .sk-post-row .sk-post-excerpt {
+    width: 100%;
+  }
+
+  .sk-article-head {
+    padding: 48px 0 36px;
+  }
+
+  .sk-article-title {
+    width: 100%;
+  }
+
+  .sk-article-title-short {
+    width: 72%;
+  }
+
+  .sk-article-code {
+    height: 130px;
+  }
+
+  .sk-study {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sk-study .study-sidebar {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sk-study .sk-question-list {
+    max-height: 240px;
+  }
+
+  .sk-study .study-main {
+    padding-top: 28px;
+  }
+
+  .sk-study-evidence {
+    display: block;
+    position: static;
+    height: auto;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 24px max(24px, 6vw) 60px;
+  }
+
+  .sk-study-evidence .sk-evidence-shot {
+    max-width: 360px;
+  }
+
+  .sk-question-title {
+    width: 100%;
+  }
+
+  .sk-question-title-short {
+    width: 72%;
+  }
+
+  .sk-summary {
+    padding: 18px 16px;
+  }
+}
