@@ -6,7 +6,7 @@ description: 在 dev-learn 写、改、发布博客文章时使用。覆盖写�
 # 博客写作（dev-learn）
 
 > 本文件是博客内容规则的**唯一来源**；`AGENTS.md` 第二章只做索引。章节号保持 2.x，与旧引用一一对应。
-> 已发布文章在 `content/posts/`，草稿在 `content/drafts/`，都是 Markdown，文件即唯一数据源。规范的目标只有一个：**每次改动都产出可以直接发布的文章**。写作对象永远是：**未来那个深夜搜索这个问题的读者**。
+> 已发布文章在 `backend/data/content/posts/`，草稿在 `backend/data/content/drafts/`，都是 Markdown，文件即唯一数据源。规范的目标只有一个：**每次改动都产出可以直接发布的文章**。写作对象永远是：**未来那个深夜搜索这个问题的读者**。
 
 ## 2.1 写作原则
 
@@ -19,13 +19,13 @@ description: 在 dev-learn 写、改、发布博客文章时使用。覆盖写�
 ## 2.2 新增一篇文章：标准流程
 
 1. **先确认信息**：标题与期望文件名、分类（技术文 `develop`，随笔 `life`，不自创）、标签（复用优先）、范围与深度（科普/源码/排错、篇幅）、读者预设（有 Java/Spring 基础但卡在底层）。宁可多问一句，也别写方向错误的长文；一次问清。
-2. **检索已有文章建关联**：看 `content/posts`、`content/drafts` 的标题/标签/开头，判断新文属于哪条脉络。现有系列：请求链路、`@Transactional` 失效、上传/下载、WebFlux、容器/MyBatis、Nacos/Jasypt、下载失败排查。前置知识、延续补完、对比关系要在开头交代并互链，**不为链接而链接**；链到草稿要说明"发布后才生效"。
-3. **建文件**：后台 `/admin`「新建文章」会自动写 `content/drafts/<slug>.md`（slug 由标题生成、`date` 取当前北京时间），填标题/日期/标签/分类/摘要/封面后 `⌘S` 保存；或手写草稿（**必须自补 Front Matter**）。**不要直接写进 `content/posts/`**（会立刻上线），发布走后台或 `git mv`。
+2. **检索已有文章建关联**：看 `backend/data/content/posts`、`backend/data/content/drafts` 的标题/标签/开头，判断新文属于哪条脉络。现有系列：请求链路、`@Transactional` 失效、上传/下载、WebFlux、容器/MyBatis、Nacos/Jasypt、下载失败排查。前置知识、延续补完、对比关系要在开头交代并互链，**不为链接而链接**；链到草稿要说明"发布后才生效"。
+3. **建文件**：后台 `/admin`「新建文章」会自动写 `backend/data/content/drafts/<slug>.md`（slug 由标题生成、`date` 取当前北京时间），填标题/日期/标签/分类/摘要/封面后 `⌘S` 保存；或手写草稿（**必须自补 Front Matter**）。**不要直接写进 `backend/data/content/posts/`**（会立刻上线），发布走后台或 `git mv`。
 4. **写正文**：见「写作结构要求」「格式与排版」。
 5. **自检**：过「提交前自检清单」，并实际打开首页、文章页（桌面+窄屏）、目录、所有链接、图片。
-6. **汇报**：文件路径、slug（=URL）、标题、分类、标签、关联了哪些文章、怎么预览，并说明**文章仍在 `content/drafts/`、是否发布由用户决定**。**未经许可不发布、不 `git commit` / `git push`**。
+6. **汇报**：文件路径、slug（=URL）、标题、分类、标签、关联了哪些文章、怎么预览，并说明**文章仍在 `backend/data/content/drafts/`、是否发布由用户决定**。**未经许可不发布、不 `git commit` / `git push`**。
 
-站内链接（不是 Hexo 的 `/2026/09/11/标题/`）：`[文字](/posts/<文件名去掉 .md>)`，空格写 `%20`，中文全角标点可保留。**旧 permalink 已全部迁成 `/posts/<slug>`**，改稿时不要再写 `/20xx/…/`；自查残留：`grep -rn "](/20" content/` 应无输出。
+站内链接（不是 Hexo 的 `/2026/09/11/标题/`）：`[文字](/posts/<文件名去掉 .md>)`，空格写 `%20`，中文全角标点可保留。**旧 permalink 已全部迁成 `/posts/<slug>`**，改稿时不要再写 `/20xx/…/`；自查残留：`grep -rn "](/20" backend/data/content/` 应无输出。
 
 ## 2.3 修改/扩写已有文章
 
@@ -72,7 +72,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 | `description` | 可选 | 摘要，截 180 字符；无则取正文纯文本前 150 字 |
 | `cover` | 可选 | 封面路径 `/images/…`，只在文章页正文顶部显示 |
 
-- 发布状态由目录决定（`content/posts` / `content/drafts`），**没有 `published` 字段**，写了不生效。
+- 发布状态由目录决定（`backend/data/content/posts` / `backend/data/content/drafts`），**没有 `published` 字段**，写了不生效。
 - `date` 只写 `YYYY-MM-DD` 会当当天 00:00:00；**缺失或无法解析 → 1970-01-01，并被排到最后**。
 - `tags`/`categories` 写成列表 `  - 值`（两空格 + `- `）；`tags: spring, nacos` 是容错写法，后台保存会改回列表；后台输入框里是英文逗号分隔。
 - 值含 **ASCII `: `（冒号+空格）**、**空格 + `#`** 或以 `- ` 开头时必须给整个值加双引号，否则 YAML 报错或截断（`title: 上传 #1 篇` 只剩"上传"）；中文全角 `：`、`？` 不必引号，统一加最稳。不加 `permalink`/`layout`/`published` 等未用字段；不写注释、YAML 锚点、多文档 `---`（后台保存会丢）。
@@ -85,7 +85,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 - 标签用**小写英文**，新标签统一小写（`spring webflux`，别再造成 `Spring WebFlux`）；一篇 **2~4 个**，不堆砌，同一概念不拆两个标签；不确定先问用户，不造孤立标签。
 - 分类只有 `develop`（技术）和 `life`（随笔）；技术文默认 `develop`，不自创。
 
-查重（或看 `/blog/tags`）：`grep -rhA8 '^tags:' content/*/*.md | grep -E '^\s+- ' | sed 's/^\s*- //' | sort | uniq -c | sort -rn`
+查重（或看 `/blog/tags`）：`grep -rhA8 '^tags:' backend/data/content/*/*.md | grep -E '^\s+- ' | sed 's/^\s*- //' | sort | uniq -c | sort -rn`
 
 ## 2.6 文件命名规范
 
@@ -93,7 +93,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 - 中文可用，空格用 `-`（`Spring-接入点：跟着容器过一生.md`）；后台新建时把 `\ / : * ? " < > |` 与空白替成 `-`、折叠连续 `-`、去首尾、**截断 80 字符**。
 - 文件名禁用 `/`、`\`、`?`、`#`、`*`、`"`、`<`、`>`、`|` 和 **`%`**——`getPost` 会 `decodeURIComponent(slug)`，带 `%` 抛 `URIError` 导致文章页 500；不以 `.`/空格结尾；全角 `？` 合法但链接必须编码，新文件别用。
 - 系列用同前缀 + 序号（`SpringBoot请求链路1：…`、`Transactional-为什么会失效（一）：…`），正文同步交代上一篇/下一篇。
-- **已发布文件不重命名**（含大小写变化），必须改时同步改所有站内链接；只把 `.md` 放 `content/posts` 或 `content/drafts`，放 `content/` 根目录会静默忽略。
+- **已发布文件不重命名**（含大小写变化），必须改时同步改所有站内链接；只把 `.md` 放 `backend/data/content/posts` 或 `backend/data/content/drafts`，放 `backend/data/content/` 根目录会静默忽略。
 
 ## 2.7 写作结构要求
 
@@ -128,7 +128,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 🚫 正文不允许出现 `#` 一级标题——文章页大标题由 Front Matter 的 `title` 渲染（`PostPage` 的 `<h1>`），否则两个标题。正文从 `##` 起，分部用 `## 第一部分：…` / `### 1.1 …`；**TOC 自动取 `##`/`###`**（`backend/app/rendering/markdown.py` 只提取 h2/h3），锚点 id 与 github-slugger 兼容。不用 HTML/加粗模拟标题；代码块内的 `#`（Shell 注释、`# application.yml`）是注释不是标题。自查（无输出即通过）：
 
 ```bash
-awk 'BEGIN{inb=0} /^```/{inb=!inb; next} inb==0 && /^# /{print FILENAME":"FNR": "$0}' content/drafts/*.md content/posts/*.md
+awk 'BEGIN{inb=0} /^```/{inb=!inb; next} inb==0 && /^# /{print FILENAME":"FNR": "$0}' backend/data/content/drafts/*.md backend/data/content/posts/*.md
 ```
 
 ### 数学公式
@@ -145,11 +145,11 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 
 ### 链接
 
-站内：`/posts/<文件名去掉 .md>`，空格写 `%20`；**不要写 Hexo permalink `/2026/09/11/xxx/`**；目标还在 `content/drafts` 时线上 404，交付时说明；锚点与 github-slugger 兼容，不确定就引用整篇；每个链接交付前点一遍。站外直接写 URL——正文链接不在新标签打开，别写"在新窗口打开"。
+站内：`/posts/<文件名去掉 .md>`，空格写 `%20`；**不要写 Hexo permalink `/2026/09/11/xxx/`**；目标还在 `backend/data/content/drafts` 时线上 404，交付时说明；锚点与 github-slugger 兼容，不确定就引用整篇；每个链接交付前点一遍。站外直接写 URL——正文链接不在新标签打开，别写"在新窗口打开"。
 
 ### 图片
 
-图片放 `public/images/`，Markdown 写站点根路径 `/images/…`（写成 `public/images/…` 会 404）；后台上传存 `public/images/uploads/<年>/<月>/` 并返回 `/images/uploads/…`，只收 png/jpeg/webp/gif 且 ≤ 20MB；上传后把 alt 从文件名改成有意义的描述；不用外部图床；封面用 Front Matter 的 `cover`。
+图片放 `frontend/public/images/`，Markdown 写站点根路径 `/images/…`（写成 `frontend/public/images/…` 会 404）；后台上传存 `frontend/public/images/uploads/<年>/<月>/` 并返回 `/images/uploads/…`，只收 png/jpeg/webp/gif 且 ≤ 20MB；上传后把 alt 从文件名改成有意义的描述；不用外部图床；封面用 Front Matter 的 `cover`。
 
 ## 2.9 篇幅预算
 
@@ -160,15 +160,15 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 | 必须拆 | > 3.1 万 | > 50 KB | 超出已验证区间，别赌 |
 
 - 字符数指**非空白字符**（汉字/标点/英文/代码/表格），按"汉字数"估会严重低估；2 万字符 ≈ 正文 4,000~5,000 字 + 代码 300~400 行。目标档是上限，能砍到 1.4 万就别停在 1.9 万。
-- 统计：`python3 -c "import re,sys;print(len(re.sub(r'\s','',open(sys.argv[1],encoding='utf-8').read())))" content/posts/xxx.md`（草稿换路径），或 `ls -lh`；后台状态栏字符数含空白，不能当口径。
+- 统计：`python3 -c "import re,sys;print(len(re.sub(r'\s','',open(sys.argv[1],encoding='utf-8').read())))" backend/data/content/posts/xxx.md`（草稿换路径），或 `ls -lh`；后台状态栏字符数含空白，不能当口径。
 - 超预算**拆系列**：导读篇做入口，各篇补引子/小结/上下篇链接，**节号跨篇连续编号**（正文"见第八节"不用改），删章后重排。
 - 验收：发布前用自己手机从头滚到底；旧站实测 7.7 万字符 / 122 KB 必崩，3.1 万 / 50 KB 已验证可读。
 
 ## 2.10 提交前自检清单
 
-- **文件与 Front Matter**：草稿在 `content/drafts/`（发布才移入 `content/posts/`）；六字段齐全、`---` 成对、之后空一行；`date` 为 `YYYY-MM-DD HH:mm:ss` 北京时间；`tags`/`categories` 是列表且大小写一致；含 ASCII `: `、` #`、`- ` 开头的值加引号；文件名不含 `%`/`/`/`?`/`#`。
+- **文件与 Front Matter**：草稿在 `backend/data/content/drafts/`（发布才移入 `backend/data/content/posts/`）；六字段齐全、`---` 成对、之后空一行；`date` 为 `YYYY-MM-DD HH:mm:ss` 北京时间；`tags`/`categories` 是列表且大小写一致；含 ASCII `: `、` #`、`- ` 开头的值加引号；文件名不含 `%`/`/`/`?`/`#`。
 - **标题与内容**：正文无 `#` 一级标题；结构标题用 `##`/`###`，TOC 对得上；开头 3 行切入问题；每节有"为什么读"的铺垫；章/节标题是论点、无陌生名词、一章一论点；小节"结论→论证→细节"；无无关堆砌与裸名词；源码块交代"在哪/为什么看"；代码标语言且预览有高亮；公式渲染正常；图片 `/images/` 可加载、alt 有意义。
-- **关联与语言**：已检索现有文章；站内链接全为 `/posts/<slug>`、无 `/20xx/…/`（`grep -rn "](/20" content/`）；链接都点过且目标已发布；全文无"和需求方对话"的元叙述；单篇 ≤ 2 万非空白字符，改动净字符数不增。
+- **关联与语言**：已检索现有文章；站内链接全为 `/posts/<slug>`、无 `/20xx/…/`（`grep -rn "](/20" backend/data/content/`）；链接都点过且目标已发布；全文无"和需求方对话"的元叙述；单篇 ≤ 2 万非空白字符，改动净字符数不增。
 - **交付**：`/admin` 的「预览」与「整页预览」各看一遍；手机上滚到底；大改跑**冷读 + 事实核查**（不可合并）；说明路径/slug/标题/分类/标签/关联/预览方式；停在 drafts、未擅自发布/commit/push；动过代码则 `cd frontend && npm run typecheck && npm run build`、`cd backend && python -m pytest` 通过。
 
 ## 2.11 常见坑
@@ -177,14 +177,14 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 |---|---|
 | 首页或文章页 500（`YAMLException`） | Front Matter 未闭合、标题含 ASCII `: ` 未加引号、缩进错；**一个坏文件会让整站列表崩**，看 dev server 报错定位 |
 | 显示 `1970-01-01` 且排最后 | `date` 缺失或无法解析，改成 `YYYY-MM-DD HH:mm:ss` |
-| 文章不出现在站点 | 还在 `content/drafts`；或放进了 `content/` 根目录；或 `date` 在未来 |
+| 文章不出现在站点 | 还在 `backend/data/content/drafts`；或放进了 `backend/data/content/` 根目录；或 `date` 在未来 |
 | 发布后 URL 变了 / 旧链接 404 | 改了文件名（slug = URL）；或发布时 `posts/` 已有同名文件被追加时间戳 |
 | 站内链接 404 | 旧 permalink `/20xx/…/`（迁移后应为 0，可用 grep 自查）、目标仍在 drafts、路径不是 `/posts/<slug>`；文件名带 `%` 则是 500（`URIError`） |
 | 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错，或不在 `backend/app/rendering/highlight.py` 的 `COMMON_LANGS` 里（Pygments 静默降级为纯文本，不报错）。补语言表并重启后端 |
 | 文章页代码块没有复制按钮 / 表格横向溢出 | 服务端插件没产出 `.code-block`/`.table-wrap`（检查 `backend/app/rendering/plugins.py` 是否在 Pygments 高亮之前包裹），或前端 `HtmlContent` 又开始在 hydration 后移动 DOM |
 | 题目页滚动时截图"跳版"、CLS 变高 | 证据图 `<img>` 缺 `width/height`（由 `backend/app/rendering/images.py` 从文件头注入），或 CSS 把图片覆盖成 `height:100%` |
 | 公式样式丢失 / 非文章页多了 KaTeX CSS | 公式由 `HtmlContent` 用 KaTeX 在浏览器渲染，样式随组件引入；只有用到它的页面才付这份体积 |
-| 图片裂图 | 写成 `public/images/…` 或 `source/images/…`，应为 `/images/…`；路径大小写敏感；上传只收 png/jpeg/webp/gif 且 ≤ 20MB |
+| 图片裂图 | 写成 `frontend/public/images/…` 或 `source/images/…`，应为 `/images/…`；路径大小写敏感；上传只收 png/jpeg/webp/gif 且 ≤ 20MB |
 | mermaid 变成一段源码 | 本仓库不支持 mermaid；改用 `text` 图形、表格或截图 |
 | 后台保存后 front matter 被重排、注释消失 | 后端按固定字段重新序列化，正常；未知字段保留但不生效；删除可到 `.trash/<type>/` 找回 |
 | 改了 `.md` / Markdown 页面没变化 | 后端缓存按 mtime+size 判定，同一毫秒同尺寸写入会漏判；重启后端或重新保存兜底 |
@@ -193,6 +193,6 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 
 ## 2.12 一句话总结
 
-> 先问清楚（标题/分类/标签/范围）→ 找关联 → 按"引子 → 问题 → 分层递进 → 收口"写；正文不写 `#`，技术经得起查证，语言对读者负责。改旧文当作重写整篇，不塞补丁；新文章先进 `content/drafts/`，确认后才进 `content/posts/`。可读性优先于知识密度：每节先回答"为什么要想"，章标题写论点。单篇 ≤ 2 万字符（≈ 33 KB），3.1 万（≈ 50 KB）是顶格且须真机验证，再多拆系列。
+> 先问清楚（标题/分类/标签/范围）→ 找关联 → 按"引子 → 问题 → 分层递进 → 收口"写；正文不写 `#`，技术经得起查证，语言对读者负责。改旧文当作重写整篇，不塞补丁；新文章先进 `backend/data/content/drafts/`，确认后才进 `backend/data/content/posts/`。可读性优先于知识密度：每节先回答"为什么要想"，章标题写论点。单篇 ≤ 2 万字符（≈ 33 KB），3.1 万（≈ 50 KB）是顶格且须真机验证，再多拆系列。
 
 不要写给需求方看，写给未来那个深夜搜索这个问题的读者看。

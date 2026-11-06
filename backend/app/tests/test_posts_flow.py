@@ -18,7 +18,11 @@ class _TempSettings:
 
     @property
     def content_dir(self) -> Path:
-        return self.root / "content"
+        return self.root / "data" / "content"
+
+    @property
+    def trash_dir(self) -> Path:
+        return self.root / ".trash"
 
 
 @pytest.fixture()
@@ -27,8 +31,8 @@ def posts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> _TempSettings:
     monkeypatch.setattr(repository, "settings", settings)
     monkeypatch.setattr(service, "settings", settings)
     service._invalidate()
-    (tmp_path / "content" / "posts").mkdir(parents=True)
-    (tmp_path / "content" / "drafts").mkdir(parents=True)
+    (tmp_path / "data" / "content" / "posts").mkdir(parents=True)
+    (tmp_path / "data" / "content" / "drafts").mkdir(parents=True)
     return settings
 
 

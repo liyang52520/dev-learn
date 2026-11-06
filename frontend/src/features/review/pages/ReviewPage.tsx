@@ -18,8 +18,8 @@ export default function ReviewPage() {
           <p>{session.error}</p>
           {offline ? (
             <p className="review-hint">
-              在仓库根目录执行 <code>python anki-svc/import.py</code> 初始化复习数据，或执行
-              <code>python scripts/dev.py</code> 启动服务后刷新本页。
+              在仓库根目录执行 <code>python backend/anki-svc/import.py</code> 初始化复习数据，或执行
+              <code>python backend/scripts/dev.py</code> 启动服务后刷新本页。
             </p>
           ) : (
             <p className="review-hint">数据没有丢，重新取卡就能继续。</p>

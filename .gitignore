@@ -8,10 +8,12 @@ frontend/dist
 .idea/
 .trash
 .env*.local
+.wip-answers
 
 # Python
 .venv
 backend/.venv
+*.egg-info/
 __pycache__/
 *.py[cod]
 .ruff_cache/
@@ -19,6 +21,6 @@ __pycache__/
 .pytest_cache/
 
 # 本地 Anki 复习数据：虚拟环境与学习状态都不入库
-anki-svc/.venv
-anki-svc/.token
-anki-svc/data
+backend/anki-svc/.venv
+backend/anki-svc/.token
+backend/anki-svc/data

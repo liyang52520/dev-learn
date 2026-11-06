@@ -19,7 +19,7 @@ def _public_file(src: str) -> Path | None:
     clean = unquote(src.split("?", 1)[0].split("#", 1)[0])
     parts = [part for part in clean.split("/") if part]
     try:
-        return safe_join(settings.public_dir, *parts)
+        return safe_join(settings.study_dir, *parts[1:])
     except ValueError:
         return None
 

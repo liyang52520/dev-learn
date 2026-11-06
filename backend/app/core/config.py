@@ -35,16 +35,20 @@ class Settings:
     login_lock_seconds: int = field(default_factory=lambda: _env_int("LOGIN_LOCK_SECONDS", 120))
 
     @property
+    def backend_dir(self) -> Path:
+        return self.root / "backend"
+
+    @property
     def content_dir(self) -> Path:
-        return self.root / "content"
+        return self.backend_dir / "data" / "content"
 
     @property
     def study_dir(self) -> Path:
-        return self.root / "data" / "study"
+        return self.backend_dir / "data" / "study"
 
     @property
     def public_dir(self) -> Path:
-        return self.root / "public"
+        return self.root / "frontend" / "public"
 
     @property
     def dist_dir(self) -> Path:
@@ -52,7 +56,11 @@ class Settings:
 
     @property
     def anki_dir(self) -> Path:
-        return self.root / "anki-svc" / "data"
+        return self.backend_dir / "anki-svc" / "data"
+
+    @property
+    def trash_dir(self) -> Path:
+        return self.backend_dir / ".trash"
 
 
 settings = Settings()

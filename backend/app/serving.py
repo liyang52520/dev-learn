@@ -45,13 +45,18 @@ def _mount_spa(app: FastAPI) -> None:
         return _spa_response(index_file)
 
 
+_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+
+
 def _study_file(path: str) -> Path | None:
     parts = [part for part in path.split("/") if part]
     if not parts:
         return None
     try:
-        target = safe_join(settings.public_dir / "study", *parts)
+        target = safe_join(settings.study_dir, *parts)
     except ValueError:
+        return None
+    if target.suffix.lower() not in _IMAGE_SUFFIXES:
         return None
     return target if target.is_file() else None
 

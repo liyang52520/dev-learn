@@ -10,7 +10,7 @@
 
 | 你要做的事 | 直接读 |
 | --- | --- |
-| 结构 / 命令 / 后台 / 代码约定；复习子系统 | 第一章（复习另见 `anki-svc/README.md`） |
+| 结构 / 命令 / 后台 / 代码约定；复习子系统 | 第一章（复习另见 `backend/anki-svc/README.md`） |
 | 写、改博客文章 | 先读 [`skills/blog-writing/SKILL.md`](skills/blog-writing/SKILL.md)，第二章只是索引 |
 | 维护题库、加专题 | 先读 [`skills/study-bank/SKILL.md`](skills/study-bank/SKILL.md)，第三章只是索引 |
 | 接手任务、交付自检 | 第四章 |
@@ -23,10 +23,10 @@
 
 `dev-learn` 是「YG's Blog」个人站与「Java 面试宝典」学习站的合并体，一套文件驱动的前后端分离站点：
 
-- **博客**：`content/posts/*.md` 写文章；首页、归档、标签、分类、文章页由 React 渲染。
-- **学习**：`data/study/*.json` 存专题与题目，配套 `public/study/` 下 8000 多张 PDF 原文截图。
+- **博客**：`backend/data/content/posts/*.md` 写文章；首页、归档、标签、分类、文章页由 React 渲染。
+- **学习**：`backend/data/study/*.json` 存专题与题目，配套 `backend/data/study/` 下 8000 多张 PDF 原文截图。
 - **后台**：`/admin` 自带本地 CMS，可新建、编辑、预览、发布文章并上传图片。
-- **复习**：可选的 Anki 调度，已并入后端进程，学习状态放在 `anki-svc/data/`。
+- **复习**：可选的 Anki 调度，已并入后端进程，学习状态放在 `backend/anki-svc/data/`。
 
 没有数据库、没有外部 CMS、没有 Node 服务端。**仓库里的文件就是数据库**：改 Markdown 就是发文章，改 JSON 就是改题库，`git` 就是版本管理与发布记录。
 
@@ -68,21 +68,29 @@
 dev-learn/
 ├── backend/
 │   ├── pyproject.toml
-│   └── app/
-│       ├── main.py                 # 只做装配
-│       ├── serving.py              # 静态资产与 SPA 回退
-│       ├── core/                   # config / paths / errors / security / logging / pagination
-│       ├── rendering/              # markdown / plugins / toc / highlight / answers / images
-│       ├── features/
-│       │   ├── posts/              # 文章列表、详情、后台 CRUD、frontmatter
-│       │   ├── blog/               # archive / tags / categories
-│       │   ├── study/              # 专题、题目、导航、证据
-│       │   ├── search/             # 文章 + 题目混合检索
-│       │   ├── auth/               # 登录、登出、登录态
-│       │   ├── media/              # 图片上传
-│       │   └── review/             # 复习调度、快照、统计
-│       └── tests/                  # 跨模块测试
+│   ├── app/
+│   │   ├── main.py                 # 只做装配
+│   │   ├── serving.py              # 静态资产与 SPA 回退
+│   │   ├── core/                   # config / paths / errors / security / logging / pagination
+│   │   ├── rendering/              # markdown / plugins / toc / highlight / answers / images
+│   │   ├── features/
+│   │   │   ├── posts/              # 文章列表、详情、后台 CRUD、frontmatter
+│   │   │   ├── blog/               # archive / tags / categories
+│   │   │   ├── study/              # 专题、题目、导航、证据
+│   │   │   ├── search/             # 文章 + 题目混合检索
+│   │   │   ├── auth/               # 登录、登出、登录态
+│   │   │   ├── media/              # 图片上传
+│   │   │   └── review/             # 复习调度、快照、统计
+│   │   └── tests/                  # 跨模块测试
+│   ├── data/
+│   │   ├── content/posts|drafts/   # 已发布文章 / 草稿
+│   │   └── study/                  # index.json + 专题 JSON + PDF 截图
+│   ├── scripts/
+│   │   ├── dev.py                  # 一条命令起前后端
+│   │   └── check_structure.py      # 结构规则检查
+│   └── anki-svc/                   # import.py + 学习数据（见其 README）
 ├── frontend/
+│   ├── public/images/              # 头像、上传图、站点图标
 │   ├── src/
 │   │   ├── app/                    # App.tsx 路由表、providers、layout、404
 │   │   ├── features/               # posts / blog / study / search / review / admin
@@ -90,15 +98,10 @@ dev-learn/
 │   │   └── types/                  # api.d.ts（OpenAPI 生成）、models.ts（别名）
 │   ├── vite.config.ts
 │   └── package.json
-├── content/posts|drafts/           # 已发布文章 / 草稿
-├── data/study/                     # index.json + 专题 JSON
-├── public/images|study/            # 头像、上传图、PDF 截图
-├── scripts/
-│   ├── dev.py                      # 一条命令起前后端
-│   └── extract-study.cjs           # 题库抽取（Node 脚本）
-├── skills/                         # blog-writing / study-bank 细则
-├── anki-svc/                       # import.py + 学习数据（见其 README）
-├── docs/                           # 重构计划、验收截图
+├── skills/
+│   ├── blog-writing/               # 博客写作细则
+│   └── study-bank/                 # 题库细则 + scripts/{extract-study.cjs, enhance-answers/}
+├── .gitignore
 └── AGENTS.md
 ```
 
@@ -133,11 +136,11 @@ dev-learn/
 
 ### 1.5 数据流
 
-**博客**：`content/posts/*.md` → `features/posts/repository.py`（frontmatter 解析、目录缓存）→ `features/posts/service.py`（排序、分页、上一篇/下一篇）→ `rendering/markdown.py`（Markdown → HTML + TOC）→ JSON → 前端 `HtmlContent`（KaTeX 渲染 + 代码复制事件委托）。
+**博客**：`backend/data/content/posts/*.md` → `features/posts/repository.py`（frontmatter 解析、目录缓存）→ `features/posts/service.py`（排序、分页、上一篇/下一篇）→ `rendering/markdown.py`（Markdown → HTML + TOC）→ JSON → 前端 `HtmlContent`（KaTeX 渲染 + 代码复制事件委托）。
 
-**题库**：`data/study/index.json` → 专题列表；`data/study/<id>.json` → 题目与答案 HTML；`rendering/answers.py` 把答案里的 `<pre class='code'>` 高亮成 `.code-block`（按 sha1 缓存）；`rendering/images.py` 读文件头注入 `width/height`。
+**题库**：`backend/data/study/index.json` → 专题列表；`backend/data/study/<id>.json` → 题目与答案 HTML；`rendering/answers.py` 把答案里的 `<pre class='code'>` 高亮成 `.code-block`（按 sha1 缓存）；`rendering/images.py` 读文件头注入 `width/height`。
 
-**后台**：`/admin` → `/api/admin/*` → `features/posts/repository.py` 原子写（临时文件 + `os.replace`）；发布/撤回 = 在 `content/posts` 与 `content/drafts` 间移动；删除 = 移入 `.trash/<type>/<时间戳>-<slug>.md`；上传 = 落 `public/images/uploads/<年>/<月>/`。
+**后台**：`/admin` → `/api/admin/*` → `features/posts/repository.py` 原子写（临时文件 + `os.replace`）；发布/撤回 = 在 `backend/data/content/posts` 与 `backend/data/content/drafts` 间移动；删除 = 移入 `backend/.trash/<type>/<时间戳>-<slug>.md`；上传 = 落 `frontend/public/images/uploads/<年>/<月>/`。
 
 ### 1.6 本地运行与验证
 
@@ -148,7 +151,7 @@ cd backend && python -m venv .venv
 cd ../frontend && npm install
 
 # 开发（两个进程一起起）
-python scripts/dev.py                   # uvicorn :8000 + vite :5173
+python backend/scripts/dev.py            # uvicorn :8000 + vite :5173
 
 # 只跑其中一边
 cd backend && .venv/Scripts/python -m uvicorn app.main:app --reload --port 8000
@@ -168,7 +171,7 @@ cd backend && .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --po
 
 ```bash
 # 结构规则（行数 / 分层 / 禁用命名 / 前端直连 fetch）
-python scripts/check_structure.py
+python backend/scripts/check_structure.py
 
 # backend
 .venv/Scripts/python -m ruff check app
@@ -185,9 +188,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 ### 1.7 内容管理后台
 
 1. `/admin/login` 校验密码后写入 httpOnly cookie（7 天），服务端用签名 cookie 保存登录态。
-2. `/admin` 支持「全部 / 已发布 / 草稿」筛选与关键词过滤；「新建文章」默认建在 `content/drafts`，文件名由标题 slug 化。
+2. `/admin` 支持「全部 / 已发布 / 草稿」筛选与关键词过滤；「新建文章」默认建在 `backend/data/content/drafts`，文件名由标题 slug 化。
 3. 编辑器字段：`title`、`date`、`tags`（逗号分隔）、`categories`（逗号分隔）、`description`、`cover`；正文用 CodeMirror，`⌘/Ctrl+S` 保存，右侧实时预览。
-4. 「整页预览」复用同一渲染管线；「发布/撤回」只移动文件；「删除」移到 `.trash/`。
+4. 「整页预览」复用同一渲染管线；「发布/撤回」只移动文件；「删除」移到 `backend/.trash/`。
 5. 上传仅支持 png/jpeg/webp/gif、≤ 20 MB，服务端会校验真实图片头，返回 `/images/uploads/YYYY/MM/…`。
 
 后台只编辑已知字段；手写在 front matter 里的额外字段会被保留，但新增字段的完整支持需同时改
@@ -230,9 +233,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 ### 1.9 不要做的事
 
 - ❌ 重新引入 Next.js / Hexo / 任何 Node 服务端渲染。
-- ❌ 手工编辑 `public/study/**` 截图；题库变更改 `data/study`，截图由抽取流程生成。
+- ❌ 手工编辑 `backend/data/study/**` 截图；题库变更改 `backend/data/study` 的 JSON，截图由抽取流程生成。
 - ❌ 把 PDF 原文搬进仓库。
-- ❌ 提交 `node_modules/`、`frontend/dist/`、`backend/.venv/`、`.trash/`、各类缓存、`anki-svc/data/`。
+- ❌ 提交 `node_modules/`、`frontend/dist/`、`backend/.venv/`、`backend/.trash/`、各类缓存、`backend/anki-svc/data/`。
 - ❌ 手动拼 front matter 写文件；统一走序列化函数 / 后台 API。
 - ❌ 在前端组件里读写文件或拼接后端路径。
 - ❌ 为「以后可能用到」预留抽象；三个相似行好过一个提前的抽象。
@@ -243,8 +246,8 @@ npm run typecheck && npm run lint && npm run test && npm run build
 
 | 部分 | 位置 |
 | --- | --- |
-| 导入脚本 | `anki-svc/import.py` |
-| 学习状态 | `anki-svc/data/collection.anki2`（独立仓库 dev-anki，已 gitignore） |
+| 导入脚本 | `backend/anki-svc/import.py` |
+| 学习状态 | `backend/anki-svc/data/collection.anki2`（独立仓库 dev-anki，已 gitignore） |
 | 调度 / 快照 / 统计 | `backend/app/features/review/` |
 | 复习页 | `frontend/src/features/review/` |
 | 后台设置 | `/admin/study` |
@@ -252,7 +255,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 约定：
 
 1. 内容归站点、状态归 Anki：复习页从 `/api/study` 渲染题面与答案，Anki 只负责「下一张卡 / 四个按钮文案 / 复习日志」。
-2. `anki-svc/data` 永不入库；服务每 10 分钟快照（`.colpkg`，保留 30 份）、15 分钟在有改动时自动 commit+push 到 dev-anki。
+2. `backend/anki-svc/data` 永不入库；服务每 10 分钟快照（`.colpkg`，保留 30 份）、15 分钟在有改动时自动 commit+push 到 dev-anki。
 3. `/api/review/answer` 直接返回下一张卡；浏览器只回 `cardId + rating`。
 4. 写操作校验 `Origin` 同源；`/api/admin/study/*` 还需登录态。
 5. 改这块必须验：后端检查全绿，并实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」。
@@ -272,7 +275,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 5. **只写给读者**：不出现"根据你的要求…""补充了 XX"这类面向需求方的元叙述。
 6. **改旧文当重写整篇**：结构反映当前全部内容，不留"更新于…"等修订痕迹。
 7. **篇幅 ≤ 2 万非空白字符（≈ 33 KB）**，再多拆系列。
-8. **新文章只写 `content/drafts/`**；发布 = 移入 `content/posts/`，未经许可不发布、不 `git commit` / `git push`。
+8. **新文章只写 `backend/data/content/drafts/`**；发布 = 移入 `backend/data/content/posts/`，未经许可不发布、不 `git commit` / `git push`。
 
 ---
 
@@ -282,11 +285,11 @@ npm run typecheck && npm run lint && npm run test && npm run build
 
 高频红线：
 
-- 源在上游 PDF + `questions.p*.json`；`data/study/*.json` 是派生产物，整题增删走上游重抽，不要当源改。
-- `node scripts/extract-study.cjs` 会整体覆盖 `data/study`，重抽后必须重跑 `scripts/enhance-answers/` 增强流水线。
+- 源在上游 PDF + `questions.p*.json`；`backend/data/study/*.json` 是派生产物，整题增删走上游重抽，不要当源改。
+- `node skills/study-bank/scripts/extract-study.cjs` 会整体覆盖 `backend/data/study`，重抽后必须重跑 `skills/study-bank/scripts/enhance-answers/` 增强流水线。
 - 题干/答案逐字照录，不改写、不摘要替代、不删段落、不合并多题；格式只能改空白与块结构。
-- 截图即证据：`public/study/**` 不手改、不 P 图、不裁红框；每题至少一组 evidence。
-- 改完必须 `node scripts/enhance-answers/verify.cjs` 输出 `OK`，再做页面/视觉验收。
+- 截图即证据：`backend/data/study/**` 不手改、不 P 图、不裁红框；每题至少一组 evidence。
+- 改完必须 `node skills/study-bank/scripts/enhance-answers/verify.cjs` 输出 `OK`，再做页面/视觉验收。
 
 ---
 
@@ -303,7 +306,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
    | 改页面、接口、样式、后台 | 站点代码 | 第一章（1.3–1.8） |
    | 换框架、加依赖、改构建 | 基础设施 | 第一章，且先与用户确认 |
 
-2. 看清现场：`git status`；文章数量用 `ls content/posts content/drafts`；题库数量读 `data/study/index.json`，不要凭记忆。改代码前先读要改的文件。
+2. 看清现场：`git status`；文章数量用 `ls backend/data/content/posts backend/data/content/drafts`；题库数量读 `backend/data/study/index.json`，不要凭记忆。改代码前先读要改的文件。
 3. 需求含糊就问，一次问清：新分类、新标签、新专题、是否发布、是否加 front matter 字段。
 4. 不顺手重构：只改任务相关文件；无关问题记下来告诉用户。
 
@@ -344,9 +347,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 | 查标签 / 分类该用哪个 | `skills/blog-writing` 2.5 |
 | 加一道题 / 改一道题的答案 | `skills/study-bank` 3.5 |
 | 从一份新 PDF 加一个专题 | `skills/study-bank` 3.8 |
-| 搞清楚 `data/study/*.json` 的字段 | `skills/study-bank` 3.4 |
+| 搞清楚 `backend/data/study/*.json` 的字段 | `skills/study-bank` 3.4 |
 | 重新抽取题库 / 同步上游 | `skills/study-bank` 3.3 |
-| 改复习页 / 学习设置 / 调度 | 1.10、`anki-svc/README.md` |
+| 改复习页 / 学习设置 / 调度 | 1.10、`backend/anki-svc/README.md` |
 | 新增页面 / 组件 / 接口、改主题与响应式 | 1.3、1.8、4.2 |
 | 排查「接口 500 / 图片 404 / 内容不更新」 | `skills/blog-writing` 2.11、`skills/study-bank` 3.9 |
 
@@ -358,9 +361,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 
 ## 五、一句话总结
 
-> **项目**：文件即数据库——`content/` 是文章，`data/study/` 是题库，`public/` 是资产；FastAPI 只出 JSON，React 负责页面。
+> **项目**：文件即数据库——`backend/data/content/` 是文章，`backend/data/study/` 是题库与截图，`frontend/public/images/` 是图片资产；FastAPI 只出 JSON，React 负责页面。
 >
-> **博客**：先问清楚，再找关联，按「引子 → 问题 → 分层递进 → 收口」写；正文不写 `#` 一级标题，技术经得起查证，语言写给读者；新文章先进 `content/drafts/`。
+> **博客**：先问清楚，再找关联，按「引子 → 问题 → 分层递进 → 收口」写；正文不写 `#` 一级标题，技术经得起查证，语言写给读者；新文章先进 `backend/data/content/drafts/`。
 >
 > **题库**：题干、答案、代码、截图逐字照录、以图为证；本仓库 JSON 是派生产物；改数据必须过自检、页面验收与独立审计。
 >

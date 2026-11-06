@@ -84,7 +84,7 @@ def delete(post_type: PostType, slug: str) -> bool:
     file = file_of(post_type, slug)
     if not file.exists():
         return False
-    trash = settings.root / ".trash" / post_type
+    trash = settings.trash_dir / post_type
     trash.mkdir(parents=True, exist_ok=True)
     target = trash / f"{time.time_ns()}-{slug}.md"
     with _write_lock:

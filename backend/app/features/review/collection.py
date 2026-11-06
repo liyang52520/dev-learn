@@ -1,6 +1,6 @@
 """Anki collection 生命周期：延迟打开、快照、git 同步与后台维护。
 
-复习状态不属于站点内容，存放在独立仓库 `anki-svc/data/`（dev-anki）。
+复习状态不属于站点内容，存放在独立仓库 `backend/anki-svc/data/`（dev-anki）。
 本模块只管「库怎么开、怎么备份」，调度细节在 schedule.py。
 """
 
@@ -55,7 +55,7 @@ def instance() -> Collection:
     path = collection_path()
     if not path.is_file():
         raise AppError(
-            "复习数据尚未初始化：请先运行 python anki-svc/import.py",
+            "复习数据尚未初始化：请先运行 python backend/anki-svc/import.py",
             code="review_unavailable",
             status=503,
         )
@@ -85,7 +85,7 @@ def deck() -> DeckId:
     did = col.decks.id_for_name(DECK_NAME)
     if did is None:
         raise AppError(
-            f"collection 里没有 deck：{DECK_NAME}，请先运行 anki-svc/import.py",
+            f"collection 里没有 deck：{DECK_NAME}，请先运行 backend/anki-svc/import.py",
             code="review_unavailable",
             status=503,
         )
@@ -165,7 +165,7 @@ def git_sync(message: str) -> tuple[bool, str]:
     # data 目录必须自己是仓库，否则 git 会一路向上找到主仓库，
     # 把 backend/、frontend/ 等站点代码一起 add 进去。
     if not (settings.anki_dir / ".git").exists():
-        return False, "anki-svc/data 未初始化为独立仓库，未执行 git 同步"
+        return False, "backend/anki-svc/data 未初始化为独立仓库，未执行 git 同步"
     try:
         col = _collection
         if col is not None:
