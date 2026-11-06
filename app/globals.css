@@ -1828,6 +1828,38 @@ html.dark .code-block pre code span {
   padding: 1px 4px;
 }
 
+/* 只在手机断点出现：桌面端整列导航本来就一直可见 */
+.study-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.study-nav-toggle-count {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.study-nav-toggle-chevron {
+  font-size: 14px;
+  color: var(--muted);
+  transition: transform 0.18s ease;
+}
+
+.study-nav-toggle-chevron.is-open {
+  transform: rotate(180deg);
+}
+
 .question-list {
   flex: 1;
   overflow-y: auto;
@@ -1934,6 +1966,20 @@ html.dark .code-block pre code span {
 }
 
 .study-crumb a:hover {
+  color: var(--accent);
+}
+
+.study-crumb-review {
+  margin-left: auto;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.study-crumb-review:hover {
+  border-color: var(--line-2);
   color: var(--accent);
 }
 
@@ -2504,29 +2550,10 @@ html.dark .code-block pre code span {
 }
 
 @media (max-width: 1024px) {
+  /* 1024 下仍保留三栏：把证据栏挤到正文下方会让右侧一片空白，
+     看起来像页面少了一块。窄一点也要并排，直到 940 才降成两栏。 */
   .study-page {
-    grid-template-columns: 248px minmax(0, 1fr);
-  }
-
-  .study-evidence {
-    grid-column: 1 / -1;
-    position: static;
-    height: auto;
-    border-left: 0;
-    border-top: 1px solid var(--line);
-    padding: 28px max(24px, 6vw) 60px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 18px;
-  }
-
-  .study-evidence > .evidence-head,
-  .study-evidence > .evidence-hint {
-    grid-column: 1 / -1;
-  }
-
-  .evidence-group {
-    margin-top: 0;
+    grid-template-columns: 232px minmax(0, 1fr) 296px;
   }
 
   .article-shell {
@@ -2549,6 +2576,33 @@ html.dark .code-block pre code span {
   }
 }
 
+@media (max-width: 940px) {
+  .study-page {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .study-evidence {
+    grid-column: 1 / -1;
+    position: static;
+    height: auto;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 28px max(24px, 6vw) 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+  }
+
+  .study-evidence > .evidence-head,
+  .study-evidence > .evidence-hint {
+    grid-column: 1 / -1;
+  }
+
+  .evidence-group {
+    margin-top: 0;
+  }
+}
+
 @media (max-width: 860px) {
   .study-page {
     grid-template-columns: 1fr;
@@ -2561,12 +2615,39 @@ html.dark .code-block pre code span {
     border-bottom: 1px solid var(--line);
   }
 
+  /* 手机上整列题目会把首屏占满：默认收起，只留一条「题目列表」按钮 */
+  .study-sidebar-title,
+  .study-sidebar-foot {
+    display: none;
+  }
+
+  .study-sidebar-head {
+    padding: 12px 16px;
+  }
+
+  .topic-select-wrap {
+    margin-top: 8px;
+  }
+
+  .study-search {
+    margin-top: 8px;
+  }
+
+  .study-nav-toggle {
+    display: flex;
+  }
+
   .question-list {
-    max-height: 240px;
+    display: none;
+    max-height: 46vh;
+  }
+
+  .study-sidebar.is-open .question-list {
+    display: block;
   }
 
   .study-main {
-    padding-top: 28px;
+    padding-top: 18px;
   }
 
   .study-grid,
@@ -3312,6 +3393,20 @@ html.dark .skeleton {
   text-transform: none;
 }
 
+.review-origin {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  text-transform: none;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.review-origin:hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+}
+
 .review-question {
   font-size: clamp(21px, 2.6vw, 27px);
   line-height: 1.45;
@@ -3337,16 +3432,24 @@ html.dark .skeleton {
   border: 1px dashed var(--line-2);
   border-radius: 12px;
   background: var(--bg-elev);
-  color: var(--muted);
+  /* 原来的 --muted 在浅灰底上只有 4.26:1，正文级小字低于 AA；
+     用 --ink-2 拉到 10:1 以上，主操作按钮不该是最淡的文字。 */
+  color: var(--ink-2);
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
-.review-reveal:hover {
+.review-reveal:hover:not(:disabled) {
   color: var(--ink);
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+.review-reveal:disabled {
+  cursor: progress;
+  opacity: 0.7;
 }
 
 .review-points {
@@ -3435,20 +3538,32 @@ html.dark .skeleton {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   background: none;
   color: var(--faint);
   font-size: 12.5px;
   cursor: pointer;
-  padding: 4px 2px;
+  padding: 4px 8px;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
-.review-undo:hover:not(:disabled) {
+/* 可用 / 禁用必须一眼能看出来：禁用态灰掉，可用态给边框和底色 */
+.review-undo:not(:disabled) {
   color: var(--ink-2);
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.review-undo:not(:disabled):hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+  background: var(--accent-soft);
 }
 
 .review-undo:disabled {
-  opacity: 0.5;
+  color: var(--faint);
+  opacity: 0.55;
   cursor: default;
 }
 
@@ -3537,34 +3652,102 @@ html.dark .skeleton {
 /* —— 热力图 —— */
 
 .heatmap-wrap {
-  margin: 6px auto 24px;
+  --hm-gap: 3px;
+  --hm-label: 18px;
+  margin: 6px auto 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-  width: fit-content;
+  gap: 6px;
+  align-items: stretch;
+  width: 100%;
+  max-width: 430px;
+  text-align: left;
 }
 
+.heatmap-months {
+  display: grid;
+  grid-template-columns: repeat(26, minmax(0, 1fr));
+  gap: var(--hm-gap);
+  padding-left: calc(var(--hm-label) + 6px);
+  height: 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1;
+  color: var(--faint);
+}
+
+.heatmap-months span {
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.heatmap-body {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.heatmap-days {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: var(--hm-gap);
+  width: var(--hm-label);
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--faint);
+}
+
+.heatmap-days span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  line-height: 1;
+}
+
+/* 26 列等分容器宽度：手机上自动缩到 8px 左右，
+   不再用固定 11px 把 412px 的表格顶出视口。 */
 .heatmap {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(7, 11px);
-  grid-auto-columns: 11px;
-  gap: 3px;
+  grid-template-columns: repeat(26, minmax(0, 1fr));
+  grid-template-rows: repeat(7, auto);
+  gap: var(--hm-gap);
+  width: 100%;
+  min-width: 0;
 }
 
 .heatmap-cell {
-  width: 11px;
-  height: 11px;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
   border-radius: 2px;
   background: var(--hm-0);
+}
+
+button.heatmap-cell {
+  cursor: pointer;
+}
+
+.heatmap-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.heatmap-cell.is-selected {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
 }
 
 .heatmap-l1 { background: var(--hm-1); }
 .heatmap-l2 { background: var(--hm-2); }
 .heatmap-l3 { background: var(--hm-3); }
 .heatmap-l4 { background: var(--hm-4); }
-.heatmap-lfuture { background: transparent; }
+.heatmap-lfuture,
+.heatmap-cell.is-future { background: transparent; cursor: default; }
 
 .heatmap-legend {
   display: flex;
@@ -3572,11 +3755,27 @@ html.dark .skeleton {
   gap: 4px;
   color: var(--faint);
   font-size: 11px;
+  padding-left: calc(var(--hm-label) + 6px);
 }
 
 .heatmap-legend .heatmap-cell {
   width: 9px;
   height: 9px;
+  aspect-ratio: auto;
+  flex: none;
+}
+
+.heatmap-summary {
+  margin-left: auto;
+}
+
+.heatmap-detail {
+  margin: 0;
+  padding-left: calc(var(--hm-label) + 6px);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--faint);
+  min-height: 1.4em;
 }
 
 /* —— 学习首页入口 —— */
@@ -3610,6 +3809,31 @@ html.dark .skeleton {
 .review-launcher-text span {
   color: var(--muted);
   font-size: 13px;
+}
+
+/* 日额度：每条进度条带自己的标签，0 值时也不会像两条占位骨架 */
+.review-launcher-text .review-launcher-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 300px;
+  max-width: 100%;
+  margin-top: 4px;
+}
+
+.review-launcher-text .review-launcher-meter-label {
+  flex: none;
+  min-width: 76px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.review-launcher-text .review-launcher-meter .review-launcher-track {
+  flex: 1;
+  max-width: none;
+  margin-top: 0;
 }
 
 .review-launcher-btn {
@@ -4024,6 +4248,88 @@ html.dark .skeleton {
   transition: width 0.4s ease;
 }
 
+/* 总进度：已学 / 全部卡片，和上面的日额度分开，避免把「今天」当「全部」 */
+.review-launcher-overall {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 10px;
+}
+
+.review-launcher-text .review-launcher-overall-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.review-launcher-overall-head strong {
+  font-size: 13.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.review-launcher-text .review-launcher-overall-pct {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.review-launcher-track.is-overall {
+  max-width: none;
+  width: calc(100% - 84px);
+  height: 5px;
+  margin-top: 2px;
+  /* 和上面两条日额度进度条左对齐：标签宽 76 + 间距 8 */
+  margin-left: 84px;
+}
+
+.review-launcher-fill.is-overall {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.review-launcher-text .review-launcher-overall-note {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+/* 最近答错：给一个回看入口，而不是只让用户记住「今天错过了什么」 */
+.review-lapses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.review-launcher-text .review-lapses-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+
+.review-lapse-link {
+  max-width: 220px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.review-lapse-link:hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+}
+
 /* 双进度条：新卡 / 复习各一条，别让 200 张复习日看起来像没在学 */
 .review-progress {
   display: flex;
@@ -4228,29 +4534,23 @@ html.dark .skeleton {
   .review-page kbd {
     display: none;
   }
-}
 
-/* 鼠标设备才显示快捷键角标 */
-@media (hover: none) {
-  .rate-key {
+  .review-shortcuts {
     display: none;
   }
 }
 
-/* 热力图更清晰 */
-.heatmap {
-  grid-template-rows: repeat(7, 12px);
-  grid-auto-columns: 12px;
-  gap: 4px;
+/* 鼠标设备才显示快捷键角标 */
+@media (hover: none) {
+  .rate-key,
+  .review-shortcuts {
+    display: none;
+  }
 }
 
-.heatmap-cell {
-  width: 12px;
-  height: 12px;
-}
-
+/* 热力图保持等比缩放；不要再写死 12px —— 26 列 × 16px = 412px 会撑爆手机 */
 .heatmap-legend {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--muted);
 }
 

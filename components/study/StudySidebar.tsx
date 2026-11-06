@@ -63,6 +63,8 @@ export default function StudySidebar({ topic, topics, questions }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [query, setQuery] = useState('');
+  // 手机屏幕放不下整列题目：默认收起成一条「题目列表」按钮，把正文留在首屏。
+  const [navOpen, setNavOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const restoredRef = useRef(false);
@@ -176,6 +178,16 @@ export default function StudySidebar({ topic, topics, questions }: Props) {
     setQuery('');
   }, [pathname]);
 
+  // 切题后收起移动端列表，避免刚点完题又被整列导航挡住正文。
+  useEffect(() => {
+    setNavOpen(false);
+  }, [pathname]);
+
+  // 在手机上开始搜索时必须把列表露出来，否则输入了关键词却看不到结果。
+  useEffect(() => {
+    if (query.trim()) setNavOpen(true);
+  }, [query]);
+
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     if (!keyword) return questions;
@@ -256,7 +268,7 @@ export default function StudySidebar({ topic, topics, questions }: Props) {
   }
 
   return (
-    <aside className="study-sidebar">
+    <aside className={navOpen ? 'study-sidebar is-open' : 'study-sidebar'}>
       <div className="study-sidebar-head">
         <Link href="/study" className="study-back">
           ← 全部专题
@@ -295,9 +307,30 @@ export default function StudySidebar({ topic, topics, questions }: Props) {
           />
           <kbd>/</kbd>
         </div>
+        <button
+          type="button"
+          className="study-nav-toggle"
+          aria-expanded={navOpen}
+          aria-controls="study-question-list"
+          onClick={() => setNavOpen((open) => !open)}
+        >
+          <span>题目列表</span>
+          <span className="study-nav-toggle-count">
+            {activeIndex + 1} / {questions.length}
+          </span>
+          <span className={`study-nav-toggle-chevron${navOpen ? ' is-open' : ''}`} aria-hidden>
+            ⌄
+          </span>
+        </button>
       </div>
 
-      <div className="question-list" role="list" ref={attachList} onScroll={handleListScroll}>
+      <div
+        className="question-list"
+        id="study-question-list"
+        role="list"
+        ref={attachList}
+        onScroll={handleListScroll}
+      >
         {filtered.map((question) => {
           const href = questionHrefOf(question.id);
           const active = pathname === href;

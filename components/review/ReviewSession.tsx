@@ -8,6 +8,7 @@ import type {
   ApiResult,
   ReviewCard,
   ReviewCounts,
+  ReviewProgress,
   ReviewStats,
 } from './types';
 
@@ -28,12 +29,21 @@ interface StoredSession {
   reviewed: number;
   elapsedMs: number;
   topics: string[];
+  /** 本标签页的评分栈：刷新后撤销仍然只回退自己评过的那一次 */
+  stack?: RatedEntry[];
 }
 
 interface AnswerResponse {
   counts: ReviewCounts;
   due_total: number;
+  progress?: ReviewProgress;
   next: ReviewCard | null;
+}
+
+interface RatedEntry {
+  id: number;
+  /** 这一次评分是否让「本轮已评」+1（同一张卡重复出现时只有第一次算） */
+  counted: boolean;
 }
 
 class ApiError extends Error {
@@ -74,6 +84,16 @@ function readSession(): StoredSession | null {
   }
 }
 
+/** 复习卡 → 原文题目页。qid 形如「专题 id/题目 id」。 */
+function originHrefOf(card: ReviewCard): string | null {
+  const topicId = card.question?.topicId;
+  if (!topicId) return null;
+  const [, ...rest] = card.qid.split('/');
+  const questionId = rest.join('/');
+  if (!questionId) return null;
+  return `/study/${encodeURIComponent(topicId)}/${encodeURIComponent(questionId)}`;
+}
+
 export default function ReviewSession() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [card, setCard] = useState<ReviewCard | null>(null);
@@ -89,12 +109,14 @@ export default function ReviewSession() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [topics, setTopics] = useState<string[]>([]);
   const [stuck, setStuck] = useState(false);
+  const [revealing, setRevealing] = useState(false);
 
   const mounted = useRef(true);
   const elapsedRef = useRef(0);
   const segmentRef = useRef<number | null>(null);
   const undoQueued = useRef(false);
   const ratedIds = useRef<Set<number>>(new Set());
+  const ratedOrder = useRef<RatedEntry[]>([]);
   const lastStatsAt = useRef(0);
 
   // 4 秒还没卡出来，给一个可以自救的按钮
@@ -112,12 +134,25 @@ export default function ReviewSession() {
     if (!stored) return;
     setReviewed(stored.reviewed);
     setTopics(stored.topics || []);
+    const stack = stored.stack || [];
+    ratedOrder.current = stack;
+    ratedIds.current = new Set(stack.map((entry) => entry.id));
     elapsedRef.current = stored.elapsedMs || 0;
     setElapsedMs(stored.elapsedMs || 0);
   }, []);
 
   useEffect(() => {
-    if (reviewed <= 0) return;
+    // 只在进行中的轮次写入：结束时 finish() 已经清掉了存储，
+    // 若这里不判断 phase，setElapsedMs 会把刚删掉的记录又写回去。
+    if (phase !== 'question' && phase !== 'answer') return;
+    if (reviewed <= 0) {
+      try {
+        sessionStorage.removeItem(SESSION_KEY);
+      } catch {
+        /* 忽略 */
+      }
+      return;
+    }
     try {
       sessionStorage.setItem(
         SESSION_KEY,
@@ -126,12 +161,13 @@ export default function ReviewSession() {
           reviewed,
           elapsedMs,
           topics,
+          stack: ratedOrder.current,
         } satisfies StoredSession),
       );
     } catch {
       /* 隐私模式写不了，忽略 */
     }
-  }, [reviewed, elapsedMs, topics]);
+  }, [reviewed, elapsedMs, topics, phase, ratedThisTab]);
 
   useEffect(() => {
     if (!toast) return;
@@ -168,6 +204,12 @@ export default function ReviewSession() {
     }
   }, []);
 
+  /** 作答后服务端会带回轻量进度，直接合并进 stats，顶部数字不再等 4 秒节流 */
+  const applyProgress = useCallback((next?: ReviewProgress) => {
+    if (!next) return;
+    setStats((prev) => (prev ? { ...prev, ...next } : prev));
+  }, []);
+
   /** 把当前这段「停留时间」累加进本轮用时 */
   const flushSegment = useCallback(() => {
     if (segmentRef.current !== null) {
@@ -183,6 +225,7 @@ export default function ReviewSession() {
     setRatedThisTab(0);
     setTopics([]);
     ratedIds.current = new Set();
+    ratedOrder.current = [];
     elapsedRef.current = 0;
     setElapsedMs(0);
     segmentRef.current = null;
@@ -250,9 +293,30 @@ export default function ReviewSession() {
     };
   }, [loadNext, loadStats]);
 
-  const reveal = useCallback(() => {
-    setPhase((current) => (current === 'question' ? 'answer' : current));
-  }, []);
+  const reveal = useCallback(async () => {
+    if (phase !== 'question' || revealing || !card) return;
+    if (!card.question || card.question.answerHtml || card.question.hasAnswer === false) {
+      setPhase('answer');
+      return;
+    }
+    setRevealing(true);
+    try {
+      const data = await api<{ answerHtml: string }>(
+        `/api/review/card-answer?qid=${encodeURIComponent(card.qid)}`,
+      );
+      if (!mounted.current) return;
+      setCard((prev) => (prev && prev.question
+        ? { ...prev, question: { ...prev.question, answerHtml: data.answerHtml } }
+        : prev));
+      setPhase('answer');
+    } catch (err) {
+      if (mounted.current) {
+        setToast(err instanceof Error ? err.message : '原文加载失败，请重试');
+      }
+    } finally {
+      if (mounted.current) setRevealing(false);
+    }
+  }, [phase, revealing, card]);
 
   const rate = useCallback(
     async (rating: number) => {
@@ -267,16 +331,20 @@ export default function ReviewSession() {
         });
         if (!mounted.current) return;
         // 「本轮完成」按卡片去重：学习步骤里同一张卡会出现多次，但用户只学了 1 张。
-        if (!ratedIds.current.has(card.card_id)) {
+        // 同时记录每一次评分，撤销时才能准确回退计数。
+        const counted = !ratedIds.current.has(card.card_id);
+        if (counted) {
           ratedIds.current.add(card.card_id);
           setReviewed((n) => n + 1);
         }
+        ratedOrder.current.push({ id: card.card_id, counted });
         setRatedThisTab((n) => n + 1);
         const topic = card.question?.topic;
         if (topic) setTopics((prev) => (prev.includes(topic) ? prev : [...prev, topic]));
         flushSegment();
         setCounts(data.counts);
         if (typeof data.due_total === 'number') setDueTotal(data.due_total);
+        applyProgress(data.progress);
         if (!data.next) {
           finish();
         } else {
@@ -299,7 +367,7 @@ export default function ReviewSession() {
         if (mounted.current) setBusy(false);
       }
     },
-    [card, busy, finish, flushSegment, loadNext, loadStats],
+    [card, busy, finish, flushSegment, loadNext, loadStats, applyProgress],
   );
 
   const undo = useCallback(async () => {
@@ -310,11 +378,19 @@ export default function ReviewSession() {
     }
     setBusy(true);
     try {
-      await api('/api/review/undo', { method: 'POST' });
+      const data = await api<{ progress?: ReviewProgress }>('/api/review/undo', { method: 'POST' });
       if (!mounted.current) return;
-      setReviewed((n) => Math.max(0, n - 1));
-      setRatedThisTab((n) => Math.max(0, n - 1));
-      setToast('已撤销上一张');
+      // 撤销栈是全局的（可能来自另一个标签页），只回退「本标签页确实评过」的那一次。
+      const last = ratedOrder.current.pop();
+      if (last) {
+        if (last.counted) {
+          ratedIds.current.delete(last.id);
+          setReviewed((n) => Math.max(0, n - 1));
+        }
+        setRatedThisTab((n) => Math.max(0, n - 1));
+      }
+      applyProgress(data.progress);
+      setToast(last ? '已撤销上一张' : '已撤销最近一次评分（来自其他标签页）');
       await loadNext(true);
       void loadStats(true);
     } catch (err) {
@@ -324,7 +400,7 @@ export default function ReviewSession() {
     } finally {
       if (mounted.current) setBusy(false);
     }
-  }, [busy, loadNext, loadStats]);
+  }, [busy, loadNext, loadStats, applyProgress]);
 
   useEffect(() => {
     if (busy || !undoQueued.current) return;
@@ -365,7 +441,7 @@ export default function ReviewSession() {
         if (onInteractive) return; // 焦点在按钮/链接上时交给浏览器
         if (phase === 'question') {
           event.preventDefault();
-          reveal();
+          void reveal();
         }
         return;
       }
@@ -394,7 +470,14 @@ export default function ReviewSession() {
   const revDone = stats?.today_review ?? null;
   const newPct = newLimit > 0 && newDone !== null ? Math.min(100, Math.round((newDone / newLimit) * 100)) : 0;
   const revPct = revLimit > 0 && revDone !== null ? Math.min(100, Math.round((revDone / revLimit) * 100)) : 0;
-  const backlog = stats?.due_total ?? dueTotal;
+  // 以作答响应里的 due_total 为准：stats 可能有几秒滞后
+  const backlog = dueTotal;
+  const queueReview = counts.learning + counts.review;
+  const overflow = Math.max(0, backlog - queueReview);
+  const hitNewLimit = newLimit > 0 && newDone !== null && newDone >= newLimit && (stats?.new_remaining ?? 0) > 0;
+  // 复习额度打满时 Anki 会连新卡一起停发，这两种情况都是「额度用完」
+  const hitRevLimit = revLimit > 0 && revDone !== null && revDone >= revLimit && overflow > 0;
+  const outOfQuota = hitNewLimit || hitRevLimit;
 
   if (phase === 'error') {
     // 只有真的连不上才提示去启动服务；409/500 是服务内部的业务错误，别让用户去跑命令。
@@ -430,12 +513,9 @@ export default function ReviewSession() {
     const perCard = reviewed > 0 ? Math.max(1, Math.round(seconds / reviewed)) : 0;
     const nextDue = stats?.next_due_epoch ? formatNextDue(stats.next_due_epoch) : null;
     const finishedAll = remaining === 0;
-    const hitNewLimit = Boolean(
-      stats && stats.new_per_day > 0 && stats.today_new >= stats.new_per_day && stats.new_remaining > 0,
-    );
     const title = reviewed > 0
-      ? (finishedAll ? (hitNewLimit ? '今天的额度用完了' : '今天的复习完成了') : '这一轮结束了')
-      : (finishedAll ? '现在没有到期的卡' : '还没有开始');
+      ? (finishedAll ? (outOfQuota ? '今天的额度用完了' : '今天的复习完成了') : '这一轮结束了')
+      : (finishedAll ? (outOfQuota ? '今天的额度用完了' : '现在没有到期的卡') : '还没有开始');
 
     return (
       <div className="review-page">
@@ -516,7 +596,12 @@ export default function ReviewSession() {
             <Link href="/study" className="review-btn ghost">回到学习</Link>
           </div>
 
-          {hitNewLimit && (
+          {hitRevLimit && (
+            <p className="review-done-help">
+              今天复习额度已满，还有 {overflow} 张到期卡，明天继续（额度可在设置里调整）。
+            </p>
+          )}
+          {hitNewLimit && !hitRevLimit && (
             <p className="review-done-help">
               新卡额度打满不代表都学会了，剩下的 {stats?.new_remaining} 张明天继续。
             </p>
@@ -602,6 +687,11 @@ export default function ReviewSession() {
           <div className="review-meta">
             <span>{card.question?.topic || card.qid}</span>
             {card.question?.pages && <span>{card.question.pages}</span>}
+            {originHrefOf(card) && (
+              <Link className="review-origin" href={originHrefOf(card) as string} target="_blank" rel="noreferrer">
+                查看原文 ↗
+              </Link>
+            )}
             <span className="review-state">{STATE_LABEL[card.state] || card.state}</span>
           </div>
 
@@ -612,9 +702,14 @@ export default function ReviewSession() {
 
           {phase === 'question' ? (
             <>
-              <button type="button" className="review-reveal" onClick={reveal}>
-                显示答案
-                <kbd>空格</kbd>
+              <button
+                type="button"
+                className="review-reveal"
+                onClick={() => void reveal()}
+                disabled={revealing}
+              >
+                {revealing ? '正在载入原文…' : '显示答案'}
+                {!revealing && <kbd>空格</kbd>}
               </button>
               <div className="review-undo-row">
                 <button
@@ -622,6 +717,7 @@ export default function ReviewSession() {
                   className="review-undo"
                   onClick={() => void undo()}
                   disabled={!canUndo}
+                  title={canUndo ? '撤销最近一次评分' : '还没有可撤销的评分'}
                 >
                   撤销上一张 <kbd>U</kbd>
                 </button>

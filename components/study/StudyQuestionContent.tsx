@@ -26,6 +26,7 @@ export default function StudyQuestionContent({ topic, question, answerHtml }: Pr
           <Link href={topicHref(topic.id)}>{topic.label}</Link>
           <IconChevron size={13} />
           <span>{topic.no}</span>
+          <Link href="/review" className="study-crumb-review">复习模式 ↗</Link>
         </div>
         <div className="study-question-kicker">
           <span style={{ background: topic.accent }} />

@@ -50,6 +50,7 @@ KEEP_BACKUPS = 30
 SNAPSHOT_EVERY = 10 * 60      # 本地快照间隔（秒）
 GIT_SYNC_EVERY = 15 * 60      # git 提交推送间隔（秒）
 MAX_STATES = 64               # 缓存多少张卡的 states，供 answer 使用
+PENDING_TTL = 30 * 60          # 取卡后 30 分钟没作答，状态作废，避免内存里堆死数据
 
 ALLOWED_NETS = [
     ipaddress.ip_network("127.0.0.0/8"),
@@ -186,9 +187,33 @@ def clean_label(text: str) -> str:
     return text.replace("\u2068", "").replace("\u2069", "")
 
 
+def _deck_ids() -> list[int]:
+    """当前 deck 及其子 deck 的 id：所有统计都必须落在同一范围里。"""
+    return [int(x) for x in COL.decks.deck_and_child_ids(deck_id())]
+
+
+def _placeholders(ids: list[int]) -> str:
+    return ",".join("?" * len(ids))
+
+
+def _today() -> int:
+    """Anki 自己的「今天」序号（已处理凌晨 4 点换日与新建时间偏移）。"""
+    return int(COL.sched.today)
+
+
+def _day_start_ms() -> int:
+    """今天 4 点（换日点）的毫秒时间戳，用于按 revlog.id 截断。"""
+    return int(COL.sched.day_cutoff - 86400) * 1000
+
+
 def queue_view(limit: int = 1) -> dict:
     with LOCK:
         deck_id()
+        now = time.time()
+        # 旧卡的状态缓存过期就丢掉，否则长时间挂着会一直涨。
+        for key, (_, at) in list(PENDING.items()):
+            if now - at > PENDING_TTL:
+                PENDING.pop(key, None)
         queued = COL.sched.get_queued_cards(fetch_limit=limit)
         picked = queued.cards
         items = []
@@ -230,6 +255,9 @@ def answer(card_id: int, rating: int) -> dict:
         if not cached:
             raise LookupError("这张卡的调度状态已过期，请重新取卡")
         states, shown_at = cached
+        if time.time() - shown_at > PENDING_TTL:
+            PENDING.pop(card_id, None)
+            raise LookupError("这张卡的调度状态已过期，请重新取卡")
         new_state = {
             1: states.again, 2: states.hard, 3: states.good, 4: states.easy
         }[rating]
@@ -252,6 +280,7 @@ def answer(card_id: int, rating: int) -> dict:
         return {
             "counts": nxt["counts"],
             "due_total": nxt["due_total"],
+            "progress": progress(),
             "next": nxt["cards"][0] if nxt["cards"] else None,
         }
 
@@ -264,7 +293,7 @@ def undo() -> dict:
         PENDING.clear()
         DIRTY["value"] = True
         PENDING_SNAPSHOT["value"] = True
-        return {"counts": counts(), "due_total": due_total()}
+        return {"counts": counts(), "due_total": due_total(), "progress": progress()}
 
 
 # Anki 默认凌晨 4 点换日。SQL 里先把时间戳减 4 小时再取本地日期，
@@ -272,15 +301,70 @@ def undo() -> dict:
 DAY_SHIFT = "-4 hours"
 
 
-def day_rows(days: int = 365) -> list[dict]:
-    with LOCK:
-        cutoff_ms = int((time.time() - days * 86400) * 1000)
-        rows = COL.db.all(
-            "select date(id / 1000, 'unixepoch', 'localtime', ?) as d, "
-            "       count(distinct cid) "
-            "from revlog where id >= ? group by d order by d",
-            DAY_SHIFT, cutoff_ms)
-        return [{"date": str(d), "count": int(c)} for d, c in rows]
+HISTORY_CACHE: dict = {
+    "at": 0.0, "deck": None, "days": [], "total_reviews": 0, "total_answers": 0, "streak": 0,
+}
+HISTORY_TTL = 30  # 热力图/累计数 30 秒内复用，不必每张卡都扫一遍 revlog
+
+
+def day_rows(days: int = 183) -> list[dict]:
+    """按本地日期（凌晨 4 点换日）汇总当前 deck 的复习天数。
+
+    只取最近 days 天，并且按 revlog.id 截断——revlog.id 是主键，
+    这样不会为了热力图把十万条历史全部扫一遍。
+    """
+    ids = _deck_ids()
+    cutoff_ms = int((time.time() - days * 86400) * 1000)
+    rows = COL.db.all(
+        "select date(r.id / 1000, 'unixepoch', 'localtime', ?) as d, "
+        "       count(distinct r.cid) "
+        "from revlog r join cards c on c.id = r.cid "
+        f"where r.id >= ? and c.did in ({_placeholders(ids)}) "
+        "group by d order by d",
+        DAY_SHIFT, cutoff_ms, *ids)
+    return [{"date": str(d), "count": int(c)} for d, c in rows]
+
+
+def _history() -> tuple[list[dict], int, int, int]:
+    ids = _deck_ids()
+    key = tuple(ids)
+    now = time.time()
+    if HISTORY_CACHE["deck"] == key and now - HISTORY_CACHE["at"] < HISTORY_TTL:
+        return (
+            HISTORY_CACHE["days"],
+            HISTORY_CACHE["total_reviews"],
+            HISTORY_CACHE["total_answers"],
+            HISTORY_CACHE["streak"],
+        )
+    rows = day_rows(183)
+    ph = _placeholders(ids)
+    total_reviews = int(COL.db.scalar(
+        "select count(*) from revlog r join cards c on c.id = r.cid "
+        f"where r.type in (1, 2) and c.did in ({ph})", *ids) or 0)
+    total_answers = int(COL.db.scalar(
+        "select count(*) from revlog r join cards c on c.id = r.cid "
+        f"where c.did in ({ph})", *ids) or 0)
+    # 连续天数要算全量历史，不能只看热力图的 26 周：
+    # 否则练了 300 天的人会被截断成 183 天。
+    active_rows = COL.db.all(
+        "select distinct date(r.id / 1000, 'unixepoch', 'localtime', ?) as d "
+        "from revlog r join cards c on c.id = r.cid "
+        f"where c.did in ({ph})",
+        DAY_SHIFT, *ids)
+    active = {str(d) for (d,) in active_rows}
+    cursor = (datetime.now() - timedelta(hours=4)).date()
+    if cursor.isoformat() not in active:
+        cursor -= timedelta(days=1)  # 今天还没开始不算断
+    streak = 0
+    while cursor.isoformat() in active:
+        streak += 1
+        cursor -= timedelta(days=1)
+    HISTORY_CACHE.update({
+        "at": now, "deck": key, "days": rows,
+        "total_reviews": total_reviews, "total_answers": total_answers,
+        "streak": streak,
+    })
+    return rows, total_reviews, total_answers, streak
 
 
 def can_undo() -> bool:
@@ -294,34 +378,42 @@ def can_undo() -> bool:
 def due_total() -> int:
     """当前真正到期、且没被日限额截断的卡片数（含学习中）。"""
     with LOCK:
-        crt = COL.db.scalar("select crt from col") or 0
-        now = int(time.time())
-        today_day = (now - crt + 4 * 3600) // 86400
+        ids = _deck_ids()
         row = COL.db.scalar(
-            "select count(*) from cards where queue >= 0 and ("
+            "select count(*) from cards where queue >= 0 and "
+            f"did in ({_placeholders(ids)}) and ("
             "(type in (1, 3) and due <= ?) or (type = 2 and due <= ?))",
-            now, today_day)
+            *ids, int(time.time()), _today())
     return int(row or 0)
 
 
 def today_card_counts() -> tuple[int, int, int, int]:
     """今日学过 / 其中新学 / 复习 / 重学。
 
-    新卡和复习直接取 Anki 的当日记账（counts_for_deck_today）——
-    也就是决定「今天还能发几张」的那份计数，页面上的额度和实际可学数量
-    才不会打架（连续、热力图等历史统计仍从 revlog 汇总）。
-    重学 Anki 没有对应记账，只能从 revlog 按 cid 去重统计。
+    直接按 revlog 的答题类型汇总，并按当前 deck 过滤：
+      * type=0 是新卡的学习步骤（同一张卡去重后就是今天新学的卡数）；
+      * type=1 是复习卡的正常作答；今天刚学的新卡当天转复习时不算进「复习」，
+        否则「今日学过」会把同一张卡算两遍；
+      * type=2 是答错后的重学，Anki 的当日记账里没有这一项。
+    所有查询都用 id >= 换日时间戳截断，走主键索引，不再全表扫 revlog。
     """
     with LOCK:
-        ledger = COL._backend.counts_for_deck_today(deck_id())
-        new_today = int(ledger.new)
-        review_today = int(ledger.review)
+        ids = _deck_ids()
+        ph = _placeholders(ids)
+        start_ms = _day_start_ms()
+        new_today = int(COL.db.scalar(
+            "select count(distinct r.cid) from revlog r join cards c on c.id = r.cid "
+            f"where r.type = 0 and r.id >= ? and c.did in ({ph})",
+            start_ms, *ids) or 0)
+        review_today = int(COL.db.scalar(
+            "select count(distinct r.cid) from revlog r join cards c on c.id = r.cid "
+            f"where r.type = 1 and r.id >= ? and c.did in ({ph}) "
+            "and r.cid not in (select cid from revlog where type = 0 and id >= ?)",
+            start_ms, *ids, start_ms) or 0)
         relearn_today = int(COL.db.scalar(
-            "select count(distinct cid) from revlog "
-            "where type = 2 and date(id / 1000, 'unixepoch', 'localtime', ?) = "
-            "      date('now', 'localtime', ?)",
-            DAY_SHIFT, DAY_SHIFT,
-        ) or 0)
+            "select count(distinct r.cid) from revlog r join cards c on c.id = r.cid "
+            f"where r.type = 2 and r.id >= ? and c.did in ({ph})",
+            start_ms, *ids) or 0)
     return (
         new_today + review_today + relearn_today,
         new_today,
@@ -331,36 +423,75 @@ def today_card_counts() -> tuple[int, int, int, int]:
 
 
 def next_rollover_epoch() -> int:
-    """下一次凌晨 4 点换日的时间戳。"""
-    now = datetime.now()
-    target = now.replace(hour=4, minute=0, second=0, microsecond=0)
-    if target <= now:
-        target += timedelta(days=1)
-    return int(target.timestamp())
+    """下一次凌晨 4 点换日的时间戳（直接用 Anki 的换日点）。"""
+    with LOCK:
+        return int(COL.sched.day_cutoff)
+
+
+def progress() -> dict:
+    """作答后立即回传的轻量进度，前端不用再打一次 /stats。"""
+    cards_today, new_today, review_today, relearn_today = today_card_counts()
+    with LOCK:
+        ids = _deck_ids()
+        new_remaining = int(COL.db.scalar(
+            "select count(*) from cards where type = 0 and queue >= 0 and "
+            f"did in ({_placeholders(ids)})", *ids) or 0)
+        undoable = can_undo()
+    return {
+        "today": cards_today,
+        "today_new": new_today,
+        "today_review": review_today,
+        "today_relearn": relearn_today,
+        "new_remaining": new_remaining,
+        "can_undo": undoable,
+    }
 
 
 def next_due_epoch() -> int | None:
-    """距离下一张卡可学还有多久（秒）。
+    """下一张卡真正可以学的时间点。
 
-    Anki 的 due 语义按类型不同：学习/重学卡存的是时间戳，复习卡存的是「天数」，
-    要加 collection 创建时间 crt 才能换算成时间。
-    如果当前因为日限额没卡了，但库里还有新卡，下一次要等到凌晨换日。
+    关键：必须把日限额算进来。额度用尽时，库里明明还有到期卡，
+    但今天已经不会再出卡——这时应该给「明天 4 点」，而不是「现在」。
     """
     with LOCK:
-        crt = COL.db.scalar("select crt from col") or 0
-        row = COL.db.scalar(
-            "select min(case when type in (1,3) then due "
-            "when type = 2 then due * 86400 + ? end) "
-            "from cards where queue >= 0 and type in (1,2,3)",
-            crt,
-        )
+        ids = _deck_ids()
+        ph = _placeholders(ids)
+        today = _today()
+        now = int(time.time())
+        rollover = next_rollover_epoch()
+        cfg = get_config()
+        _, new_today, review_today, _ = today_card_counts()
+        review_blocked = cfg["rev_per_day"] <= 0 or review_today >= cfg["rev_per_day"]
+        new_blocked = cfg["new_per_day"] <= 0 or new_today >= cfg["new_per_day"] or review_blocked
+
+        candidates: list[int] = []
+        # 学习/重学卡按时间戳到期，不受日限额影响
+        learning = COL.db.scalar(
+            "select min(due) from cards where queue >= 0 and "
+            f"did in ({ph}) and type in (1, 3)", *ids)
+        if learning:
+            candidates.append(int(learning))
+        # 复习卡按「天序号」到期
+        review_day = COL.db.scalar(
+            "select min(due) from cards where queue >= 0 and "
+            f"did in ({ph}) and type = 2", *ids)
+        if review_day is not None:
+            due_day = int(review_day)
+            if due_day <= today:
+                # 已经到期：额度打满就等换日，否则现在就能学
+                candidates.append(rollover if review_blocked else now)
+            else:
+                # 未来才到期：rollover 是「明天 4 点」，due_day 为 tomorrow 时正好是 rollover
+                candidates.append(rollover + (due_day - today - 1) * 86400)
+        # 新卡：额度没打满就现在可学
         new_left = COL.db.scalar(
-            "select count(*) from cards where type = 0 and queue >= 0") or 0
-    if row:
-        return int(row)
-    if new_left:
-        return next_rollover_epoch()
-    return None
+            "select count(*) from cards where queue >= 0 and "
+            f"did in ({ph}) and type = 0", *ids) or 0
+        if new_left:
+            candidates.append(rollover if new_blocked else now)
+        if not candidates:
+            return None
+        return max(now, min(candidates))
 
 
 def last_backup() -> dict | None:
@@ -376,26 +507,56 @@ def last_backup() -> dict | None:
     }
 
 
-def stats() -> dict:
-    rows = day_rows(365)
-    by_day = {row["date"]: row["count"] for row in rows}
-    today = (datetime.now() - timedelta(hours=4)).date()
-    streak = 0
-    cursor = today
-    if by_day.get(today.isoformat(), 0) == 0:
-        cursor = today - timedelta(days=1)  # 今天还没开始不算断
-    while by_day.get(cursor.isoformat(), 0) > 0:
-        streak += 1
-        cursor -= timedelta(days=1)
-    cards_today, new_today, review_today, relearn_today = today_card_counts()
-    config = get_config()
+def recent_lapses(limit: int = 6) -> list[dict]:
+    """最近答错的卡（ease=1），用于首页「最近答错回看」。
+
+    只看最近 90 天，按 revlog.id 截断，避免把整张 revlog 扫一遍。
+    """
     with LOCK:
-        total_reviews = COL.db.scalar(
-            "select count(*) from revlog where type in (1, 2)") or 0
-        total_answers = COL.db.scalar("select count(*) from revlog") or 0
-        notes = COL.db.scalar("select count(*) from notes") or 0
-        new_remaining = COL.db.scalar(
-            "select count(*) from cards where type = 0 and queue >= 0") or 0
+        ids = _deck_ids()
+        cutoff_ms = int((time.time() - 90 * 86400) * 1000)
+        rows = COL.db.all(
+            "select r.cid, max(r.id) as last from revlog r "
+            "join cards c on c.id = r.cid "
+            f"where r.ease = 1 and r.id >= ? and c.did in ({_placeholders(ids)}) "
+            "group by r.cid order by last desc limit ?",
+            cutoff_ms, *ids, max(1, min(limit, 20)))
+        items: list[dict] = []
+        for cid, _ in rows:
+            try:
+                card = COL.get_card(int(cid))
+                note = COL.get_note(card.nid)
+                qid = note["QID"]
+            except Exception:  # noqa: BLE001 - 单张卡读不到就跳过
+                continue
+            items.append({"qid": qid, "card_id": int(cid)})
+        return items
+
+
+def stats() -> dict:
+    # 整段持有同一把锁：多个查询之间不要被别的作答插进来，
+    # 否则页面上「到期总量」和「今日已学」可能来自两个不同的瞬间。
+    with LOCK:
+        rows, total_reviews, total_answers, streak = _history()
+        cards_today, new_today, review_today, relearn_today = today_card_counts()
+        config = get_config()
+        ids = _deck_ids()
+        ph = _placeholders(ids)
+        total_cards = int(COL.db.scalar(
+            f"select count(*) from cards where did in ({ph})", *ids) or 0)
+        learned_cards = int(COL.db.scalar(
+            f"select count(*) from cards where did in ({ph}) and type != 0", *ids) or 0)
+        new_remaining = int(COL.db.scalar(
+            "select count(*) from cards where type = 0 and queue >= 0 and "
+            f"did in ({ph})", *ids) or 0)
+        # 「明日到期」：复习卡的下一个到期日 + 学习卡在明天的窗口
+        tomorrow_start = int(COL.sched.day_cutoff)
+        due_tomorrow = int(COL.db.scalar(
+            "select count(*) from cards where queue >= 0 and "
+            f"did in ({ph}) and ("
+            "(type = 2 and due = ?) or "
+            "(type in (1, 3) and due >= ? and due < ?))",
+            *ids, _today() + 1, tomorrow_start, tomorrow_start + 86400) or 0)
     return {
         "counts": counts(),
         "due_total": due_total(),
@@ -406,11 +567,13 @@ def stats() -> dict:
         "new_per_day": config["new_per_day"],
         "rev_per_day": config["rev_per_day"],
         "can_undo": can_undo(),
-        "new_remaining": int(new_remaining),
+        "new_remaining": new_remaining,
         "streak": streak,
         "total_reviews": int(total_reviews),
         "total_answers": int(total_answers),
-        "total_cards": int(notes),
+        "total_cards": total_cards,
+        "learned_cards": min(learned_cards, total_cards),
+        "due_tomorrow": due_tomorrow,
         "next_due_epoch": next_due_epoch(),
         "last_backup": last_backup(),
         "days": rows,
@@ -436,13 +599,27 @@ def get_config() -> dict:
         }
 
 
+def _parse_limit(value, label: str) -> int | None:
+    if value is None:
+        return None
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{label} 必须是 0-9999 的整数") from None
+    if number < 0 or number > 9999:
+        raise ValueError(f"{label} 必须在 0-9999 之间")
+    return number
+
+
 def set_config(new_per_day: int | None, rev_per_day: int | None) -> dict:
+    new_limit = _parse_limit(new_per_day, "新卡 / 天")
+    rev_limit = _parse_limit(rev_per_day, "复习 / 天")
     with LOCK:
         cfg = COL.decks.config_dict_for_deck_id(deck_id())
-        if new_per_day is not None:
-            cfg["new"]["perDay"] = max(0, min(int(new_per_day), 9999))
-        if rev_per_day is not None:
-            cfg["rev"]["perDay"] = max(0, min(int(rev_per_day), 9999))
+        if new_limit is not None:
+            cfg["new"]["perDay"] = new_limit
+        if rev_limit is not None:
+            cfg["rev"]["perDay"] = rev_limit
         COL.decks.update_config(cfg)
         DIRTY["value"] = True
         PENDING_SNAPSHOT["value"] = True
@@ -538,6 +715,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, {"ok": True, **stats()})
             elif path == "/config":
                 self._send(200, {"ok": True, **get_config()})
+            elif path == "/lapses":
+                self._send(200, {"ok": True, "items": recent_lapses()})
             else:
                 self._fail(404, "未知接口")
         except Exception as exc:  # noqa: BLE001
@@ -579,6 +758,9 @@ class Handler(BaseHTTPRequestHandler):
                 self._fail(404, "未知接口")
         except LookupError as exc:
             self._fail(409, str(exc))
+        except ValueError as exc:
+            # 参数写错是用户输入问题，不是服务异常：别用 500 把栈信息漏出去
+            self._fail(400, str(exc))
         except Exception as exc:  # noqa: BLE001
             self._fail(500, str(exc))
 

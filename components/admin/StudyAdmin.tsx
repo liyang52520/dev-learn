@@ -52,8 +52,26 @@ export default function StudyAdmin() {
       setNotice('两个上限都要填数字（0–9999），不能留空');
       return;
     }
-    if (newValue === 0 || revValue === 0) {
-      const ok = window.confirm('设为 0 会暂停对应类型的卡，直到你改回。确定要保存吗？');
+    if (!Number.isInteger(newValue) || !Number.isInteger(revValue)) {
+      setNotice('上限必须是整数');
+      return;
+    }
+    const pauses = newValue === 0 || revValue === 0;
+    // 额度翻倍以上属于「明显加大负担」，先让用户看一眼影响再保存
+    const jumps = config
+      ? (config.new_per_day > 0 && newValue >= config.new_per_day * 2)
+        || (config.rev_per_day > 0 && revValue >= config.rev_per_day * 2)
+      : false;
+    const warnings: string[] = [];
+    if (pauses) warnings.push('设为 0 会暂停对应类型的卡，直到你改回');
+    if (jumps) {
+      warnings.push(
+        `额度将明显提高（新卡 ${config?.new_per_day} → ${newValue}，复习 ${config?.rev_per_day} → ${revValue}），每天花的时间会明显增加`,
+      );
+    }
+    if (stats?.can_undo) warnings.push('保存会清空「撤销上一张」的历史记录');
+    if (warnings.length > 0) {
+      const ok = window.confirm(`${warnings.join('；')}。确定要保存吗？`);
       if (!ok) return;
     }
     setBusy(true);
@@ -63,8 +81,8 @@ export default function StudyAdmin() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          new_per_day: Math.max(0, Math.min(9999, newValue)),
-          rev_per_day: Math.max(0, Math.min(9999, revValue)),
+          new_per_day: newValue,
+          rev_per_day: revValue,
         }),
       });
       const data = await res.json();
@@ -117,6 +135,13 @@ export default function StudyAdmin() {
   }
 
   const due = stats ? stats.counts.new + stats.counts.learning + stats.counts.review : 0;
+  const previewNew = Number(newPerDay);
+  const previewRev = Number(revPerDay);
+  const previewReady = newPerDay.trim() !== '' && revPerDay.trim() !== ''
+    && Number.isInteger(previewNew) && Number.isInteger(previewRev)
+    && previewNew >= 0 && previewRev >= 0;
+  const newChanged = Boolean(config && previewReady && previewNew !== config.new_per_day);
+  const revChanged = Boolean(config && previewReady && previewRev !== config.rev_per_day);
 
   return (
     <div className="study-admin">
@@ -134,18 +159,30 @@ export default function StudyAdmin() {
           <strong>{stats?.total_reviews ?? '—'}</strong>
         </div>
         <div>
-          <span>到期总量</span>
-          <strong>{stats?.due_total ?? '—'}</strong>
+          <span>今日可学（队列）</span>
+          <strong>{stats ? due : '—'}</strong>
         </div>
         <div>
-          <span>限额内可学</span>
-          <strong>{due}</strong>
+          <span>到期总量</span>
+          <strong>{stats?.due_total ?? '—'}</strong>
         </div>
         <div>
           <span>未学新卡</span>
           <strong>{stats?.new_remaining ?? '—'}</strong>
         </div>
       </section>
+
+      {stats && stats.days.length > 0 && (
+        <section className="study-admin-card study-admin-heatmap">
+          <div className="study-admin-heatmap-head">
+            <h3>最近 26 周</h3>
+            <span>
+              今日 {stats.today} 次 · 连续 {stats.streak} 天 · 累计 {stats.total_reviews} 次
+            </span>
+          </div>
+          <Heatmap days={stats.days} />
+        </section>
+      )}
 
       <section className="study-admin-grid">
         <div className="study-admin-card">
@@ -166,7 +203,7 @@ export default function StudyAdmin() {
               调度：{config.fsrs_enabled ? 'FSRS 已启用' : 'SM-2（FSRS 未启用）'}
             </p>
           )}
-          <label>
+          <label className={newChanged ? 'is-changed' : undefined}>
             <span>新卡 / 天</span>
             <input
               type="number"
@@ -176,7 +213,7 @@ export default function StudyAdmin() {
               onChange={(event) => setNewPerDay(event.target.value)}
             />
           </label>
-          <label>
+          <label className={revChanged ? 'is-changed' : undefined}>
             <span>复习 / 天</span>
             <input
               type="number"
@@ -186,6 +223,17 @@ export default function StudyAdmin() {
               onChange={(event) => setRevPerDay(event.target.value)}
             />
           </label>
+          {previewReady && (
+            <p className="study-admin-preview">
+              保存后：每天最多学 {previewNew} 张新卡、复习 {previewRev} 张。
+              {stats && previewNew > 0
+                ? `剩余 ${stats.new_remaining} 张新卡约需 ${Math.ceil(stats.new_remaining / previewNew)} 天学完`
+                : '新卡将暂停发放'}
+              {stats && previewRev > 0 && stats.due_total > 0
+                ? `；${stats.due_total} 张到期卡约需 ${Math.ceil(stats.due_total / previewRev)} 天清完`
+                : ''}
+            </p>
+          )}
           {stats && config && (
             <p className="study-admin-hint study-admin-pace">
               今天已学 {stats.today_new} 张新卡 · 队列里还有 {stats.counts.new} 张可发 ·{' '}
@@ -230,13 +278,6 @@ export default function StudyAdmin() {
           {backupNotice && <p className="study-admin-notice">{backupNotice}</p>}
         </div>
       </section>
-
-      {stats && stats.days.length > 0 && (
-        <section className="study-admin-card study-admin-heatmap">
-          <h3>最近 26 周</h3>
-          <Heatmap days={stats.days} />
-        </section>
-      )}
     </div>
   );
 }

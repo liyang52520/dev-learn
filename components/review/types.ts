@@ -6,7 +6,10 @@ export interface ReviewQuestion {
   summary: string[];
   note: string;
   pages: string;
-  answerHtml: string;
+  /** 原文答案 HTML：取卡时不下发，点「显示答案」后再按需加载。 */
+  answerHtml?: string;
+  /** 这道题是否有原文答案（决定要不要发按需加载请求）。 */
+  hasAnswer?: boolean;
   topic: string;
   topicId: string;
 }
@@ -17,6 +20,25 @@ export interface ReviewCard {
   state: 'new' | 'learning' | 'review' | 'relearning' | 'unknown';
   labels: string[];
   question: ReviewQuestion | null;
+}
+
+/** 作答后服务端立即回传的轻量进度，避免顶部数字滞后一张卡。 */
+export interface ReviewProgress {
+  today: number;
+  today_new: number;
+  today_review: number;
+  today_relearn: number;
+  new_remaining: number;
+  can_undo: boolean;
+}
+
+export interface ReviewLapse {
+  qid: string;
+  card_id: number;
+  topicId: string;
+  questionId: string;
+  title: string;
+  topic: string;
 }
 
 export interface ReviewCounts {
@@ -57,6 +79,10 @@ export interface ReviewStats {
   /** revlog 总条数，仅用于说明「评分次数」 */
   total_answers: number;
   total_cards: number;
+  /** 已经学过（不再是新卡）的卡片数，用于总进度 */
+  learned_cards: number;
+  /** 明天新到期的卡片数 */
+  due_tomorrow: number;
   next_due_epoch: number | null;
   can_undo: boolean;
   /** 还没学过的新卡总数 */

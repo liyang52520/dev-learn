@@ -1,10 +1,17 @@
+'use client';
+
+import { useState } from 'react';
 import type { ReviewDay } from './types';
+
+const WEEKDAY_LABELS = ['一', '', '三', '', '五', '', '日'];
 
 /**
  * 复习热力图：26 周 × 7 天，单色四档，不放边框和网格线。
  * 只在结算页 / 设置页出现 —— 复习过程中看它没有意义。
+ * 触屏没有 hover，点格子把当天详情显示在下方。
  */
 export default function Heatmap({ days }: { days: ReviewDay[] }) {
+  const [selected, setSelected] = useState<number | null>(null);
   const byDate = new Map(days.map((day) => [day.date, day.count]));
 
   const today = new Date();
@@ -28,29 +35,65 @@ export default function Heatmap({ days }: { days: ReviewDay[] }) {
     });
   }
 
+  // 每个月的第一列标一次月份，26 列最多 6 个标签，不会互相压住
+  const monthLabels: string[] = new Array(weeks).fill('');
+  let lastMonth = -1;
+  for (let week = 0; week < weeks; week += 1) {
+    const date = new Date(start);
+    date.setDate(start.getDate() + week * 7);
+    const month = date.getMonth();
+    if (month !== lastMonth) {
+      monthLabels[week] = `${month + 1}月`;
+      lastMonth = month;
+    }
+  }
+
   const total = cells.reduce((sum, cell) => sum + (cell.future ? 0 : cell.count), 0);
   const peak = cells.reduce((max, cell) => Math.max(max, cell.future ? 0 : cell.count), 0);
   // 阈值跟着自己的量走：每天 3 张和每天 300 张的人都应该看到四档，而不是一片最深色。
   const scale = thresholds(peak);
+  const selectedCell = selected === null ? null : cells[selected];
 
   return (
     <div className="heatmap-wrap">
-      <div
-        className="heatmap"
-        role="img"
-        aria-label={
-          total > 0
-            ? `最近 26 周共复习 ${total} 次，单日最高 ${peak} 次`
-            : '最近 26 周还没有复习记录'
-        }
-      >
-        {cells.map((cell) => (
-          <span
-            key={cell.date.toISOString()}
-            className={`heatmap-cell heatmap-l${cell.future ? 'future' : level(cell.count, scale)}`}
-            title={cell.future ? '' : `${toIso(cell.date)} · ${cell.count} 次`}
-          />
+      <div className="heatmap-months" aria-hidden>
+        {monthLabels.map((label, week) => (
+          <span key={week}>{label}</span>
         ))}
+      </div>
+      <div className="heatmap-body">
+        <div className="heatmap-days" aria-hidden>
+          {WEEKDAY_LABELS.map((label, row) => (
+            <span key={row}>{label || '\u00a0'}</span>
+          ))}
+        </div>
+        <div
+          className="heatmap"
+          role="group"
+          aria-label={
+            total > 0
+              ? `最近 26 周共复习 ${total} 次，单日最高 ${peak} 次`
+              : '最近 26 周还没有复习记录'
+          }
+        >
+          {cells.map((cell, index) => {
+            if (cell.future) {
+              return <span key={cell.date.toISOString()} className="heatmap-cell is-future" />;
+            }
+            const label = `${toIso(cell.date)} · ${cell.count} 次`;
+            return (
+              <button
+                key={cell.date.toISOString()}
+                type="button"
+                className={`heatmap-cell heatmap-l${level(cell.count, scale)}${selected === index ? ' is-selected' : ''}`}
+                title={label}
+                aria-label={label}
+                aria-pressed={selected === index}
+                onClick={() => setSelected(index)}
+              />
+            );
+          })}
+        </div>
       </div>
       <div className="heatmap-legend">
         <span>少</span>
@@ -62,6 +105,11 @@ export default function Heatmap({ days }: { days: ReviewDay[] }) {
           {total > 0 ? `26 周 ${total} 次 · 单日最高 ${peak} 次` : '还没有复习记录'}
         </span>
       </div>
+      <p className="heatmap-detail" aria-live="polite">
+        {selectedCell
+          ? `${toIso(selectedCell.date)} · ${selectedCell.count} 次`
+          : '点按任意格子查看当天复习次数'}
+      </p>
     </div>
   );
 }

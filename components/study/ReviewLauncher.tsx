@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { withBasePath } from '@/lib/base-path';
-import type { ReviewStats } from '@/components/review/types';
+import type { ReviewLapse, ReviewStats } from '@/components/review/types';
 
 /**
  * 学习首页的复习入口。
@@ -13,6 +13,7 @@ import type { ReviewStats } from '@/components/review/types';
  */
 export default function ReviewLauncher() {
   const [stats, setStats] = useState<ReviewStats | null>(null);
+  const [lapses, setLapses] = useState<ReviewLapse[]>([]);
   const [state, setState] = useState<'loading' | 'ok' | 'down'>('loading');
   const [isLocal, setIsLocal] = useState(false);
 
@@ -22,20 +23,25 @@ export default function ReviewLauncher() {
 
   useEffect(() => {
     let alive = true;
-    fetch(withBasePath('/api/review/stats'), { cache: 'no-store' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!alive) return;
-        if (data && data.ok) {
-          setStats(data as ReviewStats);
-          setState('ok');
-        } else {
-          setState('down');
-        }
-      })
-      .catch(() => {
-        if (alive) setState('down');
-      });
+    Promise.all([
+      fetch(withBasePath('/api/review/stats'), { cache: 'no-store' })
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null),
+      fetch(withBasePath('/api/review/lapses'), { cache: 'no-store' })
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null),
+    ]).then(([statsData, lapseData]) => {
+      if (!alive) return;
+      if (statsData && statsData.ok) {
+        setStats(statsData as ReviewStats);
+        setState('ok');
+      } else {
+        setState('down');
+      }
+      if (lapseData && lapseData.ok && Array.isArray(lapseData.items)) {
+        setLapses(lapseData.items as ReviewLapse[]);
+      }
+    });
     return () => {
       alive = false;
     };
@@ -48,6 +54,9 @@ export default function ReviewLauncher() {
         <div className="review-launcher-text">
           <span className="review-launcher-skel skel-eyebrow" />
           <span className="review-launcher-skel skel-title" />
+          <span className="review-launcher-skel skel-line" />
+          <span className="review-launcher-skel skel-track" />
+          <span className="review-launcher-skel skel-track" />
           <span className="review-launcher-skel skel-line" />
           <span className="review-launcher-skel skel-track" />
         </div>
@@ -93,14 +102,26 @@ export default function ReviewLauncher() {
   const reviewLimitHit = stats.rev_per_day > 0
     && stats.today_review >= stats.rev_per_day
     && overflow > 0;
+  // due_total 与队列计数不等，也可能是「学习中」的卡还没到点，别一律说成限额。
+  const reviewBlocked = overflow > 0 && (reviewLimitHit || stats.rev_per_day === 0);
 
   const headline = due > 0
     ? `今日可学 ${due} 张`
-    : quotaDone
-      ? '今日新卡额度用完了'
-      : reviewLimitHit
-        ? '今日复习额度用完了'
+    : reviewLimitHit
+      ? '今日复习额度用完了'
+      : quotaDone
+        ? '今日新卡额度用完了'
         : '今天的卡清空了';
+
+  // 站点和复习服务是分开启动的，旧版服务可能没有这两个字段；
+  // 缺失时按 0 处理，否则会渲染出 NaN% 和一条无效宽度的满格进度条。
+  const learnedCards = stats.learned_cards ?? 0;
+  const dueTomorrow = stats.due_tomorrow ?? 0;
+  const learnedPct = stats.total_cards > 0
+    ? Math.min(100, (learnedCards / stats.total_cards) * 100)
+    : 0;
+  // 2521 张里只学了 8 张，显示 0% 会像没加载；给个「<1%」更诚实
+  const learnedLabel = learnedPct > 0 && learnedPct < 1 ? '<1%' : `${Math.round(learnedPct)}%`;
 
   return (
     <div className="review-launcher">
@@ -111,9 +132,7 @@ export default function ReviewLauncher() {
         </p>
         <strong>{headline}</strong>
         <span>
-          今日新卡 {stats.today_new}/{stats.new_per_day}
-          {' · '}复习 {stats.today_review}/{stats.rev_per_day}
-          {' · '}连续 {stats.streak} 天
+          连续 {stats.streak} 天
           {' · '}累计 {stats.total_reviews} 次
         </span>
         {quotaDone && (
@@ -121,32 +140,78 @@ export default function ReviewLauncher() {
             还剩 {stats.new_remaining} 张新卡没学，明天额度刷新后继续。
           </span>
         )}
-        {overflow > 0 && (
+        {reviewBlocked && (
           <span className="review-launcher-note">
-            还有 {overflow} 张到期卡超出了今日复习限额
-            {stats.rev_per_day > 0 ? `（${stats.rev_per_day}/天）` : '（复习已暂停）'}，明天继续。
+            还有 {overflow} 张到期卡
+            {stats.rev_per_day > 0 ? `超出今日复习限额（${stats.rev_per_day}/天），明天继续。` : '，复习已暂停，去设置里恢复额度。'}
           </span>
         )}
-        <span
-          className="review-launcher-track"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={stats.new_per_day || 0}
-          aria-valuenow={stats.today_new}
-          aria-label={`今日新卡 ${stats.today_new} / ${stats.new_per_day}`}
-        >
-          <span className="review-launcher-fill" style={{ width: `${newPct}%` }} />
+        <span className="review-launcher-meter">
+          <span className="review-launcher-meter-label">
+            新卡 {stats.today_new}/{stats.new_per_day}
+          </span>
+          <span
+            className="review-launcher-track"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={stats.new_per_day || 0}
+            aria-valuenow={stats.today_new}
+            aria-label={`今日新卡 ${stats.today_new} / ${stats.new_per_day}`}
+          >
+            <span className="review-launcher-fill" style={{ width: `${newPct}%` }} />
+          </span>
         </span>
-        <span
-          className="review-launcher-track is-soft"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={stats.rev_per_day || 0}
-          aria-valuenow={stats.today_review}
-          aria-label={`今日复习 ${stats.today_review} / ${stats.rev_per_day}`}
-        >
-          <span className="review-launcher-fill is-soft" style={{ width: `${revPct}%` }} />
+        <span className="review-launcher-meter">
+          <span className="review-launcher-meter-label">
+            复习 {stats.today_review}/{stats.rev_per_day}
+          </span>
+          <span
+            className="review-launcher-track is-soft"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={stats.rev_per_day || 0}
+            aria-valuenow={stats.today_review}
+            aria-label={`今日复习 ${stats.today_review} / ${stats.rev_per_day}`}
+          >
+            <span className="review-launcher-fill is-soft" style={{ width: `${revPct}%` }} />
+          </span>
         </span>
+
+        <span className="review-launcher-overall">
+          <span className="review-launcher-overall-head">
+            总进度 <strong>{learnedCards}</strong>/{stats.total_cards}
+            <span className="review-launcher-overall-pct">{learnedLabel}</span>
+          </span>
+          <span
+            className="review-launcher-track is-overall"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={stats.total_cards || 0}
+            aria-valuenow={learnedCards}
+            aria-label={`总进度 ${learnedCards} / ${stats.total_cards}`}
+          >
+            <span className="review-launcher-fill is-overall" style={{ width: `${learnedPct}%` }} />
+          </span>
+          <span className="review-launcher-overall-note">
+            剩余新卡 {stats.new_remaining} · 明日到期 {dueTomorrow}
+          </span>
+        </span>
+
+        {lapses.length > 0 && (
+          <span className="review-lapses">
+            <span className="review-lapses-label">最近答错</span>
+            {lapses.slice(0, 4).map((item) => (
+              <Link
+                key={item.card_id}
+                href={`/study/${encodeURIComponent(item.topicId)}/${encodeURIComponent(item.questionId)}`}
+                className="review-lapse-link"
+                title={item.topic}
+              >
+                {item.title}
+              </Link>
+            ))}
+          </span>
+        )}
       </div>
       <Link href="/review" className="review-launcher-btn">
         {due > 0 ? '开始复习' : '查看状态'}

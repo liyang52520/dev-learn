@@ -57,7 +57,23 @@ async function handle(request: Request, ctx: { params: Promise<{ path: string[] 
   if (!token) return unavailable('复习服务未初始化');
 
   const url = new URL(request.url);
+
+  // 原文答案按需加载：取卡时只带题面，点「显示答案」才把高亮 HTML 拉过来，
+  // 避免每次翻卡都为一张还没看的答案付 200KB+ 的流量。
+  if (route === 'card-answer') {
+    const raw = url.searchParams.get('qid') || '';
+    const [topicId, ...rest] = raw.split('/');
+    const found = getStudyQuestion(topicId, rest.join('/'));
+    if (!found) {
+      return NextResponse.json({ ok: false, error: '题目不存在' }, { status: 404 });
+    }
+    const answerHtml = await highlightStudyAnswer(found.question.answer);
+    return NextResponse.json({ ok: true, answerHtml }, { headers: { 'Cache-Control': 'no-store' } });
+  }
+
   const target = `${REVIEW_URL}/${route}${url.search}`;
+  // /sync 要等快照 + git push，8 秒根本不够；其他接口 8 秒足够判断服务是否活着。
+  const timeout = route === 'sync' ? 180_000 : 8_000;
 
   let upstream: Response;
   try {
@@ -69,7 +85,7 @@ async function handle(request: Request, ctx: { params: Promise<{ path: string[] 
       },
       body: request.method === 'POST' ? await request.text() : undefined,
       cache: 'no-store',
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(timeout),
     });
   } catch {
     return unavailable('复习服务未运行');
@@ -87,10 +103,9 @@ async function handle(request: Request, ctx: { params: Promise<{ path: string[] 
   }
 
   async function enrich(card: ReviewCard): Promise<ReviewCard> {
-    const [topicId, qid] = String(card.qid || '').split('/');
-    const found = getStudyQuestion(topicId, qid);
+    const [topicId, ...rest] = String(card.qid || '').split('/');
+    const found = getStudyQuestion(topicId, rest.join('/'));
     if (!found) return { ...card, question: null };
-    const answerHtml = await highlightStudyAnswer(found.question.answer);
     return {
       ...card,
       question: {
@@ -99,20 +114,36 @@ async function handle(request: Request, ctx: { params: Promise<{ path: string[] 
         summary: found.question.summary,
         note: found.question.note,
         pages: found.question.pages,
-        answerHtml,
         topic: found.topic.label,
         topicId: found.topic.id,
+        hasAnswer: found.question.answer.length > 0,
       },
     };
   }
 
   if (route === 'queue' && Array.isArray(data.cards)) {
-    data.cards = await Promise.all((data.cards as ReviewCard[]).map(enrich));
+    data.cards = await Promise.all((data.cards as ReviewCard[]).map((card) => enrich(card)));
   }
 
   // /answer 会顺手返回下一张卡，这里同样补上题面内容
   if (route === 'answer' && data.next) {
     data.next = await enrich(data.next as ReviewCard);
+  }
+
+  // 最近答错：只补题目定位信息，不进正文
+  if (route === 'lapses' && Array.isArray(data.items)) {
+    data.items = await Promise.all(data.items.map((item) => {
+      const entry = item as { qid?: string; card_id?: number };
+      const [topicId, ...rest] = String(entry.qid || '').split('/');
+      const found = getStudyQuestion(topicId, rest.join('/'));
+      return {
+        ...entry,
+        topicId,
+        questionId: rest.join('/'),
+        title: found?.question.title || entry.qid || '',
+        topic: found?.topic.label || '',
+      };
+    }));
   }
 
   return NextResponse.json(data, { headers: { 'Cache-Control': 'no-store' } });
