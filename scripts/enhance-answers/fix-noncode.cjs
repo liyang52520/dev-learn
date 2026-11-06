@@ -948,7 +948,7 @@ function main() {
     },
     duplicateAdjacentP: {
       verdict: '未修（会删字）',
-      detail: `${report.registerOnly.duplicateAdjacentP.length} 处相邻 <p> 规范化文本完全相同。AGENTS.md 3.6 要求「原文自身问题照录」，` +
+      detail: `${report.registerOnly.duplicateAdjacentP.length} 处相邻 <p> 规范化文本完全相同。skills/study-bank/SKILL.md 3.6 要求「原文自身问题照录」，` +
         '需对照 PDF 截图确认是抽取重复还是原文确实重复，再决定删除。',
     },
     weakPBreak: {
@@ -970,7 +970,7 @@ function main() {
     },
     emptyAnswer: {
       verdict: '不修（上游原貌）',
-      detail: '23 题 answer 为空，summary 已注明「原文未给出答案」；按 3.6 不伪造内容。',
+      detail: '23 题 answer 为空，summary 已注明「原文未给出答案」；按 skills/study-bank 3.6 不伪造内容。',
     },
   };
   report.recommendedNextSteps = {
