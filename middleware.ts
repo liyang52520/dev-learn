@@ -13,7 +13,10 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/api/admin')) {
     return NextResponse.json({ error: '未登录' }, { status: 401 });
   }
-  return NextResponse.redirect(new URL(withBasePath('/admin/login'), requestOrigin(request.headers)));
+  // 记住原始目的地，登录后直接回去（/admin/study 这类深链不用二次点击）
+  const loginUrl = new URL(withBasePath('/admin/login'), requestOrigin(request.headers));
+  loginUrl.searchParams.set('next', pathname + request.nextUrl.search);
+  return NextResponse.redirect(loginUrl);
 }
 
 export const config = {

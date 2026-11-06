@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "anki": "anki-svc/.venv/bin/python anki-svc/server.py",
+    "anki:import": "anki-svc/.venv/bin/python anki-svc/import.py"
   },
   "dependencies": {
     "@codemirror/lang-markdown": "^6.3.3",

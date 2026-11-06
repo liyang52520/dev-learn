@@ -12,6 +12,11 @@
   --accent: #3659e3;
   --accent-2: #7c5cff;
   --accent-soft: rgba(54, 89, 227, 0.08);
+  --hm-0: rgba(17, 20, 26, 0.06);
+  --hm-1: rgba(54, 89, 227, 0.18);
+  --hm-2: rgba(54, 89, 227, 0.36);
+  --hm-3: rgba(54, 89, 227, 0.58);
+  --hm-4: rgba(54, 89, 227, 0.82);
   --ember: #c25a2b;
   --code: #f7f8fa;
   --code-bar: rgba(17, 20, 26, 0.035);
@@ -43,6 +48,11 @@ html.dark {
   --accent: #7c95ff;
   --accent-2: #a78bfa;
   --accent-soft: rgba(124, 149, 255, 0.11);
+  --hm-0: rgba(255, 255, 255, 0.06);
+  --hm-1: rgba(124, 149, 255, 0.2);
+  --hm-2: rgba(124, 149, 255, 0.4);
+  --hm-3: rgba(124, 149, 255, 0.62);
+  --hm-4: rgba(124, 149, 255, 0.88);
   --ember: #f08a5d;
   --code: #090b0f;
   --code-bar: rgba(255, 255, 255, 0.035);
@@ -3213,4 +3223,1065 @@ html.dark .skeleton {
   .sk-summary {
     padding: 18px 16px;
   }
+}
+
+/* ==========================================================================
+   复习（/review）：专注模式页面 + 学习首页入口
+   —— 数据来自本机 anki-svc，题目内容仍由本站 data/study 渲染，样式与题目页共用。
+   ========================================================================== */
+
+.focus-main {
+  min-height: 100dvh;
+  background: var(--bg);
+  padding: 18px 0 40px;
+}
+
+.review-page {
+  width: min(880px, 100% - 40px);
+  margin: 0 auto;
+}
+
+.review-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 6px 2px 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.review-back {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: var(--surface);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.review-back:hover {
+  border-color: var(--line-2);
+  transform: translateX(-2px);
+}
+
+.review-counts {
+  display: flex;
+  gap: 14px;
+}
+
+.review-counts strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.review-summary-line {
+  margin-left: auto;
+}
+
+.review-due {
+  color: var(--faint);
+}
+
+.review-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 30px clamp(20px, 4vw, 38px) 34px;
+  box-shadow: var(--shadow-sm);
+}
+
+.review-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: var(--faint);
+  text-transform: uppercase;
+}
+
+.review-state {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-transform: none;
+}
+
+.review-question {
+  font-size: clamp(21px, 2.6vw, 27px);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  margin: 14px 0 10px;
+  color: var(--ink);
+}
+
+.review-alias {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.review-reveal {
+  margin-top: 26px;
+  width: 100%;
+  padding: 26px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px dashed var(--line-2);
+  border-radius: 12px;
+  background: var(--bg-elev);
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.review-reveal:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.review-points {
+  margin: 18px 0 6px;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.review-points li + li {
+  margin-top: 6px;
+}
+
+.review-answer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.review-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.review-rate {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  padding: 12px 14px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.review-rate:hover:not(:disabled) {
+  border-color: var(--line-2);
+  transform: translateY(-1px);
+  background: var(--bg-elev);
+}
+
+.review-rate:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.rate-hint {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rate-1 .rate-hint { color: var(--ember); }
+.rate-2 .rate-hint { color: var(--muted); }
+.rate-3 .rate-hint { color: var(--ink); }
+.rate-4 .rate-hint { color: var(--accent); }
+
+.rate-label {
+  font-size: 12px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.rate-key {
+  align-self: flex-end;
+  font-size: 10.5px;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.review-undo-row {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.review-undo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  color: var(--faint);
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+
+.review-undo:hover:not(:disabled) {
+  color: var(--ink-2);
+}
+
+.review-undo:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.review-loading,
+.review-error,
+.review-done {
+  text-align: center;
+}
+
+.review-done h1,
+.review-error h1 {
+  font-size: clamp(20px, 2.4vw, 25px);
+  margin: 10px 0 18px;
+}
+
+.review-done-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 26px;
+}
+
+.review-done-stats strong {
+  display: block;
+  font-size: 22px;
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.review-hint {
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.review-hint code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--code);
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.review-done-actions,
+.review-error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.review-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.review-btn.ghost {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--ink-2);
+}
+
+.review-btn.ghost:hover {
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+
+/* —— 热力图 —— */
+
+.heatmap-wrap {
+  margin: 6px auto 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  width: fit-content;
+}
+
+.heatmap {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 11px);
+  grid-auto-columns: 11px;
+  gap: 3px;
+}
+
+.heatmap-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--hm-0);
+}
+
+.heatmap-l1 { background: var(--hm-1); }
+.heatmap-l2 { background: var(--hm-2); }
+.heatmap-l3 { background: var(--hm-3); }
+.heatmap-l4 { background: var(--hm-4); }
+.heatmap-lfuture { background: transparent; }
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.heatmap-legend .heatmap-cell {
+  width: 9px;
+  height: 9px;
+}
+
+/* —— 学习首页入口 —— */
+
+.review-launcher {
+  margin: 26px 0 10px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+}
+
+.review-launcher-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.review-launcher-text .eyebrow {
+  margin: 0 0 2px;
+}
+
+.review-launcher-text strong {
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.review-launcher-text span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.review-launcher-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.review-launcher-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  .review-page {
+    width: calc(100% - 28px);
+  }
+
+  .review-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .review-summary-line {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .review-launcher {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .review-launcher-btn {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .heatmap {
+    grid-template-rows: repeat(7, 9px);
+    grid-auto-columns: 9px;
+    gap: 2px;
+  }
+
+  .heatmap-cell {
+    width: 9px;
+    height: 9px;
+  }
+}
+
+/* 四个评分按钮吸底：原文答案经常很长，读完不用再滚回底部找按钮 */
+.review-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 24px -14px -18px;
+  padding: 12px 14px 10px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 14px 14px;
+  backdrop-filter: blur(6px);
+}
+
+.review-bottom .review-actions {
+  margin-top: 0;
+}
+
+.review-bottom .review-undo-row {
+  margin-top: 8px;
+}
+
+.review-page kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--faint);
+}
+
+/* —— 结算页：把「今天结束了」这件事做成一个收束动作 —— */
+
+.review-done {
+  padding-top: 44px;
+}
+
+.review-done-mark {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  animation: review-done-pop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+.review-done .eyebrow {
+  display: flex;
+  justify-content: center;
+}
+
+.review-done h1 {
+  margin: 10px 0 8px;
+  animation: review-done-rise 0.5s ease 0.08s both;
+}
+
+.review-done-sub {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 14px;
+  animation: review-done-rise 0.5s ease 0.12s both;
+}
+
+.review-done-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 22px;
+  animation: review-done-rise 0.5s ease 0.16s both;
+}
+
+.review-done-count-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.review-done-count-num {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.review-done-count strong {
+  font-size: clamp(52px, 7vw, 68px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.review-done-count span {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.review-done-stats {
+  animation: review-done-rise 0.5s ease 0.2s both;
+}
+
+.review-done-topics {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+  animation: review-done-rise 0.5s ease 0.24s both;
+}
+
+.review-done-next {
+  display: flex;
+  width: fit-content;
+  margin: 8px auto 22px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  color: var(--ink-2);
+  font-size: 13px;
+  animation: review-done-rise 0.5s ease 0.28s both;
+}
+
+.review-done-next-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.review-done-actions {
+  animation: review-done-rise 0.5s ease 0.32s both;
+}
+
+@keyframes review-done-pop {
+  from {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes review-done-rise {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-done-mark,
+  .review-done h1,
+  .review-done-sub,
+  .review-done-count,
+  .review-done-stats,
+  .review-done-topics,
+  .review-done-next,
+  .review-done-actions {
+    animation: none;
+  }
+}
+
+/* 复习页顶部：今日进度条 + 拆开的三类计数 + 结束本轮 */
+.review-head {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.review-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-progress-track {
+  flex: 1;
+  max-width: 200px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.review-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+.review-progress-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.review-progress-label strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.review-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.review-chips strong {
+  color: var(--ink-2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.review-end {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.review-end:hover:not(:disabled) {
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+
+.review-end:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* 吸底评分条会盖住正文最后一段，给正文留出等高的空档 */
+.review-answer {
+  padding-bottom: 96px;
+}
+
+.review-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  padding: 9px 17px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  box-shadow: var(--shadow-md);
+  z-index: 60;
+}
+
+.review-done-help {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  color: var(--faint);
+}
+
+.review-done-help a {
+  color: var(--accent);
+  margin-left: 4px;
+}
+
+@media (max-width: 720px) {
+  .review-top {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .review-head {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .review-end {
+    margin-left: auto;
+  }
+
+  .review-answer {
+    padding-bottom: 170px;
+  }
+
+  .review-bottom {
+    padding: 8px 10px 8px;
+  }
+
+  .review-bottom .review-rate {
+    padding: 9px 10px 8px;
+  }
+}
+
+.review-launcher-off {
+  border-style: dashed;
+  background: transparent;
+}
+
+.review-launcher-off strong {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.review-launcher-off code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--code);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.review-launcher-btn.ghost {
+  background: transparent;
+  border: 1px solid var(--line-2);
+  color: var(--ink-2);
+}
+
+.review-launcher-track {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.review-launcher-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+/* 双进度条：新卡 / 复习各一条，别让 200 张复习日看起来像没在学 */
+.review-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.review-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-progress-track {
+  flex: none;
+  width: 84px;
+  height: 5px;
+}
+
+.review-progress-fill-soft {
+  background: var(--accent-2);
+}
+
+.review-progress-label {
+  font-size: 12px;
+}
+
+/* 评分条压薄：撤销行内成图标，四档按钮横向三行变两行 */
+.review-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.review-bottom .review-actions {
+  flex: 1;
+  margin-top: 0;
+  gap: 8px;
+}
+
+.review-undo-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.review-undo-icon:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--line-2);
+}
+
+.review-undo-icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.review-rate {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 1px;
+  padding: 7px 10px 6px;
+}
+
+.rate-label {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.rate-hint {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.rate-key {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.review-done-quota {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .review-progress-item {
+    gap: 6px;
+  }
+
+  .review-progress-track {
+    width: 52px;
+  }
+
+  .review-bottom {
+    padding: 6px 8px;
+  }
+
+  .review-answer {
+    padding-bottom: 120px;
+  }
+
+  .rate-label {
+    font-size: 13px;
+  }
+
+  .rate-hint {
+    font-size: 10px;
+  }
+
+  .rate-key {
+    display: none;
+  }
+}
+
+/* 窄屏也保持一行四档：两行两列会把吸底条撑到 140px+ */
+@media (max-width: 720px) {
+  .review-bottom .review-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .review-rate {
+    padding: 6px 6px 5px;
+    row-gap: 0;
+  }
+
+  .review-answer {
+    padding-bottom: 96px;
+  }
+}
+
+/* —— 视觉审查修复 —— */
+
+/* 关键 bug：填充条是 span，默认 inline，width 不生效 → 进度永远 0 */
+.review-progress-fill,
+.review-launcher-fill {
+  display: block;
+}
+
+.review-progress-track {
+  overflow: hidden;
+  background: var(--line);
+}
+
+/* 面板边界太弱（白底白 1.19:1） */
+.review-panel {
+  border-color: var(--line-2);
+}
+
+/* 吸底条加阴影，滚动时和内容分离 */
+.review-bottom {
+  box-shadow: 0 -18px 32px -24px rgba(16, 24, 40, 0.35);
+}
+
+/* 底部留白按条高收一档（原是 96/120，看起来像内容没加载） */
+.review-answer {
+  padding-bottom: 72px;
+}
+
+@media (max-width: 720px) {
+  .review-answer {
+    padding-bottom: 84px;
+  }
+
+  .review-back {
+    width: 36px;
+    height: 36px;
+  }
+
+  .review-end {
+    padding: 9px 16px;
+    min-height: 40px;
+  }
+
+  .review-undo-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* 触屏不显示键盘快捷键提示 */
+  .review-page kbd {
+    display: none;
+  }
+}
+
+/* 鼠标设备才显示快捷键角标 */
+@media (hover: none) {
+  .rate-key {
+    display: none;
+  }
+}
+
+/* 热力图更清晰 */
+.heatmap {
+  grid-template-rows: repeat(7, 12px);
+  grid-auto-columns: 12px;
+  gap: 4px;
+}
+
+.heatmap-cell {
+  width: 12px;
+  height: 12px;
+}
+
+.heatmap-legend {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* 后台统计标签太小（9.5px / 2.58:1） */
+.admin-stats span {
+  font-size: 11.5px;
+}
+
+/* 答案分区标题 */
+.review-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 26px 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.review-section-title + .review-points,
+.review-section-title + .review-answer {
+  margin-top: 0;
+}
+
+.review-answer h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 22px 0 8px;
+}
+
+.review-answer > :first-child {
+  margin-top: 0;
 }

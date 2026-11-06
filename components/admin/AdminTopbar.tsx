@@ -12,6 +12,7 @@ export default function AdminTopbar() {
       </Link>
       <nav>
         <Link href="/admin">文章</Link>
+        <Link href="/admin/study">学习</Link>
         <a href={withBasePath('/')} target="_blank" rel="noreferrer">
           查看站点
           <IconArrow size={13} />

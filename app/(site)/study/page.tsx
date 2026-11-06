@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getStudyIndex, summarizeTopic } from '@/lib/study';
 import StudyTopicBrowser from '@/components/study/StudyTopicBrowser';
+import ReviewLauncher from '@/components/study/ReviewLauncher';
 
 export const metadata: Metadata = {
   title: '学习 · 面试专题',
@@ -37,6 +38,8 @@ export default function StudyHomePage() {
           </span>
         </div>
       </header>
+
+      <ReviewLauncher />
 
       <StudyTopicBrowser topics={index.topics.map(summarizeTopic)} />
     </div>

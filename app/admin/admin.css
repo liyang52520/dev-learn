@@ -1170,3 +1170,118 @@ html.dark .admin-badge.posts {
     display: none;
   }
 }
+
+/* —— 学习设置 —— */
+
+.study-admin-stats {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.study-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 22px 0;
+}
+
+.study-admin-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 22px 24px;
+}
+
+.study-admin-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.study-admin-hint {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.study-admin-hint code,
+.study-admin-offline code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--code);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.study-admin-card label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.study-admin-card input[type='number'] {
+  width: 110px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.study-admin-card input[type='number']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.study-admin-list {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.study-admin-notice {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.study-admin-heatmap {
+  margin-top: 6px;
+}
+
+.study-admin-offline {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 30px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.study-admin-offline h2 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.study-admin-offline p {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+}
+
+@media (max-width: 900px) {
+  .study-admin-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .study-admin-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

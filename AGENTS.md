@@ -10,12 +10,12 @@
 
 | 你要做的事 | 直接读 |
 | --- | --- |
-| 第一次接触项目：结构、命令、后台、代码约定 | 第一章 |
-| 写 / 改博客文章 | 第二章 |
-| 维护面试题库、从新 PDF 加专题 | 第三章 |
-| 接手任务、交付前自检、按场景查规范 | 第四章 |
+| 结构 / 命令 / 后台 / 代码约定；新增复习子系统 | 第一章（复习另见 `anki-svc/README.md`） |
+| 写、改博客文章 | 第二章 |
+| 维护题库、加专题 | 第三章 |
+| 接手任务、交付自检 | 第四章 |
 
-> **来源**：本文件由两个旧仓库的 `AGENTS.md` 合并改写而来——博客 `/Users/liyang/WebstormProjects/liyang52520.github.io/AGENTS.md`、面试题库 `/Users/liyang/Deepseek/projects/interview/AGENTS.md`。合并时按本仓库的实际代码重写了全部落地细节（Hexo 命令、Python 工具链、上游目录均已改写为当前仓库的做法）。上游文档仍可当历史参考，**以本文件为准**。
+> **来源**：由旧博客仓库与旧题库仓库（`/Users/liyang/Deepseek/projects/interview`）的 `AGENTS.md` 合并改写，细节已按本仓库重写。上游文档只作历史参考，**以本文件为准**。
 >
 ---
 
@@ -38,7 +38,7 @@
 | 博客 | `/Users/liyang/WebstormProjects/liyang52520.github.io` | Hexo + Butterfly，`source/_posts`、`_config.yml`、`scaffolds` | Next.js 重写：`content/posts`、`app/(site)`、`components` |
 | 面试题 | `/Users/liyang/Deepseek/projects/interview` | Python 工具链 + 42 个 PDF + 生成的静态三栏站 `site/` | 只保留产物：`data/study/*.json`、`public/study/**`，加抽取脚本 `scripts/extract-study.cjs` |
 
-迁移已完成：上游博客 1 篇已发布 + 21 篇草稿全部迁入（2 篇在本仓库升为已发布）；42 个专题、2521 道题已全部抽取为 JSON。上游的 Hexo 依赖、Butterfly 配置、PDF 原文、Python 工具链**都没有**搬进来，也**不应该**搬进来（见 1.9）。
+迁移已完成：22 篇博客（含草稿）、42 个专题 2521 道题、5762 张证据截图全部到位。上游的 Hexo 依赖、PDF 原文、Python 工具链**都没有也不应该**搬进来（见 1.9）。
 
 
 ### 1.2 技术栈
@@ -48,7 +48,7 @@
 | 框架 | Next.js 15.5（App Router）+ React 19 | 默认 Server Component；动态数据页标 `dynamic = 'force-dynamic'` |
 | 语言 | TypeScript 5.9，`strict: true` | 路径别名 `@/*` → 仓库根 |
 | 内容解析 | `gray-matter` | 读写 Markdown front matter |
-| Markdown 渲染 | `unified` + `remark-gfm` + `remark-math` → `rehype-raw` + `rehype-katex` + `@shikijs/rehype` | 支持 GFM、数学公式、Shiki 高亮、内嵌 HTML |
+| Markdown 渲染 | `unified` + `remark-gfm` + `remark-math` → `rehype-raw` + `rehype-katex` + `@shikijs/rehype` | GFM、公式、Shiki 高亮、内嵌 HTML |
 | 后台编辑器 | CodeMirror 6 | 浏览器内编辑，保存走后端 API 写文件 |
 | 搜索 | 进程内全文扫描（`lib/search.ts`） | `GET /api/search?q=…`，文章与题库统一检索 |
 | 样式 | 单个 `app/globals.css` + CSS 变量 | 暗色是 `html.dark` 覆盖变量；后台另有 `app/admin/admin.css` |
@@ -64,12 +64,13 @@ dev-learn/
 │   │   ├── posts/[slug]/       # 文章详情
 │   │   ├── blog/               # archive / tags / categories（含 [tag]、[category]）
 │   │   └── study/              # 专题总览 / 专题首页 / 单题三栏页
-│   ├── admin/                  # 后台：登录、列表、编辑器、整页预览
-│   ├── api/                    # admin/*（登录/读写/发布/预览/上传）、search
-│   ├── globals.css             # 全站样式（设计变量 + 组件样式，约 3200 行）
+│   ├── (focus)/review/         # 复习页：专注布局，不套 Header/Footer（见 1.10）
+│   ├── admin/                  # 后台：登录、列表、编辑器、整页预览、study/ 学习设置
+│   ├── api/                    # admin/*（登录/读写/发布/预览/上传）、review/*、search
+│   ├── globals.css             # 全站样式（设计变量 + 组件样式）
 │   ├── layout.tsx              # 根布局：主题初始化、全局 metadata（KaTeX 样式按路由引入）
 │   └── icon.svg
-├── components/                 # 展示组件；admin/ 与 study/ 子目录
+├── components/                 # 展示组件；admin/、study/、review/ 子目录
 ├── content/
 │   ├── posts/                  # 已发布文章，文件名（去 .md）= slug
 │   └── drafts/                 # 草稿，不出现在站点上
@@ -80,6 +81,7 @@ dev-learn/
 ├── lib/                        # 唯一读写文件的层：posts / study / search / markdown / shiki / auth / types
 ├── scripts/extract-study.cjs   # 从上游静态站抽取题库 JSON（见 3.3）
 ├── scripts/enhance-answers/    # 抽取后的答案格式增强：代码行还原 / 模型审阅 / 非代码结构修复 / 自检（见 3.5、3.7）
+├── anki-svc/                   # 本地复习服务（Python + Anki 内核），见 1.10
 ├── instrumentation.ts          # 启动钩子：后台预热 Shiki 高亮器（见 1.8.15）
 ├── middleware.ts               # /admin 与 /api/admin 的登录守卫
 └── next.config.ts / tsconfig.json / package.json
@@ -95,7 +97,9 @@ dev-learn/
 | `/study` | 静态 | 42 个专题卡片 + 前端筛选 |
 | `/study/[topic]` | 动态 | 重定向到该专题第一题 |
 | `/study/[topic]/[qid]` | 动态 | 三栏页：左题目列表、中答案、右 PDF 证据截图 |
+| `/review` | 静态壳 | 复习页（专注布局）；后端服务不可用时降级成提示页 |
 | `/admin`、`/admin/login` | 静态壳 | 文章列表（全部/已发布/草稿）、密码登录 |
+| `/admin/study` | 静态壳 | 学习设置：每日上限、学习统计、手动快照并推送 |
 | `/admin/edit/[type]/[slug]`、`/admin/preview/[type]/[slug]` | 动态 | 编辑器、整页预览（`type` 只能是 `posts`/`drafts`） |
 | `/api/search?q=` | 接口 | 文章 + 题目混合结果（最多 16 条） |
 | `/api/admin/*` | 接口 | 后台读写，全部受 `middleware.ts` 保护 |
@@ -120,7 +124,7 @@ npm run typecheck  # tsc --noEmit
 
 - 后台：`http://localhost:3000/admin`，密码取 `ADMIN_PASSWORD`，未设置时默认 `yg-admin`。建议本地显式设置：`ADMIN_PASSWORD=xxx npm run dev`。
 - Node 建议 20+（验证版本 v24.15.0，Next 15 要求 ≥ 18.18）。
-- `npm run dev` 用 **Turbopack**（`next dev --turbopack`）：路由首次编译比 webpack 快约一倍（实测 190–350 ms vs 430–565 ms）。若怀疑 Turbopack 引入问题，可临时 `npx next dev` 用 webpack 对照。
+- `npm run dev` 用 **Turbopack**，首编译比 webpack 快约一倍；怀疑它引入问题时可临时 `npx next dev` 对照。
 - `npm run dev` 与 `npm run build` 争用 `.next/`：**不要**在 dev 运行时 build；验证完 build 记得重启 dev。
 - 构建通过 ≠ 内容正确，构建只读真实文件，内容仍需人工打开页面看。
 
@@ -146,7 +150,7 @@ npm run typecheck  # tsc --noEmit
 
 ### 1.8 代码约定
 
-1. **服务端优先**：默认 Server Component，只有需要状态/事件/浏览器 API 的组件才加 `'use client'`（当前：`Header`、`PrefetchLink`、`Toc`、`SearchDialog`、`ArticleTools`、`StudySidebar`、`StudyTopicBrowser`、`EvidencePanel`、`PostEditor`、`AdminDashboard`、`app/admin/login/page.tsx`）。`SearchDialog` 由 `Header` 用 `next/dynamic`（`ssr: false`）拆包，不进首屏关键路径。
+1. **服务端优先**：默认 Server Component，只有需要状态/事件/浏览器 API 的组件才加 `'use client'`（当前：`Header`、`PrefetchLink`、`Toc`、`SearchDialog`、`ArticleTools`、`StudySidebar`、`StudyTopicBrowser`、`EvidencePanel`、`PostEditor`、`AdminDashboard`、`StudyAdmin`、`ReviewSession`、`ReviewLauncher`、`app/admin/login/page.tsx`）。`SearchDialog` 由 `Header` 用 `next/dynamic`（`ssr: false`）拆包，不进首屏关键路径。
 2. **文件读写只在两处**：`lib/*.ts` 与 `app/api/**/route.ts`；页面与组件只调用 lib 函数。
 3. **类型先行**：站点/文章类型在 `lib/types.ts`，题库类型在 `lib/study.ts`；新增字段先改类型，再改读取与 UI。
 4. **样式**：全部集中在 `app/globals.css`，用 `:root` / `html.dark` 的 CSS 变量（`--bg`、`--ink`、`--accent`、`--radius` …）。不引入 Tailwind / 组件库；新增区块按注释分区追加，并同时处理 `< 900px`。
@@ -173,6 +177,29 @@ npm run typecheck  # tsc --noEmit
 - ❌ 在客户端组件里 import `node:fs` / `node:path`。
 - ❌ 全量复制 `public/study` 或 `data/study`；本仓库已有 ≈ 780 MB 资产，增量要克制。
 
+### 1.10 复习：本地 Anki 服务（可选子系统）
+
+站点本身不存学习状态。「复习」是挂在本机的一个 Python 服务（Anki v3 调度器），题目内容仍由本站 `data/study` 渲染。
+命令、接口、备份恢复细节都在 `anki-svc/README.md`，这里只留约定。
+
+| 部分 | 位置 |
+| --- | --- |
+| 调度服务 / 导入脚本 | `anki-svc/server.py`、`anki-svc/import.py`（只听 `127.0.0.1:8765`） |
+| 学习状态 | `anki-svc/data/`（独立仓库 dev-anki，已 gitignore；本地快照 30 份） |
+| 站点代理 | `app/api/review/[...path]/route.ts`（读 `.token`；服务器上没有 → 一律 503） |
+| 复习页 | `app/(focus)/review/` + `components/review/` |
+| 后台设置 | `app/admin/study/` |
+
+命令：`npm run anki`（起服务）、`npm run anki:import`（重建 collection）；首次需
+`python3 -m venv anki-svc/.venv && anki-svc/.venv/bin/pip install -r anki-svc/requirements.txt`。
+
+约定：
+1. 只监听 `127.0.0.1`（单机使用，不接内网穿透、不开公网端口），除 `/health` 外都要 `X-Review-Token`。
+2. 内容归站点、状态归 Anki：复习页从 `data/study` 渲染题面与答案，Anki 只负责「下一张卡 / 四个按钮文案 / 复习日志」。
+3. `anki-svc/data` 与 `.token` 永不入库；服务每 10 分钟快照、15 分钟自动 commit+push 到 dev-anki，提交前先做 WAL checkpoint。
+4. `/answer` 直接返回下一张卡（三跳变一跳）；调度状态缓存在服务端内存，浏览器只回 `card_id + rating`。
+5. 改这块必须验：`npm run typecheck && npm run build`，并实跑「/study 入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」。
+
 ---
 
 ## 二、如何写博客
@@ -191,7 +218,7 @@ npm run typecheck  # tsc --noEmit
 
 1. **先确认信息**：标题与期望文件名、分类（技术文 `develop`，随笔 `life`，不自创）、标签（复用优先）、范围与深度（科普/源码/排错、篇幅）、读者预设（有 Java/Spring 基础但卡在底层）。宁可多问一句，也别写方向错误的长文；一次问清。
 2. **检索已有文章建关联**：看 `content/posts`、`content/drafts` 的标题/标签/开头，判断新文属于哪条脉络。现有系列：请求链路、`@Transactional` 失效、上传/下载、WebFlux、容器/MyBatis、Nacos/Jasypt、下载失败排查。前置知识、延续补完、对比关系要在开头交代并互链，**不为链接而链接**；链到草稿要说明"发布后才生效"。
-3. **建文件**：后台 `npm run dev` → `http://localhost:3000/admin`（密码 `ADMIN_PASSWORD`，默认 `yg-admin`）→「新建文章」：自动写 `content/drafts/<slug>.md`，slug 由标题生成、`date` 取当前北京时间、标签/分类为空；左侧表单填标题/日期/标签（英文逗号分隔）/分类/摘要/封面，`⌘S` 保存。或手写 `content/drafts/<slug>.md`（**必须自补 Front Matter**）。**不要直接写进 `content/posts/`**（会立刻上线），发布走后台「发布」或 `git mv`。
+3. **建文件**：后台 `/admin`「新建文章」会自动写 `content/drafts/<slug>.md`（slug 由标题生成、`date` 取当前北京时间），填标题/日期/标签/分类/摘要/封面后 `⌘S` 保存；或手写草稿（**必须自补 Front Matter**）。**不要直接写进 `content/posts/`**（会立刻上线），发布走后台或 `git mv`。
 4. **写正文**：见「写作结构要求」「格式与排版」。
 5. **自检**：过「提交前自检清单」，并实际打开首页、文章页（桌面+窄屏）、目录、所有链接、图片。
 6. **汇报**：文件路径、slug（=URL）、标题、分类、标签、关联了哪些文章、怎么预览，并说明**文章仍在 `content/drafts/`、是否发布由用户决定**。**未经许可不发布、不 `git commit` / `git push`**。
@@ -270,7 +297,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 
 #### 先立骨架，再填血肉
 
-正文从 `##` 起。推荐路线：**引子**（具体现象切入，别写"本文将从三方面介绍"）→ **问题清单**（引用块列具体问题）→ **主体分层递进**（`## 第一部分` / `### 1.1`，每节收口并预告下一步）→ **转折深入**（反直觉结论/关键调用链/决定性源码）→ **收尾**（回到开头问题，可给延伸阅读）。一段一个论点（3~6 行为宜），先给结论再论证，少用"首先/其次/最后"；结构标题用 `##`/`###` 两层（`####` 不进 TOC），超过三层考虑拆节；不为凑字注水，也不为"简洁"省掉关键推导。
+正文从 `##` 起。推荐路线：**引子**（具体现象切入，别写"本文将从三方面介绍"）→ **问题清单**（引用块列具体问题）→ **分层递进**（每节收口并预告下一步）→ **转折深入**（反直觉结论/关键调用链/决定性源码）→ **收尾**（回到开头问题）。一段一个论点（3~6 行），先结论后论证；结构标题只用 `##`/`###`（`####` 不进 TOC），超过三层考虑拆节；不为凑字注水，也不为"简洁"省掉关键推导。
 
 #### 结论前置，标题写成论点
 
@@ -290,7 +317,7 @@ cover: /images/uploads/2026/10/upload-cover.png
 
 #### 叙事节奏、技术准确、可读性
 
-开头 3 行内抓住人（真实现象/报错/反直觉问题），每节有"下一步会怎样"的牵引，硬核源码后插白话总结。类比只搭桥，必须回到真实机制并说明边界；具体优于抽象。**不编造 API/类名/配置项**，存疑标"待核实"；区分"事实"与"理解"，版本相关行为标版本（"Spring Boot 3.2 中…"）；"谁调用谁/谁负责清理/谁兜底"回源码逐字确认并记版本。代码必须是真源码（省略用 `...` 并标注），不写伪代码；给边界条件；并发/线程/事件循环说明"在哪个线程执行"。善用表格对比、引用块放疑问/误区、加粗标结论（一屏不超两三处）。中文排版：中英文间加空格，代码与路径用半角，术语首次给中英对照。
+开头 3 行内抓住人（真实现象/报错/反直觉问题），每节有"下一步会怎样"的牵引，硬核源码后插白话总结。类比只搭桥，必须回到真实机制并说明边界。**不编造 API/类名/配置项**，存疑标"待核实"；版本相关行为标版本；"谁调用谁/谁负责清理/谁兜底"回源码逐字确认。代码必须是真源码（省略用 `...` 标注），不写伪代码；给边界条件；并发说明"在哪个线程执行"。善用表格对比、引用块放疑问、加粗标结论（一屏不超两三处）。中文排版：中英文间加空格，术语首次给中英对照。
 
 ### 2.8 格式与排版
 
@@ -330,14 +357,14 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 | 顶格 | 2~3.1 万 | 33~50 KB | 可写，但必须真机过一遍 |
 | 必须拆 | > 3.1 万 | > 50 KB | 超出已验证区间，别赌 |
 
-- 字符数指**非空白字符**（汉字/标点/英文/代码/表格），按"汉字数"估会严重低估；2 万字符 ≈ 正文 4,000~5,000 字 + 代码 300~400 行 + 表格 60~80 行。目标档是上限：能砍到 1.4 万就别停在 1.9 万。
+- 字符数指**非空白字符**（汉字/标点/英文/代码/表格），按"汉字数"估会严重低估；2 万字符 ≈ 正文 4,000~5,000 字 + 代码 300~400 行。目标档是上限，能砍到 1.4 万就别停在 1.9 万。
 - 统计：`python3 -c "import re,sys;print(len(re.sub(r'\s','',open(sys.argv[1],encoding='utf-8').read())))" content/posts/xxx.md`（草稿换路径），或 `ls -lh`；后台状态栏字符数含空白，不能当口径。
 - 超预算**拆系列**：导读篇做入口，各篇补引子/小结/上下篇链接，**节号跨篇连续编号**（正文"见第八节"不用改），删章后重排。
-- 验收：发布前用自己手机从头滚到底（电脑能看不算）；旧站实测 7.7 万字符 / 122 KB 必崩，3.1 万 / 50 KB 已验证可读。
+- 验收：发布前用自己手机从头滚到底；旧站实测 7.7 万字符 / 122 KB 必崩，3.1 万 / 50 KB 已验证可读。
 
 ### 2.10 提交前自检清单
 
-- **文件与 Front Matter**：草稿在 `content/drafts/`（发布才移入 `content/posts/`）且为 `.md`；六个字段齐全、`---` 成对、之后空一行；`date` 为 `YYYY-MM-DD HH:mm:ss` 北京时间；`tags`/`categories` 是列表且大小写一致；含 ASCII `: `、` #`、`- ` 开头的值加了引号；文件名不含 `%`/`/`/`?`/`#`，发布后不改名。
+- **文件与 Front Matter**：草稿在 `content/drafts/`（发布才移入 `content/posts/`）；六字段齐全、`---` 成对、之后空一行；`date` 为 `YYYY-MM-DD HH:mm:ss` 北京时间；`tags`/`categories` 是列表且大小写一致；含 ASCII `: `、` #`、`- ` 开头的值加引号；文件名不含 `%`/`/`/`?`/`#`。
 - **标题与内容**：正文无 `#` 一级标题；结构标题用 `##`/`###`，TOC 对得上；开头 3 行切入问题；每节有"为什么读"的铺垫；章/节标题是论点、无陌生名词、一章一论点；小节"结论→论证→细节"；无无关堆砌与裸名词；源码块交代"在哪/为什么看"；代码标语言且预览有高亮；公式渲染正常；图片 `/images/` 可加载、alt 有意义。
 - **关联与语言**：已检索现有文章；站内链接全为 `/posts/<slug>`、无 `/20xx/…/`（`grep -rn "](/20" content/`）；链接都点过且目标已发布；全文无"和需求方对话"的元叙述；单篇 ≤ 2 万非空白字符，改动净字符数不增。
 - **交付**：`/admin` 的「预览」与「整页预览」各看一遍；手机上滚到底；大改跑**冷读 + 事实核查**（不可合并）；说明路径/slug/标题/分类/标签/关联/预览方式；停在 drafts、未擅自发布/commit/push；动过代码则 `npm run typecheck && npm run build` 通过。
@@ -351,16 +378,14 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 | 文章不出现在站点 | 还在 `content/drafts`；或放进了 `content/` 根目录；或 `date` 在未来 |
 | 发布后 URL 变了 / 旧链接 404 | 改了文件名（slug = URL）；或发布时 `posts/` 已有同名文件被追加时间戳 |
 | 站内链接 404 | 旧 permalink `/20xx/…/`（迁移后应为 0，可用 grep 自查）、目标仍在 drafts、路径不是 `/posts/<slug>`；文件名带 `%` 则是 500（`URIError`） |
-| 页面出现两个大标题 | 正文写了 `#`，与 Front Matter 的 `title` 重复；删掉正文 H1 |
 | 公式红色报错 / 代码无高亮 | KaTeX 不认识的宏；语言标识拼错，或不在 `COMMON_LANGS`/仓库围栏扫描集里（Shiki 静默降级为纯文本，不报错）。补 `lib/shiki.ts` 的 `COMMON_LANGS` 并重启 dev |
 | 文章页代码块没有复制按钮 / 表格横向溢出 | 服务端 rehype 没产出 `.code-block`/`.table-wrap`（检查 `lib/markdown.ts` 的插件顺序是否在 `rehypeShiki` 之前），或客户端 `ArticleTools` 又开始在 hydration 后动 DOM |
 | 题目页滚动时截图"跳版"、CLS 变高 | 证据图 `<img>` 缺 `width/height`（由 `lib/study.ts` 从文件头注入），或 CSS 把图片覆盖成 `height:100%` |
 | 题库页多出 24 KB 无用 CSS / 文章公式样式丢失 | KaTeX 样式必须在文章页与后台预览 import，不能放回根布局（见 1.8.13） |
-| 改了 `.md` 页面还是旧的 | dev 下缓存按 mtime+size 失效，正常情况下刷新即可；同一毫秒同尺寸写入会漏判，重启 dev 兜底 |
 | 图片裂图 | 写成 `public/images/…` 或 `source/images/…`，应为 `/images/…`；路径大小写敏感；上传只收 png/jpeg/webp/gif 且 ≤ 20MB |
 | mermaid 变成一段源码 | 本仓库不支持 mermaid；改用 `text` 图形、表格或截图 |
 | 后台保存后 front matter 被重排、注释消失 | `serializePost` 用 js-yaml 重新序列化，正常；未知字段保留但不生效；删除可到 `.trash/<type>/` 找回 |
-| 改了 Markdown 没变化 | dev server 没运行或看的是旧标签页；页面 `force-dynamic`，刷新生效 |
+| 改了 `.md` / Markdown 页面没变化 | dev 缓存按 mtime+size 判定，同一毫秒同尺寸写入会漏判；页面 `force-dynamic`，刷新或重启 dev 兜底 |
 | 手机先闪一下随即"网页已崩溃" | 单页超过 3.1 万字符 / 50 KB 已验证区间，手机渲染进程被杀；拆系列 |
 | 读者中途看懵 / 每个字都认识却不懂 | 缺"为什么要想"的铺垫，或出现裸名词；见「写作结构要求」 |
 
@@ -377,14 +402,12 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 ### 3.1 数据从哪来：两段式管线
 
 ```
-【上游 · 不在本仓库】42 份 PDF
-  extract.py → lines.json → dump.py → flow.json + dump.txt → 人工切题 questions.p*.json
-  → resolve.py → questions.json → shots.py → assets/{ev,img}/*.jpg → build_site.py → site/index.html
+【上游 · 不在本仓库】PDF → extract.py → dump.py → 人工切题 → resolve.py → shots.py → build_site.py → site/index.html
 【本仓库】site/index.html + tools/site.json
-  → scripts/extract-study.cjs → data/study/index.json + data/study/<id>.json ×42（只搬数据，不搬图）
+  → scripts/extract-study.cjs → data/study/*.json（只搬数据，不搬图）
   → 手工 rsync site/<slug>/assets/ → public/study/<slug>/assets/
-  → scripts/enhance-answers/*（答案格式增强：用上游 lines.json 还原代码行 + 模型审阅 + 非代码结构修复，见 3.5）
-  → lib/study.ts（fs 读取）→ lib/study-highlight.ts（服务端 Shiki 高亮）→ app/(site)/study/** 三栏页面
+  → scripts/enhance-answers/*（答案格式增强，见 3.5）
+  → lib/study.ts（读盘）→ lib/study-highlight.ts（服务端 Shiki）→ app/(site)/study/** 三栏页
 ```
 
 - **源与派生物**：题目的源是上游 `questions.p*.json` + PDF；`data/study/*.json` 是抽取产物，手改会在下次抽取时被整体覆盖。
@@ -392,7 +415,7 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 
 ### 3.2 上游管线速查（PDF → 静态站）
 
-> 脚本在 `/Users/liyang/Deepseek/projects/interview/tools`，用 `.venv_pdf/bin/python` 执行（系统 Python 没有 pymupdf）；操作前先读上游 `AGENTS.md`。
+> 脚本在 `/Users/liyang/Deepseek/projects/interview/tools`，用 `.venv_pdf/bin/python` 执行；操作前先读上游 `AGENTS.md`。
 
 | 步骤 | 输入 → 输出 | 关键约束 |
 | --- | --- | --- |
@@ -417,14 +440,11 @@ node scripts/extract-study.cjs   # 每个专题一行 + done: 42 topics
 | 输出 | `data/study/<topic.id>.json` ×42 + `data/study/index.json` |
 | 依赖/副作用 | 仅 Node 内置模块；只写 `data/study/`，**不拷贝任何图片** |
 
-行为：① 大括号配对截出 `const DATA` 再 `JSON.parse`（上游把 `</` 转成 `<\/`，解析会还原；不用 `eval`/整页正则）；② 由 `site.json` 建 `id → slug` 映射，缺失则 `slug = id`；③ 专题字段原样保留、`pdf` 固定 `''`、`count` 重算；④ 路径重写：`answer` 的 `src=`/`href=` 前缀以 `assets/` 结尾时加 `/study/`（`topic-01-jvm/assets/img/p3_0.jpg` → `/study/topic-01-jvm/assets/img/p3_0.jpg`），`evidence[].files[].file` 同加 `/study/`，两种引号都处理、不碰外链（当前答案无外链 `<a href>`）；⑤ `index.json` 的 `meta.title/subtitle` 硬编码、`pages` 取上游 `meta.pages`、`topics/count` 重算，题目只留索引字段但**含 `search`**（故 7.6 MB）；⑥ `JSON.stringify(obj, null, 2)`，中文不转义、键序固定。
+行为：① 大括号配对截出 `const DATA` 再 `JSON.parse`（解析会还原上游的 `<\/`，不用 `eval`）；② 由 `site.json` 建 `id → slug` 映射；③ 专题字段原样保留、`pdf` 固定 `''`、`count` 重算；④ 路径重写：`answer` 的 `src=`/`href=` 与 `evidence[].files[].file` 若以 `assets/` 开头则加 `/study/` 前缀，不碰外链；⑤ `index.json` 的 `meta.title/subtitle` 硬编码、`pages` 取上游 `meta.pages`、`topics/count` 重算，题目只留索引字段但**含 `search`**（故 7.6 MB）；⑥ `JSON.stringify(obj, null, 2)`，中文不转义、键序固定。
 
 幂等：输入不变时逐字节相同；但脚本**不删除**过期专题文件、**不检查**资产是否存在，靠自检兜底。
 
-> ⚠️ 抽取只负责搬上游原样 HTML。代码块换行、PDF 行号、误分类等格式问题在抽取后的「答案格式增强」里处理（见 3.5）；**重抽会覆盖这些增强，必须重跑增强脚本**。
-
-
-
+> ⚠️ 抽取只搬上游原样 HTML；代码块与行号问题在 3.5 的增强流水线里处理，**重抽必须重跑**。
 
 ### 3.4 数据契约
 
@@ -545,8 +565,8 @@ node scripts/enhance-answers/verify.cjs
 4. **多出处全保留**：如 `jvm/q005` 3 个出处、`os/q074` 7 个、`bigtech/q001` 32 个出处/22 个别名，答案与证据全给，不写「另见 pXX」。
 5. **原文自身问题照录**：错字、重复段落、只给外链的空壳答案保留，用 `note` 标注。
 6. **答案分层**：`summary`→`answer`→`evidence`→`note`，不跨层搬运。
-7. **消费层不二次清洗**：广告/页脚已在上游剔除，不「补回来」，也不按长度/关键词删正文（「加载」「栈」「}」都是合法内容）。
-8. **不为好看删内容**：不删段落、不合并多题、不为通顺改标题，也不为了排版把正文塞进代码块。PDF 编辑器行号、页脚等**抽取伪影**可以清理；删字类修改（占位段、重复段、弱证据合并）默认只登记、不批量自动修。
+7. **消费层不二次清洗**：广告/页脚已在上游剔除，不「补回来」，也不按长度/关键词删正文。
+8. **不为好看删内容**：不删段落、不合并多题、不为通顺改标题，也不为排版把正文塞进代码块。行号、页脚等**抽取伪影**可清理；删字类修改默认只登记、不批量自动修。
 
 ### 3.7 验收清单
 
@@ -559,7 +579,7 @@ node scripts/enhance-answers/verify.cjs
 
 - `/study`：42 张卡片、`42 专题 / 2,521 题目 / 4,120 页原文`、筛选可用；`/study/jvm` 307 到 `/study/jvm/q001`；`/study/topic-01-jvm` 与 `/study/jvm/q999` 应 404。
 - `/study/jvm/q001`：三栏、别名、要点卡、原文备注、答案、上下题；右栏截图组数/页码与 evidence 一致、可放大、`Esc` 关闭；侧栏 `/` 搜索、`↑↓` 切题、专题下拉切换；全局搜索（`/api/search?q=`）能命中答案正文。
-- 视觉：`npm run dev` 后逐张读图，确认三栏不塌、红框在题干、插图落在正确段落之间、答案结尾无下一题标题、代码缩进正常；截图命令：
+- 视觉：`npm run dev` 后逐张读图，确认三栏不塌、红框在题干、插图位置正确、答案结尾无下一题标题；截图命令：
   ```bash
   mkdir -p /tmp/study-shots
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
@@ -578,7 +598,7 @@ node scripts/enhance-answers/verify.cjs
 | 4 | 上游 | `resolve.py build/topic-43`，必须「真正漏段: []」 |
 | 5 | 上游 | 删旧 `site/topic-43-xxx/assets/{ev,img}`；`shots.py build/topic-43 "Topic-43-XXX.pdf" site/topic-43-xxx` |
 | 6 | 上游 | `tools/site.json` 增 `id/no/slug/build/title/label/subtitle/pdf/accent`，`site.pages` 手填则加页数；`build_site.py`；跑上游三套验收 |
-| 7 | 本仓库 | `mkdir -p public/study/topic-43-xxx && rsync -a --delete .../site/topic-43-xxx/assets/ public/study/topic-43-xxx/assets/`（只同步 assets） |
+| 7 | 本仓库 | `rsync -a --delete <上游>/site/topic-43-xxx/assets/ public/study/topic-43-xxx/assets/`（只同步 assets） |
 | 8 | 本仓库 | 改硬编码 3 处：`scripts/extract-study.cjs` 的 `meta.subtitle`（「42 个专题」）、`app/(site)/study/page.tsx` 的 metadata description（42/2521）、`app/admin/login/page.tsx` 文案（42/2521）；再 `node scripts/extract-study.cjs`（应 `done: 43 topics`） |
 | 9 | 本仓库 | 跑自检 + `npm run typecheck && npm run build` + 重启 dev 看列表/首末题 + 抽查截图 + 两个只读 agent 审计 + `git status` |
 
@@ -592,16 +612,14 @@ node scripts/enhance-answers/verify.cjs
 | 新增专题仍显示「42 个专题」 | 3 处硬编码 | 改脚本 subtitle + study 页 description + admin 登录页文案 |
 | `/study/topic-01-jvm` 404 | 路由按 `topic.id` 读文件 | 链接用 id，slug 只用于资产 |
 | 插题后题号/截图错位 | qid 连续且写进文件名 | 只追加末尾；插中间就走上游重跑 shots |
-| 改 answer 后 search 与正文不一致 | search 是预计算字段 | 按规则重算（或重抽）；全局搜索正文本身读 answer |
 | 改 JSON 后页面不更新 | `getStudyIndex()` 缓存 + `/study` 预渲染 | 重启 dev / 重新 build / 硬刷新 |
 | 题目页图片裂 | 用了相对路径 | `answer` 图片必须 `/study/<slug>/assets/…` |
 | 全量格式化 JSON 产生巨大 diff | `data/study` 约 24 MB、index 7.6 MB | 只改目标字段，保持 2 空格缩进与键序 |
 | 删「未引用」图想减体积 | `topic-01-jvm/assets/img/p102_0.jpg` 无 answer 引用属正常 | 先核对引用，不按「未引用即删」清理 |
-| 代码块被压成一行、没有高亮 | 旧数据只有 token span，而本仓库没有 `.cl`/`.tk-*` 样式 | 统一成 `data-lang` + 服务端 Shiki（见 1.8.16、3.4）；旧格式请跑 3.5 增强 |
 | 代码里夹着 1/2/3 行号 | PDF 代码编辑器截图的行号被当正文抽取 | `reconstruct.cjs` 按坐标/行宽识别并剔除；非空白文字哈希校验兜底 |
 | 答案里的代码被拆成 pre→列表→pre | 中文注释行字体不同，上游按正文/列表抽取 | `reconstruct.cjs` 合并回同一代码块；模型审阅兜底（见 3.5） |
-| 改了 answer 但 search 没变 / 索引旧 | `search` 是预计算字段，index 与专题两份 | 跑 `node scripts/enhance-answers/sync-search.cjs` 重算并同步 |
-| 重抽后代码格式退回旧样 | `extract-study.cjs` 覆盖 data/study | 重跑 3.5 的增强流水线（reconstruct → 模型 ops → apply → verify） |
+| 改 answer 后 search 与正文不一致 / 索引旧 | `search` 是预计算字段，index 与专题两份 | 跑 `node scripts/enhance-answers/sync-search.cjs`（或重抽）重算并同步 |
+| 代码块被压成一行 / 重抽后格式退回旧样 | 只有 token span；`extract-study.cjs` 会覆盖 data/study | 统一成 `data-lang` + 服务端 Shiki（1.8.16、3.4），重抽后重跑 3.5 的增强流水线 |
 
 ### 3.10 硬性禁止
 
@@ -640,7 +658,7 @@ node scripts/enhance-answers/verify.cjs
 - **一次只解决一个主题**；内容改动与代码改动尽量分开，方便回滚与审阅。
 - **写文件用 read/edit/write**，不要用 `>` / `echo` 覆盖正文（换行、编码、YAML 引号都可能被破坏）。
 - **改数据结构要全链路同步**：改 front matter 字段 → `lib/types.ts` + `lib/posts.ts` 的 `metaOf`/`getRawPost`/`serializePost` + `PostEditor`；改题库字段 → `lib/study.ts` 接口 + `components/study/*` + `lib/search.ts`（若参与检索）+ `scripts/extract-study.cjs`（或明确只在消费层兼容）。
-- **新增页面**：读者侧放 `app/(site)/<route>/page.tsx` 并在 `Header.tsx` / `Footer.tsx` 补导航；后台放 `app/admin/`；样式追加到 `app/globals.css` 对应分区，暗色与 `< 900px` 一并处理。
+- **新增页面**：读者侧放 `app/(site)/<route>/page.tsx` 并补导航；后台放 `app/admin/`；样式追加到 `app/globals.css`，暗色与 `< 900px` 一并处理。
 - **新增 API**：放 `app/api/**/route.ts`；`/api/admin/*` 自动被 `middleware.ts` 保护，其他接口不需要登录。
 - **批量改题库资产前先数一遍**：`public/study` 有 8042 张图，移动/重命名前先确认引用关系（见 3.7 自检脚本）。
 - **大改先给方案**：结构调整、拆系列、删章节，先用几行说清「改哪里、为什么、影响什么」，确认后再动手。
@@ -656,10 +674,11 @@ node scripts/enhance-answers/verify.cjs
 | 博客样式 | 亮/暗两套 + 窄屏（390px）各看一眼 |
 | 题库 JSON / 截图 | 跑 3.7 的自检脚本；打开 `/study`、`/study/<topic>/<qid>`；截图能放大 |
 | 后台 / API | `/admin/login` → 新建 → 保存 → 预览 → 发布 → 撤回 → 删除，全流程走一遍 |
+| 复习页 / 学习设置 / 复习服务 | 实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」；关掉服务看降级提示；`npm run typecheck && npm run build` |
 | 搜索 | 任意页面按 `/` 或 `⌘K`，中英文关键词各搜一次 |
 | 渲染管线 / 链接预取 / 图片尺寸 | `npm run build && npm run start` 后看：文章页代码块有复制按钮且无跳版、`/study` 进专题首题与侧栏切题无骨架闪烁、题目页证据图加载前后不位移；确认 `/posts/<slug>`、`/study/<topic>/<qid>` 的 RSC 请求体积没有变大 |
 
-**在对话里汇报（不要写进文章/代码注释）**：① 改了什么（文件路径 + 一句话）；② 怎么验证的（命令 + 页面 + 结果）；③ 没验证 / 不确定的部分（如「没在真机上看过」「上游仓库不在这台机器」）；④ 需要用户决策的事（是否发布仍为草稿的文章、是否新增标签/专题）。
+**在对话里汇报（不要写进文章/代码注释）**：① 改了什么（路径 + 一句话）；② 怎么验证的（命令 + 页面 + 结果）；③ 没验证/不确定的部分；④ 需要用户决策的事。
 
 **禁止**：不擅自 `git commit` / `git push`（除非用户明确要求）；不擅自把草稿「发布」（移入 `content/posts/` 即上线）；不声称「已验证」而实际没跑命令、没打开页面；不把临时脚本、截图、`.wip-*` 目录留在仓库。
 
@@ -679,16 +698,17 @@ node scripts/enhance-answers/verify.cjs
 | 搞清楚 `data/study/*.json` 的字段 | 3.4 数据契约 |
 | 重新抽取题库 / 同步上游 | 3.3 本仓库的抽取 |
 | 重排答案代码块 / 加高亮 / 修非代码结构 | 3.5 答案格式增强、3.7 验收 |
-| 新增页面、组件、API | 1.3、1.8、4.2 |
-| 改主题色、暗色模式、响应式 | 1.8 代码约定（样式） |
+| 改复习页 / 学习设置 / 调度服务 | 1.10、`anki-svc/README.md` |
+| 调每日上限、看学习统计 | `/admin/study`（或 `curl POST /config`，见 `anki-svc/README.md`） |
+| 新增页面 / 组件 / API、改主题与响应式 | 1.3、1.8、4.2 |
 | 排查「页面 500 / 图片 404 / 内容不更新」 | 2.11、3.9 常见坑 |
 
 ### 4.5 本文件的维护
 
-- 目录、命令、数据契约、写作标准发生变化时，**同一次改动里同步更新本文件**。
-- 章节结构保持「一、项目 / 二、博客 / 三、题库 / 四、协作」四段；新规则先落到对应章节，跨领域的才提到第一章。
-- 只写**可复用的规范**：不写一次性任务背景、对话过程、会随内容增长的清单（数量以现场文件为准）。
-- 两处上游 `AGENTS.md` 是历史参考，**以本文件为准**；冲突时按本文件，并顺手修正或忽略上游。
+- 目录、命令、数据契约、写作标准变化时，**同一次改动里同步更新本文件**。
+- 章节结构保持「项目 / 博客 / 题库 / 协作」四段；新规则先落到对应章节，跨领域的才提到第一章。
+- 只写**可复用的规范**，不写一次性任务背景、对话过程、会随内容增长的清单。
+- 本文件超过 ~64 KB 会被工具截断；新增规则时先压缩旧表述，别无限追加。
 
 ## 五、一句话总结
 

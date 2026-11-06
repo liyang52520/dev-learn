@@ -24,7 +24,13 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      window.location.href = withBasePath('/admin');
+      // 只接受站内 /admin 开头的路径，避免被 next 参数带去外站
+      const rawNext = new URLSearchParams(window.location.search).get('next') || '';
+      const safeNext =
+        rawNext.startsWith('/') && !rawNext.startsWith('//') && rawNext.includes('/admin')
+          ? rawNext
+          : withBasePath('/admin');
+      window.location.href = safeNext;
     } catch {
       setError('网络错误，请重试');
       setLoading(false);

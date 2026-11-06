@@ -8,3 +8,9 @@ build
 .idea/
 .trash
 .env*.local
+
+# 本地 Anki 复习服务：虚拟环境与学习状态都不入库
+anki-svc/.venv
+anki-svc/.token
+anki-svc/data
+anki-svc/__pycache__
