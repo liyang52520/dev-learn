@@ -166,7 +166,11 @@ export function useReviewSession() {
       } catch (err) {
         if (!mounted.current) return
         if (err instanceof ApiError && err.status === 409) {
-          setToast('这张卡已被处理，正在取下一张')
+          setToast(
+            err.code === 'stale_card'
+              ? '思考超过 30 分钟，这张卡已重新排队，正在重新取卡'
+              : '这张卡已被其他标签页处理，正在取下一张',
+          )
           void loadNext(true)
           return
         }
@@ -216,14 +220,20 @@ export function useReviewSession() {
     void undo()
   }, [busy, undo])
 
-  const endSession = useCallback(() => finish(), [finish])
+  const endSession = useCallback(() => {
+    // 评分请求在途时结束，响应回来后会把页面重新拉回题面。
+    if (busy) return
+    finish()
+  }, [busy, finish])
 
   const continueRound = useCallback(() => {
-    reset()
+    const hasRemaining = counts.new + counts.learning + counts.review > 0
+    // 没有剩余卡时的「再检查一次」不能清空本轮小结。
+    if (hasRemaining) reset()
     setPhase('loading')
     setCard(null)
     void loadNext(false)
-  }, [loadNext, reset])
+  }, [counts, loadNext, reset])
 
   const retry = useCallback(() => {
     setError('')

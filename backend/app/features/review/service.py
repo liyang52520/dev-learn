@@ -65,6 +65,7 @@ def queue(limit: int = 1) -> ReviewQueue:
 
 def answer(payload: AnswerPayload) -> AnswerResult:
     raw = schedule.answer(payload.card_id, payload.rating)
+    analytics.invalidate_history()
     return AnswerResult(
         counts=ReviewCounts(**raw["counts"]),
         due_total=raw["due_total"],
@@ -75,6 +76,7 @@ def answer(payload: AnswerPayload) -> AnswerResult:
 
 def undo() -> UndoResult:
     raw = schedule.undo()
+    analytics.invalidate_history()
     return UndoResult(
         counts=ReviewCounts(**raw["counts"]),
         due_total=raw["due_total"],
@@ -114,11 +116,13 @@ def stats() -> ReviewStats:
                 "select count(*) from cards where queue >= 0 "
                 f"and did in ({marks}) and ("
                 "(type = 2 and due = ?) or "
-                "(type in (1, 3) and due >= ? and due < ?))",
+                "(type in (1, 3) and queue = 1 and due >= ? and due < ?) or "
+                "(type in (1, 3) and queue = 3 and due = ?))",
                 *ids,
                 analytics.today_seq() + 1,
                 tomorrow_start,
                 tomorrow_start + 86400,
+                analytics.today_seq() + 1,
             )
             or 0
         )
@@ -177,14 +181,16 @@ def update_config(payload: ReviewConfigUpdate) -> ReviewConfig:
 
 
 def sync() -> SyncResult:
-    snap = collection.snapshot("manual", force=True)
-    if snap is None:
+    result = collection.snapshot("manual", force=True)
+    if result is None:
         return SyncResult(status="failed", backup=None, message="快照失败，请检查服务日志")
+    snap, reused = result
     ok, message = collection.git_sync("手动同步")
+    prefix = f"无改动，沿用最近快照 {snap.name}" if reused else f"已快照 {snap.name}"
     if not ok:
         return SyncResult(
             status="partial",
             backup=snap.name,
-            message=f"快照已生成（{snap.name}），但 git 同步失败：{message}",
+            message=f"{prefix}，但 git 同步失败：{message}",
         )
-    return SyncResult(status="ok", backup=snap.name, message=f"已快照 {snap.name}；git：{message}")
+    return SyncResult(status="ok", backup=snap.name, message=f"{prefix}；git：{message}")

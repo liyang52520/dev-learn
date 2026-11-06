@@ -16,19 +16,19 @@ export function StudyStatsPanel({ stats }: { stats: ReviewStats }) {
           <strong>{stats.streak}</strong>
         </div>
         <div>
-          <span>累计复习（次）</span>
-          <strong>{stats.totalReviews}</strong>
+          <span>累计作答（次）</span>
+          <strong>{stats.totalAnswers}</strong>
         </div>
         <div>
-          <span>今日可学（队列）</span>
+          <span>当前队列（张）</span>
           <strong>{due}</strong>
         </div>
         <div>
-          <span>到期总量</span>
+          <span>到期复习（张）</span>
           <strong>{stats.dueTotal}</strong>
         </div>
         <div>
-          <span>未学新卡</span>
+          <span>未学新卡（张）</span>
           <strong>{stats.newRemaining}</strong>
         </div>
       </section>
@@ -38,7 +38,7 @@ export function StudyStatsPanel({ stats }: { stats: ReviewStats }) {
           <div className="study-admin-heatmap-head">
             <h3>最近 26 周</h3>
             <span>
-              今日 {stats.today} 次 · 连续 {stats.streak} 天 · 累计 {stats.totalReviews} 次
+              今日 {stats.today} 张 · 连续 {stats.streak} 天 · 累计作答 {stats.totalAnswers} 次
             </span>
           </div>
           <Heatmap days={stats.days} />

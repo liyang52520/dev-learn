@@ -52,6 +52,7 @@ export function useSessionClock({ phase, reviewed, setReviewed }: Options) {
           elapsedRef.current += Date.now() - segmentRef.current
           segmentRef.current = null
         }
+        setElapsedMs(elapsedRef.current)
       } else if (phase === 'question' || phase === 'answer') {
         segmentRef.current = Date.now()
       }
@@ -65,6 +66,8 @@ export function useSessionClock({ phase, reviewed, setReviewed }: Options) {
       elapsedRef.current += Date.now() - segmentRef.current
       segmentRef.current = Date.now()
     }
+    // 每评一张就把用时落到 state，刷新后才能从 sessionStorage 恢复。
+    setElapsedMs(elapsedRef.current)
     return elapsedRef.current
   }, [])
 

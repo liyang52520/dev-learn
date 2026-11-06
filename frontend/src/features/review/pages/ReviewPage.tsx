@@ -12,13 +12,14 @@ export default function ReviewPage() {
   if (phase === 'error') {
     const offline = [0, 502, 503, 504].includes(session.errorStatus)
     return (
-      <div className="review-page">
+      <div className="focus-main review-page">
         <div className="review-panel review-error">
           <h1>{offline ? '连不上学习服务' : '这次操作没成功'}</h1>
           <p>{session.error}</p>
           {offline ? (
             <p className="review-hint">
-              在仓库根目录执行 <code>npm run anki</code> 后刷新本页。
+              在仓库根目录执行 <code>python anki-svc/import.py</code> 初始化复习数据，或执行
+              <code>python scripts/dev.py</code> 启动服务后刷新本页。
             </p>
           ) : (
             <p className="review-hint">数据没有丢，重新取卡就能继续。</p>
@@ -36,7 +37,7 @@ export default function ReviewPage() {
 
   if (phase === 'done') {
     return (
-      <div className="review-page">
+      <div className="focus-main review-page">
         <ReviewDone
           reviewed={session.reviewed}
           elapsedMs={session.elapsedMs}
@@ -53,7 +54,7 @@ export default function ReviewPage() {
   const waiting = phase === 'loading' || !card
 
   return (
-    <div className="review-page">
+    <div className="focus-main review-page">
       <ReviewTop
         loaded={phase !== 'loading' || card !== null}
         counts={session.counts}
@@ -64,6 +65,7 @@ export default function ReviewPage() {
         revDone={stats?.todayReview ?? null}
         revLimit={stats?.revPerDay ?? 0}
         reviewed={session.reviewed}
+        busy={session.busy}
         onEnd={session.endSession}
       />
 
@@ -94,7 +96,11 @@ export default function ReviewPage() {
         <p className="review-shortcuts">空格 显示答案 · 1–4 评分 · U 撤销 · Esc 结束本轮</p>
       )}
 
-      {session.toast && <div className="review-toast">{session.toast}</div>}
+      {session.toast && (
+        <div className="review-toast" role="status">
+          {session.toast}
+        </div>
+      )}
     </div>
   )
 }

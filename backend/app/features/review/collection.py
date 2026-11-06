@@ -106,12 +106,15 @@ def is_dirty() -> bool:
     return _dirty["value"]
 
 
-def snapshot(reason: str = "auto", *, force: bool = False) -> Path | None:
+def snapshot(reason: str = "auto", *, force: bool = False) -> tuple[Path, bool] | None:
     """用 Anki 自带的备份器生成一致性快照。
 
     不能直接对 collection.anki2 做 sqlite3 在线备份：Anki 的 Rust 后端一直持有
     collection，`Connection.backup()` 遇到 BUSY 会无限重试，进而占死 LOCK，
     所有复习接口都会跟着卡住。
+
+    返回值第二项表示是否复用了已有快照：Anki 在 collection 没有改动时不会生成
+    新文件，这不是失败，手动同步和退出收尾都应继续走 git。
     """
     if not available():
         return None
@@ -122,27 +125,38 @@ def snapshot(reason: str = "auto", *, force: bool = False) -> Path | None:
         if col is None:
             return None
         target: Path | None = None
+        reused = False
         try:
             folder = backup_dir()
             folder.mkdir(parents=True, exist_ok=True)
             before = set(folder.glob("*.colpkg"))
-            col.create_backup(backup_folder=str(folder), force=True, wait_for_completion=True)
+            created_ok = col.create_backup(
+                backup_folder=str(folder), force=True, wait_for_completion=True
+            )
             created = [path for path in folder.glob("*.colpkg") if path not in before]
-            if not created:
-                raise RuntimeError("备份没有生成文件")
-            target = max(created, key=lambda path: path.stat().st_mtime)
+            if created:
+                target = max(created, key=lambda path: path.stat().st_mtime)
+            else:
+                existing = sorted(folder.glob("*.colpkg"), key=lambda path: path.stat().st_mtime)
+                if created_ok or not existing:
+                    raise RuntimeError("备份没有生成文件")
+                target = existing[-1]
+                reused = True
             if target.stat().st_size == 0:
                 raise RuntimeError("备份结果为空")
         except Exception as exc:  # noqa: BLE001 - 快照失败不能影响复习
             log.warning("快照失败(%s): %s", reason, exc)
-            if target is not None:
+            if not reused and target is not None:
                 target.unlink(missing_ok=True)
             return None
         _snapshot_due["value"] = False
         for old in sorted(backup_dir().glob("*.colpkg"))[:-KEEP_BACKUPS]:
             old.unlink(missing_ok=True)
-        log.info("快照完成：%s", target.name)
-        return target
+        if reused:
+            log.info("快照跳过(%s)：collection 无改动，沿用 %s", reason, target.name)
+        else:
+            log.info("快照完成：%s", target.name)
+        return target, reused
 
 
 def git_sync(message: str) -> tuple[bool, str]:
@@ -151,7 +165,7 @@ def git_sync(message: str) -> tuple[bool, str]:
     # data 目录必须自己是仓库，否则 git 会一路向上找到主仓库，
     # 把 backend/、frontend/ 等站点代码一起 add 进去。
     if not (settings.anki_dir / ".git").exists():
-        return True, "anki-svc/data 未初始化为独立仓库，已跳过 git 同步"
+        return False, "anki-svc/data 未初始化为独立仓库，未执行 git 同步"
     try:
         col = _collection
         if col is not None:
@@ -209,8 +223,9 @@ def _maintenance_loop() -> None:
             snapshot("timer")
             last_snapshot = now
         if now - last_git >= GIT_SYNC_EVERY and _dirty["value"]:
-            _dirty["value"] = False
-            git_sync(f"复习 {datetime.now():%Y-%m-%d %H:%M} 自动同步")
+            ok, _ = git_sync(f"复习 {datetime.now():%Y-%m-%d %H:%M} 自动同步")
+            if ok:
+                _dirty["value"] = False
             last_git = now
         if now - last_checkpoint >= 300:
             col = _collection
@@ -229,6 +244,8 @@ def close() -> None:
             return
         snapshot("shutdown")
         if _dirty["value"]:
-            git_sync(f"复习 {datetime.now():%Y-%m-%d %H:%M} 收尾同步")
+            ok, message = git_sync(f"复习 {datetime.now():%Y-%m-%d %H:%M} 收尾同步")
+            if not ok:
+                log.warning("收尾同步失败：%s", message)
         _collection.close()
         _collection = None

@@ -86,9 +86,19 @@ def answer(card_id: int, rating: int) -> dict[str, Any]:
         raise AppError("rating 必须是 1-4", code="invalid_params", status=400)
     with collection.LOCK:
         cached = _pending.get(card_id)
-        if not cached or time.time() - cached[1] > PENDING_TTL:
+        if not cached:
+            raise AppError(
+                "这张卡已被其他标签页处理或服务已重启，请重新取卡",
+                code="card_not_pending",
+                status=409,
+            )
+        if time.time() - cached[1] > PENDING_TTL:
             _pending.pop(card_id, None)
-            raise AppError("这张卡的调度状态已过期，请重新取卡", code="stale_card", status=409)
+            raise AppError(
+                "思考时间超过 30 分钟，这张卡已重新排队，请重新取卡",
+                code="stale_card",
+                status=409,
+            )
         states, shown_at = cached
         new_state = {1: states.again, 2: states.hard, 3: states.good, 4: states.easy}[rating]
         elapsed = int((time.time() - shown_at) * 1000)

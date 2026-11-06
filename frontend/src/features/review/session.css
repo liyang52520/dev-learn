@@ -92,8 +92,12 @@
   background: var(--ink);
   color: var(--bg);
   font-size: 13px;
+  max-width: calc(100% - 32px);
+  text-align: center;
   box-shadow: var(--shadow-md);
   z-index: 60;
+  /* 提示不能挡住底部的撤销/评分按钮 */
+  pointer-events: none;
 }
 
 .review-done-help {

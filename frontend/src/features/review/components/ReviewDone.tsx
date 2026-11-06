@@ -26,18 +26,27 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
   const hitNewLimit =
     newLimit > 0 && stats !== null && stats.todayNew >= newLimit && (stats?.newRemaining ?? 0) > 0
   const hitRevLimit = revLimit > 0 && stats !== null && stats.todayReview >= revLimit && overflow > 0
-  const outOfQuota = hitNewLimit || hitRevLimit
+  // 复习额度满了以后 Anki 会连新卡一起停发，此时 counts.new=0 但 newRemaining>0。
+  const reviewBlocksNew =
+    revLimit > 0 &&
+    stats !== null &&
+    stats.todayReview >= revLimit &&
+    (stats.newRemaining ?? 0) > 0 &&
+    counts.new === 0
+  const allPaused = stats !== null && newLimit === 0 && revLimit === 0
+  const outOfQuota = hitNewLimit || hitRevLimit || reviewBlocksNew || allPaused
   const nextDue = stats?.nextDueEpoch ? formatNextDue(stats.nextDueEpoch) : null
+  const quotaTitle = allPaused ? '复习已暂停' : '今天的额度用完了'
   const title =
     reviewed > 0
       ? finishedAll
         ? outOfQuota
-          ? '今天的额度用完了'
+          ? quotaTitle
           : '今天的复习完成了'
         : '这一轮结束了'
       : finishedAll
         ? outOfQuota
-          ? '今天的额度用完了'
+          ? quotaTitle
           : '现在没有到期的卡'
         : '还没有开始'
 
@@ -78,12 +87,13 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
       <div className="review-done-stats">
         <span><strong>{stats?.today ?? '—'}</strong>今日学过（张）</span>
         <span><strong>{stats?.streak ?? '—'}</strong>连续天数</span>
-        <span><strong>{stats?.totalReviews ?? '—'}</strong>累计复习（次）</span>
+        <span><strong>{stats?.totalAnswers ?? '—'}</strong>累计作答（次）</span>
       </div>
 
       {stats && (
         <p className="review-done-quota">
-          今日 新卡 {stats.todayNew}/{stats.newPerDay} · 复习 {stats.todayReview}/{stats.revPerDay}
+          今日 新卡 {stats.todayNew}/{stats.newPerDay > 0 ? stats.newPerDay : '已暂停'} · 复习{' '}
+          {stats.todayReview}/{stats.revPerDay > 0 ? stats.revPerDay : '已暂停'}
           {stats.todayRelearn > 0 ? ` · 重学 ${stats.todayRelearn}` : ''}
           {stats.newRemaining > 0 ? ` · 还有 ${stats.newRemaining} 张新卡没学` : ''}
         </p>
@@ -120,6 +130,11 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
       {hitNewLimit && !hitRevLimit && (
         <p className="review-done-help">
           新卡额度打满不代表都学会了，剩下的 {stats?.newRemaining} 张明天继续。
+        </p>
+      )}
+      {reviewBlocksNew && !hitRevLimit && (
+        <p className="review-done-help">
+          今天复习额度已满，新卡被一起暂停；还有 {stats?.newRemaining} 张新卡，明天继续或到设置里调高复习上限。
         </p>
       )}
     </div>

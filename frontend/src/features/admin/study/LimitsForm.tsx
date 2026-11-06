@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { errorMessage } from '@/shared/api/client'
 import type { ReviewConfig, ReviewStats } from '@/types/models'
@@ -16,6 +16,11 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
   const [revPerDay, setRevPerDay] = useState(String(config.revPerDay))
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    setNewPerDay(String(config.newPerDay))
+    setRevPerDay(String(config.revPerDay))
+  }, [config.newPerDay, config.revPerDay])
 
   const previewNew = Number(newPerDay)
   const previewRev = Number(revPerDay)

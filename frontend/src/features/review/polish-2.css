@@ -1,27 +1,23 @@
 /* —— 审查修复（第二轮）：可读性、状态语义与布局 —— */
 
-/* 问题态只有一行标题时，整块内容贴顶，下方一半是死白；把面板放到剩余空间中间 */
-.focus-main {
+/* review-page 与 focus-main 是同一个根节点，必须用复合选择器：
+   写成后代选择器永远匹配不到，面板不会拉伸，题面下方会留一整屏死白。 */
+.focus-main.review-page {
   display: flex;
   flex-direction: column;
 }
 
-.focus-main .review-page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.focus-main .review-page > .review-panel {
+.focus-main.review-page > .review-panel {
   margin-top: auto;
   margin-bottom: auto;
 }
 
 /* 问题态不要悬浮在页面中间：撑满一屏高度，把「显示答案」压到底部，
    视线从上往下是 题目 → 操作，留白变成呼吸区而不是空洞。 */
-.focus-main .review-page > .review-panel.is-question {
+.focus-main.review-page > .review-panel.is-question {
+  flex: 1;
   margin-top: 0;
-  margin-bottom: auto;
+  margin-bottom: 0;
   min-height: min(46vh, 460px);
   display: flex;
   flex-direction: column;

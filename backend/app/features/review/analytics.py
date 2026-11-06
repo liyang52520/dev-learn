@@ -29,6 +29,12 @@ def _placeholders(ids: list[int]) -> str:
     return ",".join("?" * len(ids))
 
 
+def invalidate_history() -> None:
+    """评分/撤销后立即让累计与热力图缓存失效。"""
+    _history["at"] = 0.0
+    _history["deck"] = None
+
+
 def today_seq() -> int:
     return int(collection.instance().sched.today)
 
@@ -104,13 +110,19 @@ def history() -> tuple[list[dict[str, Any]], int, int, int]:
 
 
 def due_total() -> int:
-    """真正到期、未被日限额截断的卡数（含学习中）。"""
+    """真正到期、未被日限额截断的卡数（含学习中，不含新卡）。
+
+    queue=1 的 learning 卡 due 是时间戳，queue=3 的跨日 learning 卡 due 是
+    天序号；两者必须分开比较，否则会把未来卡算成现在到期。
+    """
     ids = collection.deck_ids()
     row = collection.db().scalar(
         "select count(*) from cards where queue >= 0 "
         f"and did in ({_placeholders(ids)}) and ("
-        "(type in (1, 3) and due <= ?) or (type = 2 and due <= ?))",
+        "(type in (1, 3) and ((queue = 3 and due <= ?) or (queue <> 3 and due <= ?))) "
+        "or (type = 2 and due <= ?))",
         *ids,
+        today_seq(),
         int(time.time()),
         today_seq(),
     )
@@ -118,11 +130,24 @@ def due_total() -> int:
 
 
 def today_card_counts() -> tuple[int, int, int, int]:
-    """今日学过 / 新学 / 复习 / 重学（按卡去重）。"""
+    """今日学过 / 新学 / 复习 / 重学（按卡去重）。
+
+    总数单独按卡去重，不能把三类相加：同一张卡当天先复习、后遗忘重学，
+    会在 review 与 relearn 里各出现一次。
+    """
     ids = collection.deck_ids()
     marks = _placeholders(ids)
     start = day_start_ms()
     db = collection.db()
+    total_today = int(
+        db.scalar(
+            "select count(distinct r.cid) from revlog r join cards c on c.id = r.cid "
+            f"where r.id >= ? and c.did in ({marks})",
+            start,
+            *ids,
+        )
+        or 0
+    )
     new_today = int(
         db.scalar(
             "select count(distinct r.cid) from revlog r join cards c on c.id = r.cid "
@@ -152,7 +177,7 @@ def today_card_counts() -> tuple[int, int, int, int]:
         )
         or 0
     )
-    return new_today + review_today + relearn_today, new_today, review_today, relearn_today
+    return total_today, new_today, review_today, relearn_today
 
 
 def next_rollover_epoch() -> int:
@@ -173,12 +198,22 @@ def next_due_epoch() -> int | None:
 
     db = collection.db()
     candidates: list[int] = []
-    learning = db.scalar(
-        f"select min(due) from cards where queue >= 0 and did in ({marks}) and type in (1, 3)",
+    learning_now = db.scalar(
+        f"select min(due) from cards where queue = 1 and did in ({marks}) and type in (1, 3)",
         *ids,
     )
-    if learning:
-        candidates.append(int(learning))
+    if learning_now:
+        candidates.append(int(learning_now))
+    learning_day = db.scalar(
+        f"select min(due) from cards where queue = 3 and did in ({marks}) and type in (1, 3)",
+        *ids,
+    )
+    if learning_day is not None:
+        due_day = int(learning_day)
+        if due_day <= today:
+            candidates.append(now)
+        else:
+            candidates.append(rollover + (due_day - today - 1) * 86400)
     review_day = db.scalar(
         f"select min(due) from cards where queue >= 0 and did in ({marks}) and type = 2",
         *ids,
@@ -238,10 +273,10 @@ def recent_lapses(limit: int = 6) -> list[dict[str, Any]]:
 def last_backup() -> dict[str, Any] | None:
     # 新快照是 Anki 的 .colpkg；保留对旧 .anki2 快照的识别，方便平滑过渡。
     files = sorted(
-        collection.backup_dir().glob("*.colpkg"),
-        key=lambda path: path.stat().st_mtime,
-    ) + sorted(
-        collection.backup_dir().glob("collection-*.anki2"),
+        [
+            *collection.backup_dir().glob("*.colpkg"),
+            *collection.backup_dir().glob("collection-*.anki2"),
+        ],
         key=lambda path: path.stat().st_mtime,
     )
     if not files:

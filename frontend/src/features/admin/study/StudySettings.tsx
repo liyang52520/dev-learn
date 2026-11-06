@@ -41,7 +41,8 @@ export function StudySettings() {
         <h2>复习服务不可用</h2>
         <p>{error || '没有读到学习状态。'}</p>
         <p className="study-admin-hint">
-          先执行 <code>npm run anki</code>（或在仓库根目录启动后端），再点下面的按钮重试。
+          先执行 <code>python anki-svc/import.py</code> 初始化复习数据，或执行
+          <code>python scripts/dev.py</code> 启动服务，再点下面的按钮重试。
         </p>
         <button type="button" className="admin-button primary" onClick={() => void load()}>
           重试
@@ -61,7 +62,7 @@ export function StudySettings() {
             <h3>开始复习</h3>
             <p className="study-admin-hint">
               复习页只显示题面与原文答案，调度与统计都在服务端完成。当前连续 {stats.streak} 天，
-              累计 {stats.totalReviews} 次复习。
+              累计 {stats.totalAnswers} 次作答。
             </p>
             <Link to="/review" className="admin-button primary">
               进入复习页
