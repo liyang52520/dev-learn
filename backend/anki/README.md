@@ -1,4 +1,4 @@
-# anki-svc
+# anki
 
 复习子系统的数据与导入脚本。**调度逻辑已经并入 FastAPI 后端进程**，这里不再有独立服务，
 也没有 `8765` 端口与 `X-Review-Token`。
@@ -10,20 +10,20 @@ Anki 只回答三件事：下一张卡是哪张、四个按钮叫什么、还剩
 
 | 位置 | 内容 |
 | --- | --- |
-| `backend/anki-svc/import.py` | 把 `backend/data/study/*.json` 导入 `collection.anki2`（42 专题 / 2521 题） |
-| `backend/anki-svc/data/collection.anki2` | 学习状态，独立 git 仓库 `dev-anki`（不入库） |
-| `backend/anki-svc/data/backups/` | 一致性快照 `*.colpkg`，保留最近 30 份（不入库） |
+| `backend/anki/import.py` | 把 `backend/data/study/*.json` 导入 `collection.anki2`（42 专题 / 2521 题） |
+| `backend/anki/data/collection.anki2` | 学习状态，独立 git 仓库 `dev-anki`（不入库） |
+| `backend/anki/data/backups/` | 一致性快照 `*.colpkg`，保留最近 30 份（不入库） |
 | `backend/app/features/review/` | 调度、快照、统计与接口实现 |
 
 ## 装一次
 
 ```bash
-python3 -m venv backend/anki-svc/.venv
-backend/anki-svc/.venv/bin/pip install -r backend/anki-svc/requirements.txt
-backend/anki-svc/.venv/bin/python backend/anki-svc/import.py
+python3 -m venv backend/anki/.venv
+backend/anki/.venv/bin/pip install -r backend/anki/requirements.txt
+backend/anki/.venv/bin/python backend/anki/import.py
 ```
 
-`backend/anki-svc/data/` 必须自己是一个 git 仓库。若未初始化，后端会跳过 git 同步并在日志里说明，
+`backend/anki/data/` 必须自己是一个 git 仓库。若未初始化，后端会跳过 git 同步并在日志里说明，
 不会误把站点代码提交进 `dev-anki`。
 
 ## 每天用

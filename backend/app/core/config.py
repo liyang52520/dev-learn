@@ -56,7 +56,7 @@ class Settings:
 
     @property
     def anki_dir(self) -> Path:
-        return self.backend_dir / "anki-svc" / "data"
+        return self.backend_dir / "anki" / "data"
 
     @property
     def trash_dir(self) -> Path:

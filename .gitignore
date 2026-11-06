@@ -21,6 +21,6 @@ __pycache__/
 .pytest_cache/
 
 # 本地 Anki 复习数据：虚拟环境与学习状态都不入库
-backend/anki-svc/.venv
-backend/anki-svc/.token
-backend/anki-svc/data
+backend/anki/.venv
+backend/anki/.token
+backend/anki/data
