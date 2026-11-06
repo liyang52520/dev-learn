@@ -186,33 +186,11 @@ def clean_label(text: str) -> str:
     return text.replace("\u2068", "").replace("\u2069", "")
 
 
-QUEUE_MODES = ("mixed", "due", "new")
-
-
-def queue_view(limit: int = 1, mode: str = "mixed") -> dict:
-    if mode not in QUEUE_MODES:
-        mode = "mixed"
+def queue_view(limit: int = 1) -> dict:
     with LOCK:
         deck_id()
-        # 过滤模式需要往后多取一些，才能跨过被过滤掉的卡；日限额最多几百张，500 足够。
-        fetch = limit if mode == "mixed" else 500
-        queued = COL.sched.get_queued_cards(fetch_limit=fetch)
+        queued = COL.sched.get_queued_cards(fetch_limit=limit)
         picked = queued.cards
-        if mode == "due":
-            # get_queued_cards 会把「今天的学习卡」一起取出来，哪怕它还没到点
-            # （学习步骤 10 分钟只是排期，不是已经到期）。这里按 due_total 的
-            # 同一套标准再筛一次，否则点「只做到期」会提前 6 分钟弹出一张卡。
-            now = int(time.time())
-            crt = COL.db.scalar("select crt from col") or 0
-            today_day = (now - crt + 4 * 3600) // 86400
-            picked = [
-                qc for qc in picked
-                if (qc.card.ctype in (1, 3) and qc.card.due <= now)
-                or (qc.card.ctype == 2 and qc.card.due <= today_day)
-            ]
-        elif mode == "new":
-            picked = [qc for qc in picked if qc.card.ctype == 0]
-        picked = picked[:limit]
         items = []
         for qc in picked:
             note = COL.get_note(qc.card.note_id)
@@ -244,7 +222,7 @@ def counts() -> dict:
         return {"new": new, "learning": learning, "review": review}
 
 
-def answer(card_id: int, rating: int, mode: str = "mixed") -> dict:
+def answer(card_id: int, rating: int) -> dict:
     if rating not in (1, 2, 3, 4):
         raise ValueError("rating 必须是 1-4")
     with LOCK:
@@ -270,7 +248,7 @@ def answer(card_id: int, rating: int, mode: str = "mixed") -> dict:
         DIRTY["value"] = True
         PENDING_SNAPSHOT["value"] = True
         # 顺手把下一张卡带回去：前端少一次往返（answer → queue 两跳变一跳）
-        nxt = queue_view(1, mode)
+        nxt = queue_view(1)
         return {
             "counts": nxt["counts"],
             "due_total": nxt["due_total"],
@@ -327,27 +305,29 @@ def due_total() -> int:
 
 
 def today_card_counts() -> tuple[int, int, int, int]:
-    """今日学过 / 其中新学 / 复习 / 重学（都按 cid 去重）。
+    """今日学过 / 其中新学 / 复习 / 重学。
 
-    revlog 一次学习步骤会新增一条记录，同一张卡可能被记多次，
-    所以必须 distinct；另外「今天新学」的卡同一天再次出现时不再计入复习，
-    避免进度条把同一张卡算两遍。
+    新卡和复习直接取 Anki 的当日记账（counts_for_deck_today）——
+    也就是决定「今天还能发几张」的那份计数，页面上的额度和实际可学数量
+    才不会打架（连续、热力图等历史统计仍从 revlog 汇总）。
+    重学 Anki 没有对应记账，只能从 revlog 按 cid 去重统计。
     """
     with LOCK:
-        row = COL.db.all(
-            "with t as ("
-            "  select cid, type from revlog "
-            "  where date(id / 1000, 'unixepoch', 'localtime', ?) = "
-            "        date('now', 'localtime', ?)"
-            "), n as (select distinct cid from t where type = 0) "
-            "select (select count(distinct cid) from t), "
-            "       (select count(*) from n), "
-            "       (select count(distinct cid) from t "
-            "         where type = 1 and cid not in (select cid from n)), "
-            "       (select count(distinct cid) from t where type = 2)",
+        ledger = COL._backend.counts_for_deck_today(deck_id())
+        new_today = int(ledger.new)
+        review_today = int(ledger.review)
+        relearn_today = int(COL.db.scalar(
+            "select count(distinct cid) from revlog "
+            "where type = 2 and date(id / 1000, 'unixepoch', 'localtime', ?) = "
+            "      date('now', 'localtime', ?)",
             DAY_SHIFT, DAY_SHIFT,
-        )[0]
-    return int(row[0] or 0), int(row[1] or 0), int(row[2] or 0), int(row[3] or 0)
+        ) or 0)
+    return (
+        new_today + review_today + relearn_today,
+        new_today,
+        review_today,
+        relearn_today,
+    )
 
 
 def next_rollover_epoch() -> int:
@@ -550,13 +530,10 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/queue":
                 limit = 1
-                mode = "mixed"
                 for part in query.split("&"):
                     if part.startswith("limit="):
                         limit = max(1, min(int(part[6:] or 1), 20))
-                    elif part.startswith("mode="):
-                        mode = part[5:]
-                self._send(200, {"ok": True, **queue_view(limit, mode)})
+                self._send(200, {"ok": True, **queue_view(limit)})
             elif path == "/stats":
                 self._send(200, {"ok": True, **stats()})
             elif path == "/config":
@@ -576,7 +553,6 @@ class Handler(BaseHTTPRequestHandler):
                 result = answer(
                     int(body.get("card_id", 0)),
                     int(body.get("rating", 0)),
-                    str(body.get("mode") or "mixed"),
                 )
                 self._send(200, {"ok": True, **result})
             elif path == "/undo":

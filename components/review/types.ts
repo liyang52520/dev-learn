@@ -19,8 +19,6 @@ export interface ReviewCard {
   question: ReviewQuestion | null;
 }
 
-export type ReviewMode = 'mixed' | 'due' | 'new';
-
 export interface ReviewCounts {
   new: number;
   learning: number;

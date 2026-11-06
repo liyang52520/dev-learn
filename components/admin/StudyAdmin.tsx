@@ -154,6 +154,11 @@ export default function StudyAdmin() {
             写入本机 collection 的 deck 配置（{config?.deck}），与 Anki 桌面版 Deck Options 是同一份设置。<br />
             这是<b>每天的上限，不是每天的任务</b>；设成 0 等于暂停；改小立刻生效，改大当天也会补回。
           </p>
+          <p className="study-admin-hint">
+            两项额度彼此独立：新卡额度只限制首次学习的卡数；复习额度只统计已经学过、按计划回到队列的卡。学习步骤（1 / 10 分钟）不占用任何一项额度。
+            <br />
+            但<b>复习额度用尽后，新卡也会停发</b>（Anki 的固定规则，无法单独关闭）：当天作答的复习卡达到「复习 / 天」时，即使新卡额度还有剩余，也不会再出新卡。若只想暂停新卡、保留复习，把「新卡 / 天」设为 0。
+          </p>
           {config && (
             <p className="study-admin-hint study-admin-sched">
               学习步骤：{config.learning_steps?.length ? `${config.learning_steps.join(' / ')} 分钟` : '默认'}

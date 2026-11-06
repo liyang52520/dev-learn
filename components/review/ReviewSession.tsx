@@ -8,7 +8,6 @@ import type {
   ApiResult,
   ReviewCard,
   ReviewCounts,
-  ReviewMode,
   ReviewStats,
 } from './types';
 
@@ -22,12 +21,6 @@ const STATE_LABEL: Record<string, string> = {
   relearning: '重学',
   unknown: '未知',
 };
-const MODE_LABEL: Record<ReviewMode, string> = {
-  mixed: '混合',
-  due: '只清到期',
-  new: '只学新卡',
-};
-const MODES: ReviewMode[] = ['mixed', 'due', 'new'];
 const SESSION_KEY = 'yg-review-session';
 
 interface StoredSession {
@@ -35,7 +28,6 @@ interface StoredSession {
   reviewed: number;
   elapsedMs: number;
   topics: string[];
-  mode?: ReviewMode;
 }
 
 interface AnswerResponse {
@@ -96,14 +88,12 @@ export default function ReviewSession() {
   const [ratedThisTab, setRatedThisTab] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [topics, setTopics] = useState<string[]>([]);
-  const [mode, setMode] = useState<ReviewMode>('mixed');
   const [stuck, setStuck] = useState(false);
 
   const mounted = useRef(true);
   const elapsedRef = useRef(0);
   const segmentRef = useRef<number | null>(null);
   const undoQueued = useRef(false);
-  const modeRef = useRef<ReviewMode>('mixed');
   const ratedIds = useRef<Set<number>>(new Set());
   const lastStatsAt = useRef(0);
 
@@ -124,10 +114,6 @@ export default function ReviewSession() {
     setTopics(stored.topics || []);
     elapsedRef.current = stored.elapsedMs || 0;
     setElapsedMs(stored.elapsedMs || 0);
-    if (stored.mode && MODES.includes(stored.mode)) {
-      modeRef.current = stored.mode;
-      setMode(stored.mode);
-    }
   }, []);
 
   useEffect(() => {
@@ -140,7 +126,6 @@ export default function ReviewSession() {
           reviewed,
           elapsedMs,
           topics,
-          mode: modeRef.current,
         } satisfies StoredSession),
       );
     } catch {
@@ -219,12 +204,11 @@ export default function ReviewSession() {
   }, [flushSegment, loadStats]);
 
   const loadNext = useCallback(
-    async (retried = false, modeOverride?: ReviewMode) => {
-      const wanted = modeOverride ?? modeRef.current;
+    async (retried = false) => {
       setBusy(true);
       try {
         const data = await api<{ cards: ReviewCard[]; counts: ReviewCounts; due_total: number }>(
-          `/api/review/queue?limit=1&mode=${wanted}`,
+          '/api/review/queue?limit=1',
         );
         if (!mounted.current) return;
         setCounts(data.counts);
@@ -242,7 +226,7 @@ export default function ReviewSession() {
         // 自动重取一次，别把用户丢进「连不上服务」的错误页。
         if (isStale(err) && !retried) {
           setToast('这张卡的状态已更新，正在重新取卡');
-          window.setTimeout(() => void loadNext(true, wanted), 250);
+          window.setTimeout(() => void loadNext(true), 250);
           return;
         }
         setErrorStatus(err instanceof ApiError ? err.status : 0);
@@ -279,7 +263,7 @@ export default function ReviewSession() {
         const data = await api<AnswerResponse>('/api/review/answer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ card_id: card.card_id, rating, mode: modeRef.current }),
+          body: JSON.stringify({ card_id: card.card_id, rating }),
         });
         if (!mounted.current) return;
         // 「本轮完成」按卡片去重：学习步骤里同一张卡会出现多次，但用户只学了 1 张。
@@ -351,19 +335,6 @@ export default function ReviewSession() {
   const endSession = useCallback(() => {
     finish();
   }, [finish]);
-
-  const pickMode = useCallback(
-    (next: ReviewMode) => {
-      if (next === modeRef.current) return;
-      modeRef.current = next;
-      setMode(next);
-      resetRound();
-      setPhase('loading');
-      setCard(null);
-      void loadNext(false, next);
-    },
-    [loadNext, resetRound],
-  );
 
   const continueRound = useCallback(() => {
     resetRound();
@@ -612,21 +583,6 @@ export default function ReviewSession() {
           结束本轮
         </button>
       </header>
-
-      <div className="review-modes" role="group" aria-label="复习范围">
-        {MODES.map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={`review-mode${mode === item ? ' is-active' : ''}`}
-            aria-pressed={mode === item}
-            onClick={() => pickMode(item)}
-            disabled={busy && mode !== item}
-          >
-            {MODE_LABEL[item]}
-          </button>
-        ))}
-      </div>
 
       {phase === 'loading' || !card ? (
         <div className="review-panel review-loading">

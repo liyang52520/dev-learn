@@ -4388,41 +4388,6 @@ html.dark .skeleton {
   .review-launcher-skel { animation: none; }
 }
 
-/* 复习范围：混合 / 只清到期 / 只学新卡 */
-.review-modes {
-  display: flex;
-  gap: 6px;
-  margin: 0 0 12px;
-}
-
-.review-mode {
-  padding: 6px 13px;
-  min-height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 12.5px;
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-}
-
-.review-mode:hover:not(:disabled) {
-  border-color: var(--line-2);
-  color: var(--ink);
-}
-
-.review-mode.is-active {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
-}
-
-.review-mode:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
 /* 提前结束不是「完成」，别用对勾和 COMPLETE 骗人 */
 .review-done-mark.is-paused {
   background: var(--bg-elev);
