@@ -3,6 +3,7 @@ import type {
   AnswerPayload,
   AnswerResult,
   CardAnswer,
+  LapseList,
   ReviewQueue,
   ReviewStats,
   UndoResult,
@@ -14,6 +15,10 @@ export function fetchQueue(): Promise<ReviewQueue> {
 
 export function fetchStats(): Promise<ReviewStats> {
   return apiGet<ReviewStats>('/api/review/stats')
+}
+
+export function fetchLapses(): Promise<LapseList> {
+  return apiGet<LapseList>('/api/review/lapses')
 }
 
 export function fetchCardAnswer(qid: string): Promise<CardAnswer> {
