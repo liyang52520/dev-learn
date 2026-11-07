@@ -38,7 +38,7 @@ def save_upload(filename: str, content_type: str, data: bytes) -> str:
         raise AppError("图片尺寸过大", code="invalid_image", status=400)
     now = time.localtime()
     year, month = f"{now.tm_year:04d}", f"{now.tm_mon:02d}"
-    directory = safe_join(settings.public_dir, "images", "uploads", year, month)
+    directory = safe_join(settings.blog_assets_dir, "images", "uploads", year, month)
     directory.mkdir(parents=True, exist_ok=True)
     name = f"{int(time.time())}-{uuid.uuid4().hex[:8]}{suffix}"
     target = safe_join(directory, name)

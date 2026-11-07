@@ -15,13 +15,13 @@ from app.features.media import service
 
 @dataclass(frozen=True)
 class _TempSettings:
-    public_dir: Path
+    blog_assets_dir: Path
     max_upload_bytes: int = 20 * 1024 * 1024
 
 
 @pytest.fixture()
 def media(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> _TempSettings:
-    settings = _TempSettings(public_dir=tmp_path / "public")
+    settings = _TempSettings(blog_assets_dir=tmp_path / "assets")
     monkeypatch.setattr(service, "settings", settings)
     return settings
 
@@ -36,7 +36,7 @@ def test_saves_valid_png(media: _TempSettings) -> None:
     url = service.save_upload("a.png", "image/png", _png())
     assert url.startswith("/images/uploads/")
     assert url.endswith(".png")
-    stored = media.public_dir / url.lstrip("/")
+    stored = media.blog_assets_dir / url.lstrip("/")
     assert stored.is_file()
     assert stored.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
     assert Image.open(stored).size == (4, 3)
@@ -54,7 +54,9 @@ def test_rejects_unsupported_type(media: _TempSettings) -> None:
 
 
 def test_rejects_oversized_payload(media: _TempSettings, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(service, "settings", _TempSettings(media.public_dir, max_upload_bytes=8))
+    monkeypatch.setattr(
+        service, "settings", _TempSettings(media.blog_assets_dir, max_upload_bytes=8)
+    )
     with pytest.raises(AppError) as error:
         service.save_upload("a.png", "image/png", _png())
     assert error.value.status == 413

@@ -16,6 +16,14 @@ from app.core.paths import safe_join
 
 
 def mount_site(app: FastAPI) -> None:
+    # 上传图跟随博客内容存放，URL 仍保持 /images/uploads/…；
+    # 更具体的挂载必须先注册，否则会被 /images 吞掉。
+    uploads = settings.blog_assets_dir / "images" / "uploads"
+    app.mount(
+        "/images/uploads",
+        StaticFiles(directory=uploads, check_dir=False),
+        name="uploads",
+    )
     images = settings.public_dir / "images"
     if images.is_dir():
         app.mount("/images", StaticFiles(directory=images), name="images")

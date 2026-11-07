@@ -149,7 +149,7 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 
 ### 图片
 
-图片放 `frontend/public/images/`，Markdown 写站点根路径 `/images/…`（写成 `frontend/public/images/…` 会 404）；后台上传存 `frontend/public/images/uploads/<年>/<月>/` 并返回 `/images/uploads/…`，只收 png/jpeg/webp/gif 且 ≤ 20MB；上传后把 alt 从文件名改成有意义的描述；不用外部图床；封面用 Front Matter 的 `cover`。
+图片：后台上传存 `backend/data/blog/assets/images/uploads/<年>/<月>/`，Markdown 写站点根路径 `/images/uploads/…`；头像、站点图标等固定资源放 `frontend/public/images/`，写 `/images/…`（写成 `frontend/public/…` 会 404）；只收 png/jpeg/webp/gif 且 ≤ 20MB；上传后把 alt 从文件名改成有意义的描述；不用外部图床；封面用 Front Matter 的 `cover`。
 
 ## 2.9 篇幅预算
 
@@ -184,7 +184,7 @@ GFM 表格/删除线/任务列表/自动链接可用，表格 ≤ 5 列（宽表
 | 文章页代码块没有复制按钮 / 表格横向溢出 | 服务端插件没产出 `.code-block`/`.table-wrap`（检查 `backend/app/rendering/plugins.py` 是否在 Pygments 高亮之前包裹），或前端 `HtmlContent` 又开始在 hydration 后移动 DOM |
 | 题目页滚动时截图"跳版"、CLS 变高 | 证据图 `<img>` 缺 `width/height`（由 `backend/app/rendering/images.py` 从文件头注入），或 CSS 把图片覆盖成 `height:100%` |
 | 公式样式丢失 / 非文章页多了 KaTeX CSS | 公式由 `HtmlContent` 用 KaTeX 在浏览器渲染，样式随组件引入；只有用到它的页面才付这份体积 |
-| 图片裂图 | 写成 `frontend/public/images/…` 或 `source/images/…`，应为 `/images/…`；路径大小写敏感；上传只收 png/jpeg/webp/gif 且 ≤ 20MB |
+| 图片裂图 | 写成 `frontend/public/images/…`、`backend/data/blog/assets/…` 或 `source/images/…`，应写站点根路径 `/images/…` 或 `/images/uploads/…`；路径大小写敏感；上传只收 png/jpeg/webp/gif 且 ≤ 20MB |
 | mermaid 变成一段源码 | 本仓库不支持 mermaid；改用 `text` 图形、表格或截图 |
 | 后台保存后 front matter 被重排、注释消失 | 后端按固定字段重新序列化，正常；未知字段保留但不生效；删除可到 `.trash/<type>/` 找回 |
 | 改了 `.md` / Markdown 页面没变化 | 后端缓存按 mtime+size 判定，同一毫秒同尺寸写入会漏判；重启后端或重新保存兜底 |

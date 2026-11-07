@@ -43,6 +43,10 @@ class Settings:
         return self.backend_dir / "data" / "blog"
 
     @property
+    def blog_assets_dir(self) -> Path:
+        return self.content_dir / "assets"
+
+    @property
     def study_dir(self) -> Path:
         return self.backend_dir / "data" / "study"
 

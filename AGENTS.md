@@ -83,14 +83,16 @@ dev-learn/
 │   │   │   └── review/             # 复习调度、快照、统计
 │   │   └── tests/                  # 跨模块测试
 │   ├── data/
-│   │   ├── blog/posts|drafts/   # 已发布文章 / 草稿
+│   │   ├── blog/
+│   │   │   ├── posts|drafts/       # 已发布文章 / 草稿
+│   │   │   └── assets/images/      # 文章图片（uploads/ 为后台上传）
 │   │   └── study/                  # index.json + 专题 JSON + PDF 截图
 │   ├── scripts/
 │   │   ├── dev.py                  # 一条命令起前后端
 │   │   └── check_structure.py      # 结构规则检查
 │   └── anki/                   # import.py + 学习数据（见其 README）
 ├── frontend/
-│   ├── public/images/              # 头像、上传图、站点图标
+│   ├── public/images/              # 头像、站点图标等固定资源
 │   ├── src/
 │   │   ├── app/                    # App.tsx 路由表、providers、layout、404
 │   │   ├── features/               # posts / blog / study / search / review / admin
@@ -140,7 +142,7 @@ dev-learn/
 
 **题库**：`backend/data/study/index.json` → 专题列表；`backend/data/study/<id>.json` → 题目与答案 HTML；`rendering/answers.py` 把答案里的 `<pre class='code'>` 高亮成 `.code-block`（按 sha1 缓存）；`rendering/images.py` 读文件头注入 `width/height`。
 
-**后台**：`/admin` → `/api/admin/*` → `features/posts/repository.py` 原子写（临时文件 + `os.replace`）；发布/撤回 = 在 `backend/data/blog/posts` 与 `backend/data/blog/drafts` 间移动；删除 = 移入 `backend/.trash/<type>/<时间戳>-<slug>.md`；上传 = 落 `frontend/public/images/uploads/<年>/<月>/`。
+**后台**：`/admin` → `/api/admin/*` → `features/posts/repository.py` 原子写（临时文件 + `os.replace`）；发布/撤回 = 在 `backend/data/blog/posts` 与 `backend/data/blog/drafts` 间移动；删除 = 移入 `backend/.trash/<type>/<时间戳>-<slug>.md`；上传 = 落 `backend/data/blog/assets/images/uploads/<年>/<月>/`，URL 仍为 `/images/uploads/…`。
 
 ### 1.6 本地运行与验证
 
@@ -191,7 +193,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 2. `/admin` 支持「全部 / 已发布 / 草稿」筛选与关键词过滤；「新建文章」默认建在 `backend/data/blog/drafts`，文件名由标题 slug 化。
 3. 编辑器字段：`title`、`date`、`tags`（逗号分隔）、`categories`（逗号分隔）、`description`、`cover`；正文用 CodeMirror，`⌘/Ctrl+S` 保存，右侧实时预览。
 4. 「整页预览」复用同一渲染管线；「发布/撤回」只移动文件；「删除」移到 `backend/.trash/`。
-5. 上传仅支持 png/jpeg/webp/gif、≤ 20 MB，服务端会校验真实图片头，返回 `/images/uploads/YYYY/MM/…`。
+5. 上传仅支持 png/jpeg/webp/gif、≤ 20 MB，服务端会校验真实图片头，落 `backend/data/blog/assets/images/uploads/`，返回 `/images/uploads/YYYY/MM/…`；`frontend/public/images/` 只放头像、站点图标等固定资源。
 
 后台只编辑已知字段；手写在 front matter 里的额外字段会被保留，但新增字段的完整支持需同时改
 `features/posts/frontmatter.py`、`features/posts/schemas.py`、`frontend/src/types/models.ts` 与编辑器组件。
@@ -361,7 +363,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 
 ## 五、一句话总结
 
-> **项目**：文件即数据库——`backend/data/blog/` 是文章，`backend/data/study/` 是题库与截图，`frontend/public/images/` 是图片资产；FastAPI 只出 JSON，React 负责页面。
+> **项目**：文件即数据库——`backend/data/blog/` 是文章与文章图片，`backend/data/study/` 是题库与截图，`frontend/public/images/` 只放头像、图标等固定资源；FastAPI 只出 JSON，React 负责页面。
 >
 > **博客**：先问清楚，再找关联，按「引子 → 问题 → 分层递进 → 收口」写；正文不写 `#` 一级标题，技术经得起查证，语言写给读者；新文章先进 `backend/data/blog/drafts/`。
 >
