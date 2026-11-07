@@ -1,0 +1,95 @@
+import { useEffect, useState } from 'react'
+
+import type { BackupConflict } from '@/types/models'
+
+type Props = {
+  branch: string
+  conflicts: BackupConflict[]
+  busy: boolean
+  onResolve: (resolutions: Record<string, 'local' | 'remote'>) => void
+  onAbort: () => void
+}
+
+type Choice = 'local' | 'remote'
+
+export function MergeConflictPanel({ branch, conflicts, busy, onResolve, onAbort }: Props) {
+  const [choices, setChoices] = useState<Record<string, Choice>>(() =>
+    Object.fromEntries(conflicts.map((item) => [item.path, 'local'])),
+  )
+
+  // 轮询会换掉 conflicts 数组；只为新增冲突补默认值，不重置用户已经做过的选择。
+  useEffect(() => {
+    setChoices((prev) => {
+      let changed = false
+      const next = { ...prev }
+      for (const item of conflicts) {
+        if (!next[item.path]) {
+          next[item.path] = 'local'
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [conflicts])
+
+  return (
+    <section className="backup-card backup-conflict">
+      <div className="backup-conflict-head">
+        <div>
+          <p className="backup-kicker">冲突待处理</p>
+          <h2>合并 {branch || '远端分支'} 时发现冲突</h2>
+        </div>
+        <span className="backup-badge is-warn">{conflicts.length} 个文件</span>
+      </div>
+      <p className="backup-warn">
+        合并完成前复习暂停。每个文件整份选择保留本机或采用对方；不会自动替你决定。
+      </p>
+      <div className="backup-conflicts">
+        {conflicts.map((item) => (
+          <div className="backup-conflict-row" key={item.path}>
+            <div>
+              <code>{item.path}</code>
+              <p className="backup-branch-meta">
+                {item.kind === 'anki'
+                  ? 'Anki 学习状态是二进制文件，只能整份选择；默认保留本机。'
+                  : '文本文件，整份选择一侧，不做逐行合并。'}
+              </p>
+            </div>
+            <div className="backup-choice">
+              {(
+                [
+                  ['local', '保留本机'],
+                  ['remote', '采用对方'],
+                ] as const
+              ).map(([value, label]) => (
+                <label key={value}>
+                  <input
+                    type="radio"
+                    name={`resolve-${item.path}`}
+                    value={value}
+                    checked={choices[item.path] === value}
+                    onChange={() => setChoices((prev) => ({ ...prev, [item.path]: value }))}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="backup-actions">
+        <button type="button" className="admin-button" disabled={busy} onClick={onAbort}>
+          取消合并
+        </button>
+        <button
+          type="button"
+          className="admin-button primary"
+          disabled={busy}
+          onClick={() => onResolve(choices)}
+        >
+          {busy ? '处理中…' : '完成合并'}
+        </button>
+      </div>
+    </section>
+  )
+}

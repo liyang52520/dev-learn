@@ -10,6 +10,8 @@ from fastapi import FastAPI
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLogMiddleware, configure_logging
 from app.features.auth.router import router as auth_router
+from app.features.backup import scheduler as backup_scheduler
+from app.features.backup.router import router as backup_router
 from app.features.blog.router import router as blog_router
 from app.features.media.router import router as media_router
 from app.features.posts.router_admin import router as posts_admin_router
@@ -24,8 +26,12 @@ from app.serving import mount_site
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    yield
-    review_collection.close()
+    backup_scheduler.start()
+    try:
+        yield
+    finally:
+        backup_scheduler.stop()
+        review_collection.close()
 
 
 def create_app() -> FastAPI:
@@ -60,6 +66,7 @@ def _include_routers(app: FastAPI) -> None:
         media_router,
         review_router,
         review_admin_router,
+        backup_router,
     ):
         app.include_router(router)
 

@@ -26,6 +26,7 @@ export function AdminTopbar() {
       <nav>
         <Link to="/admin">文章</Link>
         <Link to="/admin/study">学习</Link>
+        <Link to="/admin/backup">备份</Link>
         <Link to="/">
           查看站点
           <ArrowRightIcon className="icon" />

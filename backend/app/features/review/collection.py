@@ -1,17 +1,15 @@
-"""Anki collection 生命周期：延迟打开、快照、git 同步与后台维护。
+"""Anki collection 生命周期：延迟打开、快照与后台维护。
 
 复习状态属于站点数据，和 blog / study 一起放在独立仓库 `backend/data/`（dev-anki）。
-本模块只管「库怎么开、怎么备份」，调度细节在 schedule.py。
+git 同步由 `features/backup` 负责；本模块只管「库怎么开、怎么关、怎么备份」。
 """
 
 from __future__ import annotations
 
 import contextlib
 import logging
-import subprocess
 import threading
 import time
-from datetime import datetime
 from pathlib import Path
 
 from anki.collection import Collection
@@ -26,11 +24,10 @@ log = logging.getLogger("app.review")
 DECK_NAME = "Java面试"
 KEEP_BACKUPS = 30
 SNAPSHOT_EVERY = 10 * 60
-GIT_SYNC_EVERY = 24 * 60 * 60
 
 LOCK = threading.RLock()
-_dirty = {"value": False}
 _snapshot_due = {"value": False}
+_suspended = {"value": False}
 _collection: Collection | None = None
 _maintenance: threading.Thread | None = None
 
@@ -50,6 +47,12 @@ def available() -> bool:
 def instance() -> Collection:
     """延迟打开：只有第一次真正用到复习时才读 collection。"""
     global _collection
+    if _suspended["value"]:
+        raise AppError(
+            "数据同步进行中，复习暂时不可用，请稍后刷新",
+            code="sync_in_progress",
+            status=503,
+        )
     if _collection is not None:
         return _collection
     path = collection_path()
@@ -60,6 +63,12 @@ def instance() -> Collection:
             status=503,
         )
     with LOCK:
+        if _suspended["value"]:
+            raise AppError(
+                "数据同步进行中，复习暂时不可用，请稍后刷新",
+                code="sync_in_progress",
+                status=503,
+            )
         if _collection is None:
             try:
                 _collection = Collection(str(path))
@@ -98,12 +107,7 @@ def deck_ids() -> list[int]:
 
 
 def mark_dirty() -> None:
-    _dirty["value"] = True
     _snapshot_due["value"] = True
-
-
-def is_dirty() -> bool:
-    return _dirty["value"]
 
 
 def snapshot(reason: str = "auto", *, force: bool = False) -> tuple[Path, bool] | None:
@@ -159,51 +163,46 @@ def snapshot(reason: str = "auto", *, force: bool = False) -> tuple[Path, bool] 
         return target, reused
 
 
-def git_sync(message: str) -> tuple[bool, str]:
-    """把 anki 学习状态提交并推到 dev-anki；返回真实结果，不假报成功。"""
-    repo = str(settings.data_dir)
-    # data 目录必须自己是仓库，否则 git 会一路向上找到主仓库，
-    # 把 backend/app、frontend 等站点代码一起 add 进去。
-    if not (settings.data_dir / ".git").exists():
-        return False, "backend/data 未初始化为独立仓库，未执行 git 同步"
-    try:
+def checkpoint() -> None:
+    """只做 PASSIVE 检查点。
+
+    TRUNCATE 会等待所有读者退出，而 Anki 自己的连接一直开着，
+    等待可能永不返回并长期占住 LOCK。
+    """
+    with LOCK:
         col = _collection
-        if col is not None:
-            proxy = col.db
-            if proxy is not None:
-                # 只做 PASSIVE 检查点。TRUNCATE 会等待所有读者退出，
-                # 而 Anki 自己的连接一直开着，等待可能永不返回并长期占住 LOCK。
-                with LOCK, contextlib.suppress(Exception):
-                    proxy.all("pragma wal_checkpoint(passive)")
-        # 自动同步只提交 anki 状态；blog / study 的改动由人工按需提交。
-        subprocess.run(
-            ["git", "-C", repo, "add", "anki"], check=True, timeout=60, capture_output=True
-        )
-        diff = subprocess.run(
-            ["git", "-C", repo, "diff", "--cached", "--quiet"], timeout=60, capture_output=True
-        )
-        if diff.returncode == 0:
-            return True, "没有改动，无需推送"
-        subprocess.run(
-            ["git", "-C", repo, "commit", "-q", "-m", message],
-            check=True,
-            timeout=60,
-            capture_output=True,
-        )
-        subprocess.run(
-            ["git", "-C", repo, "push", "-q", "origin", "HEAD"],
-            check=True,
-            timeout=120,
-            capture_output=True,
-        )
-        return True, "已提交并推送"
-    except subprocess.CalledProcessError as exc:
-        raw = exc.stderr or b""
-        text = raw.decode("utf-8", "replace") if isinstance(raw, bytes) else str(raw)
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
-        return False, lines[-1] if lines else f"git 退出码 {exc.returncode}"
-    except Exception as exc:  # noqa: BLE001
-        return False, str(exc)
+        proxy = col.db if col is not None else None
+        if proxy is not None:
+            with contextlib.suppress(Exception):
+                proxy.all("pragma wal_checkpoint(passive)")
+
+
+def suspend() -> None:
+    """同步前关闭 collection：git 改动工作区前必须先让它松手。"""
+    global _collection
+    with LOCK:
+        _suspended["value"] = True
+        if _collection is not None:
+            with contextlib.suppress(Exception):
+                _collection.close()
+            _collection = None
+
+
+def resume() -> None:
+    """同步结束；下次访问复习接口时按需重新打开。"""
+    with LOCK:
+        _suspended["value"] = False
+
+
+def is_suspended() -> bool:
+    return _suspended["value"]
+
+
+def clear_runtime_files() -> None:
+    """工作区被 git 改写后，旧的 WAL / SHM 不能再交给新库。"""
+    base = collection_path()
+    for suffix in ("-wal", "-shm", "-journal"):
+        Path(f"{base}{suffix}").unlink(missing_ok=True)
 
 
 def _start_maintenance() -> None:
@@ -215,37 +214,25 @@ def _start_maintenance() -> None:
 
 
 def _maintenance_loop() -> None:
-    last_snapshot = last_git = last_checkpoint = time.time()
+    last_snapshot = last_checkpoint = time.time()
     while True:
         time.sleep(30)
         now = time.time()
         if now - last_snapshot >= SNAPSHOT_EVERY:
             snapshot("timer")
             last_snapshot = now
-        if now - last_git >= GIT_SYNC_EVERY and _dirty["value"]:
-            ok, _ = git_sync(f"复习 {datetime.now():%Y-%m-%d} 每日同步")
-            if ok:
-                _dirty["value"] = False
-            last_git = now
         if now - last_checkpoint >= 300:
-            col = _collection
-            proxy = col.db if col is not None else None
-            if proxy is not None:
-                with LOCK, contextlib.suppress(Exception):
-                    proxy.all("pragma wal_checkpoint(passive)")
+            checkpoint()
             last_checkpoint = now
 
 
 def close() -> None:
-    """进程退出前的收尾：快照 + 有改动才推送。"""
+    """进程退出前的收尾：快照后关闭；git 同步由备份模块负责。"""
     global _collection
     with LOCK:
         if _collection is None:
             return
         snapshot("shutdown")
-        if _dirty["value"]:
-            ok, message = git_sync(f"复习 {datetime.now():%Y-%m-%d %H:%M} 收尾同步")
-            if not ok:
-                log.warning("收尾同步失败：%s", message)
+        checkpoint()
         _collection.close()
         _collection = None

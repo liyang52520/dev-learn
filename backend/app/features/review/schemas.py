@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 from pydantic import Field
 
 from app.core.pagination import ApiModel
@@ -130,9 +128,3 @@ class Lapse(ApiModel):
 
 class LapseList(ApiModel):
     items: list[Lapse]
-
-
-class SyncResult(ApiModel):
-    status: Literal["ok", "partial", "failed"]
-    backup: str | None
-    message: str

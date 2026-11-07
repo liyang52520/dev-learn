@@ -1273,20 +1273,206 @@
         }
       }
     },
-    "/api/admin/study/sync": {
-      "post": {
+    "/api/admin/backup/status": {
+      "get": {
         "tags": [
           "admin"
         ],
-        "summary": "Run Sync",
-        "operationId": "run_sync_api_admin_study_sync_post",
+        "summary": "Read Status",
+        "operationId": "read_status_api_admin_backup_status_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SyncResult"
+                  "$ref": "#/components/schemas/BackupStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup/fetch": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Fetch Remote",
+        "operationId": "fetch_remote_api_admin_backup_fetch_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup/push": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Push",
+        "operationId": "push_api_admin_backup_push_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup/merge": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Merge",
+        "operationId": "merge_api_admin_backup_merge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupBranchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup/resolve": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Resolve",
+        "operationId": "resolve_api_admin_backup_resolve_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupResolveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup/abort": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Abort",
+        "operationId": "abort_api_admin_backup_abort_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup/overwrite": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Overwrite",
+        "operationId": "overwrite_api_admin_backup_overwrite_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupBranchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1382,6 +1568,277 @@
           "authenticated"
         ],
         "title": "AuthState"
+      },
+      "BackupBranch": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "sha": {
+            "type": "string",
+            "title": "Sha"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          },
+          "ahead": {
+            "type": "integer",
+            "title": "Ahead"
+          },
+          "behind": {
+            "type": "integer",
+            "title": "Behind"
+          },
+          "isOwn": {
+            "type": "boolean",
+            "title": "Isown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "sha",
+          "updatedAt",
+          "ahead",
+          "behind",
+          "isOwn"
+        ],
+        "title": "BackupBranch",
+        "description": "远端分支相对本机 HEAD 的位置。"
+      },
+      "BackupBranchRequest": {
+        "properties": {
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          }
+        },
+        "type": "object",
+        "required": [
+          "branch"
+        ],
+        "title": "BackupBranchRequest"
+      },
+      "BackupConflict": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "anki"
+            ],
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "kind"
+        ],
+        "title": "BackupConflict"
+      },
+      "BackupLastSync": {
+        "properties": {
+          "at": {
+            "type": "string",
+            "title": "At"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at",
+          "branch",
+          "ok",
+          "message"
+        ],
+        "title": "BackupLastSync"
+      },
+      "BackupResolveRequest": {
+        "properties": {
+          "resolutions": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "local",
+                "remote"
+              ]
+            },
+            "type": "object",
+            "title": "Resolutions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resolutions"
+        ],
+        "title": "BackupResolveRequest"
+      },
+      "BackupResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pushed",
+              "merged",
+              "up-to-date",
+              "conflict",
+              "overwritten",
+              "aborted",
+              "fetched"
+            ],
+            "title": "Status"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "commit": {
+            "type": "string",
+            "title": "Commit",
+            "default": ""
+          },
+          "conflicts": {
+            "items": {
+              "$ref": "#/components/schemas/BackupConflict"
+            },
+            "type": "array",
+            "title": "Conflicts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok",
+          "status",
+          "branch",
+          "message"
+        ],
+        "title": "BackupResult"
+      },
+      "BackupStatus": {
+        "properties": {
+          "repo": {
+            "type": "boolean",
+            "title": "Repo"
+          },
+          "branch": {
+            "type": "string",
+            "title": "Branch"
+          },
+          "ownBranch": {
+            "type": "string",
+            "title": "Ownbranch"
+          },
+          "remote": {
+            "type": "string",
+            "title": "Remote"
+          },
+          "dirty": {
+            "type": "boolean",
+            "title": "Dirty"
+          },
+          "merging": {
+            "type": "boolean",
+            "title": "Merging"
+          },
+          "mergeBranch": {
+            "type": "string",
+            "title": "Mergebranch"
+          },
+          "conflicts": {
+            "items": {
+              "$ref": "#/components/schemas/BackupConflict"
+            },
+            "type": "array",
+            "title": "Conflicts"
+          },
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/BackupBranch"
+            },
+            "type": "array",
+            "title": "Branches"
+          },
+          "ownPushed": {
+            "type": "boolean",
+            "title": "Ownpushed"
+          },
+          "ownAhead": {
+            "type": "integer",
+            "title": "Ownahead"
+          },
+          "ownBehind": {
+            "type": "integer",
+            "title": "Ownbehind"
+          },
+          "lastSync": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BackupLastSync"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ankiAvailable": {
+            "type": "boolean",
+            "title": "Ankiavailable"
+          },
+          "suspended": {
+            "type": "boolean",
+            "title": "Suspended"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "repo",
+          "branch",
+          "ownBranch",
+          "remote",
+          "dirty",
+          "merging",
+          "mergeBranch",
+          "conflicts",
+          "branches",
+          "ownPushed",
+          "ownAhead",
+          "ownBehind",
+          "lastSync",
+          "ankiAvailable",
+          "suspended",
+          "message"
+        ],
+        "title": "BackupStatus"
       },
       "Body_upload_api_admin_upload_post": {
         "properties": {
@@ -2512,10 +2969,6 @@
             ],
             "title": "Type"
           },
-          "slug": {
-            "type": "string",
-            "title": "Slug"
-          },
           "front": {
             "$ref": "#/components/schemas/FrontMatter"
           },
@@ -2528,7 +2981,6 @@
         "type": "object",
         "required": [
           "type",
-          "slug",
           "front"
         ],
         "title": "SavePostRequest"
@@ -2606,41 +3058,6 @@
           "topics"
         ],
         "title": "StudyIndexResponse"
-      },
-      "SyncResult": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "ok",
-              "partial",
-              "failed"
-            ],
-            "title": "Status"
-          },
-          "backup": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Backup"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "backup",
-          "message"
-        ],
-        "title": "SyncResult"
       },
       "TermCount": {
         "properties": {

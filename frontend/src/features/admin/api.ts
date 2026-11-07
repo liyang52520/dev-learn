@@ -2,6 +2,8 @@ import { apiGet, apiSend, apiUpload } from '@/shared/api/client'
 import type {
   AdminPostList,
   AuthState,
+  BackupResult,
+  BackupStatus,
   FrontMatter,
   PreviewResponse,
   PublishResponse,
@@ -9,7 +11,6 @@ import type {
   ReviewConfig,
   ReviewConfigUpdate,
   ReviewStats,
-  SyncResult,
   UploadResponse,
 } from '@/types/models'
 
@@ -78,6 +79,30 @@ export function fetchStudyStats(): Promise<ReviewStats> {
   return apiGet<ReviewStats>('/api/admin/study/stats')
 }
 
-export function syncStudy(): Promise<SyncResult> {
-  return apiSend<SyncResult>('POST', '/api/admin/study/sync')
+export function fetchBackupStatus(): Promise<BackupStatus> {
+  return apiGet<BackupStatus>('/api/admin/backup/status')
+}
+
+export function pushBackup(): Promise<BackupResult> {
+  return apiSend<BackupResult>('POST', '/api/admin/backup/push')
+}
+
+export function fetchBackupRemote(): Promise<BackupResult> {
+  return apiSend<BackupResult>('POST', '/api/admin/backup/fetch')
+}
+
+export function mergeBackup(branch: string): Promise<BackupResult> {
+  return apiSend<BackupResult>('POST', '/api/admin/backup/merge', { branch })
+}
+
+export function resolveBackup(resolutions: Record<string, 'local' | 'remote'>): Promise<BackupResult> {
+  return apiSend<BackupResult>('POST', '/api/admin/backup/resolve', { resolutions })
+}
+
+export function abortBackup(): Promise<BackupResult> {
+  return apiSend<BackupResult>('POST', '/api/admin/backup/abort')
+}
+
+export function overwriteBackup(branch: string): Promise<BackupResult> {
+  return apiSend<BackupResult>('POST', '/api/admin/backup/overwrite', { branch })
 }

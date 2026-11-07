@@ -24,6 +24,7 @@ const AdminListPage = lazy(() => import('@/features/admin/posts/AdminListPage'))
 const AdminEditorPage = lazy(() => import('@/features/admin/posts/AdminEditorPage'))
 const AdminPreviewPage = lazy(() => import('@/features/admin/posts/AdminPreviewPage'))
 const AdminStudyPage = lazy(() => import('@/features/admin/study/AdminStudyPage'))
+const AdminBackupPage = lazy(() => import('@/features/admin/backup/AdminBackupPage'))
 
 export function App() {
   return (
@@ -59,6 +60,14 @@ export function App() {
               element={
                 <AdminGuard>
                   <AdminStudyPage />
+                </AdminGuard>
+              }
+            />
+            <Route
+              path="admin/backup"
+              element={
+                <AdminGuard>
+                  <AdminBackupPage />
                 </AdminGuard>
               }
             />

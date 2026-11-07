@@ -518,7 +518,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/admin/study/sync": {
+    "/api/admin/backup/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Status */
+        get: operations["read_status_api_admin_backup_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backup/fetch": {
         parameters: {
             query?: never;
             header?: never;
@@ -527,8 +544,93 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Run Sync */
-        post: operations["run_sync_api_admin_study_sync_post"];
+        /** Fetch Remote */
+        post: operations["fetch_remote_api_admin_backup_fetch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backup/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Push */
+        post: operations["push_api_admin_backup_push_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backup/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Merge */
+        post: operations["merge_api_admin_backup_merge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backup/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve */
+        post: operations["resolve_api_admin_backup_resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backup/abort": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Abort */
+        post: operations["abort_api_admin_backup_abort_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backup/overwrite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Overwrite */
+        post: operations["overwrite_api_admin_backup_overwrite_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -565,6 +667,112 @@ export interface components {
         AuthState: {
             /** Authenticated */
             authenticated: boolean;
+        };
+        /**
+         * BackupBranch
+         * @description 远端分支相对本机 HEAD 的位置。
+         */
+        BackupBranch: {
+            /** Name */
+            name: string;
+            /** Sha */
+            sha: string;
+            /** Updatedat */
+            updatedAt: string;
+            /** Ahead */
+            ahead: number;
+            /** Behind */
+            behind: number;
+            /** Isown */
+            isOwn: boolean;
+        };
+        /** BackupBranchRequest */
+        BackupBranchRequest: {
+            /** Branch */
+            branch: string;
+        };
+        /** BackupConflict */
+        BackupConflict: {
+            /** Path */
+            path: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "text" | "anki";
+        };
+        /** BackupLastSync */
+        BackupLastSync: {
+            /** At */
+            at: string;
+            /** Branch */
+            branch: string;
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
+        };
+        /** BackupResolveRequest */
+        BackupResolveRequest: {
+            /** Resolutions */
+            resolutions: {
+                [key: string]: "local" | "remote";
+            };
+        };
+        /** BackupResult */
+        BackupResult: {
+            /** Ok */
+            ok: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pushed" | "merged" | "up-to-date" | "conflict" | "overwritten" | "aborted" | "fetched";
+            /** Branch */
+            branch: string;
+            /** Message */
+            message: string;
+            /**
+             * Commit
+             * @default
+             */
+            commit: string;
+            /** Conflicts */
+            conflicts?: components["schemas"]["BackupConflict"][];
+        };
+        /** BackupStatus */
+        BackupStatus: {
+            /** Repo */
+            repo: boolean;
+            /** Branch */
+            branch: string;
+            /** Ownbranch */
+            ownBranch: string;
+            /** Remote */
+            remote: string;
+            /** Dirty */
+            dirty: boolean;
+            /** Merging */
+            merging: boolean;
+            /** Mergebranch */
+            mergeBranch: string;
+            /** Conflicts */
+            conflicts: components["schemas"]["BackupConflict"][];
+            /** Branches */
+            branches: components["schemas"]["BackupBranch"][];
+            /** Ownpushed */
+            ownPushed: boolean;
+            /** Ownahead */
+            ownAhead: number;
+            /** Ownbehind */
+            ownBehind: number;
+            lastSync: components["schemas"]["BackupLastSync"] | null;
+            /** Ankiavailable */
+            ankiAvailable: boolean;
+            /** Suspended */
+            suspended: boolean;
+            /** Message */
+            message: string;
         };
         /** Body_upload_api_admin_upload_post */
         Body_upload_api_admin_upload_post: {
@@ -968,8 +1176,6 @@ export interface components {
              * @enum {string}
              */
             type: "posts" | "drafts";
-            /** Slug */
-            slug: string;
             front: components["schemas"]["FrontMatter"];
             /**
              * Body
@@ -1002,18 +1208,6 @@ export interface components {
             meta: components["schemas"]["TopicMeta"];
             /** Topics */
             topics: components["schemas"]["TopicSummary"][];
-        };
-        /** SyncResult */
-        SyncResult: {
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "ok" | "partial" | "failed";
-            /** Backup */
-            backup: string | null;
-            /** Message */
-            message: string;
         };
         /** TermCount */
         TermCount: {
@@ -2081,7 +2275,7 @@ export interface operations {
             };
         };
     };
-    run_sync_api_admin_study_sync_post: {
+    read_status_api_admin_backup_status_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2096,7 +2290,166 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncResult"];
+                    "application/json": components["schemas"]["BackupStatus"];
+                };
+            };
+        };
+    };
+    fetch_remote_api_admin_backup_fetch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupResult"];
+                };
+            };
+        };
+    };
+    push_api_admin_backup_push_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupResult"];
+                };
+            };
+        };
+    };
+    merge_api_admin_backup_merge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupBranchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resolve_api_admin_backup_resolve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupResolveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    abort_api_admin_backup_abort_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupResult"];
+                };
+            };
+        };
+    };
+    overwrite_api_admin_backup_overwrite_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupBranchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -1,4 +1,4 @@
-"""后台学习设置：每日上限、统计与手动快照。"""
+"""后台学习设置：每日上限与统计。"""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 
 from app.core.security import guard_admin
 from app.features.review import service
-from app.features.review.schemas import ReviewConfig, ReviewConfigUpdate, ReviewStats, SyncResult
+from app.features.review.schemas import ReviewConfig, ReviewConfigUpdate, ReviewStats
 
 router = APIRouter(prefix="/api/admin/study", tags=["admin"], dependencies=[Depends(guard_admin)])
 
@@ -24,8 +24,3 @@ def write_config(payload: ReviewConfigUpdate) -> ReviewConfig:
 @router.get("/stats", response_model=ReviewStats)
 def read_stats() -> ReviewStats:
     return service.stats()
-
-
-@router.post("/sync", response_model=SyncResult)
-def run_sync() -> SyncResult:
-    return service.sync()

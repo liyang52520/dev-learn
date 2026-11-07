@@ -118,7 +118,7 @@ dev-learn/
 | `/blog/archive`、`/blog/tags`、`/blog/tags/:tag`、`/blog/categories`、`/blog/categories/:category` | 归档、标签云与筛选、分类云与筛选 |
 | `/study`、`/study/:topic`、`/study/:topic/:qid` | 专题总览、专题首页（跳第一题）、三栏题目页 |
 | `/review` | 复习页（专注布局，不套 Header/Footer） |
-| `/admin`、`/admin/login`、`/admin/study` | 文章列表、登录、学习设置 |
+| `/admin`、`/admin/login`、`/admin/study`、`/admin/backup` | 文章列表、登录、学习设置、数据备份 |
 | `/admin/edit/:type/:slug`、`/admin/preview/:type/:slug` | 编辑器、整页预览（`type` 只能是 `posts`/`drafts`） |
 
 后端接口：
@@ -131,9 +131,10 @@ dev-learn/
 | GET | `/api/search?q=` | 文章 + 题目混合结果（≤16 条） |
 | GET | `/api/study`、`/api/study/{topic}`、`/api/study/{topic}/{qid}` | 专题列表、专题导航、题目详情 |
 | GET/POST | `/api/review/*` | 队列、评分、撤销、统计、遗忘记录 |
+| GET/POST | `/api/admin/backup/*` | 备份状态、推送本机、合并远端分支、冲突解决、覆盖本机 |
 | POST | `/api/admin/auth/login`、`/logout`；GET `/me` | 登录态 |
 | GET/POST | `/api/admin/posts`、`/api/admin/post`、`/preview`、`/publish`、`/upload` | 后台读写 |
-| GET/POST | `/api/admin/study/config`、`/sync` | 学习设置、手动快照 |
+| GET/POST | `/api/admin/study/config` | 学习设置 |
 | GET | `/api/health` | 存活检查 |
 
 ### 1.5 数据流
@@ -253,14 +254,19 @@ npm run typecheck && npm run lint && npm run test && npm run build
 | 调度 / 快照 / 统计 | `backend/app/features/review/` |
 | 复习页 | `frontend/src/features/review/` |
 | 后台设置 | `/admin/study` |
+| 数据备份 | `backend/app/features/backup/`、`/admin/backup` |
 
 约定：
 
 1. 内容归站点、状态归 Anki：复习页从 `/api/study` 渲染题面与答案，Anki 只负责「下一张卡 / 四个按钮文案 / 复习日志」。
-2. `backend/data` 是独立仓库（remote dev-anki，主仓已忽略）：服务每 10 分钟快照（`.colpkg`，保留 30 份），每天一次在有改动时自动 commit + push，且只提交 `anki/`；blog / study 由人工提交。
+2. `backend/data` 是独立仓库（remote dev-anki，主仓已忽略）：每台机器只写自己的远端分支
+   （默认 `machine/<主机名>`，可用 `DATA_SYNC_BRANCH` 覆盖）。服务每 10 分钟快照
+   （`.colpkg`，保留 30 份），每天自动提交全部数据并推送本机分支；`/admin/backup`
+   可手动推送、合并别的机器分支、逐文件解决冲突，或用对方整份覆盖本机（保留安全引用）。
 3. `/api/review/answer` 直接返回下一张卡；浏览器只回 `cardId + rating`。
 4. 写操作校验 `Origin` 同源；`/api/admin/study/*` 还需登录态。
 5. 改这块必须验：后端检查全绿，并实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」。
+6. 任何 git 改动工作区前必须关闭 collection；备份模块统一走 `prepare_sync / close_for_sync / resume_after_sync`。
 
 ---
 
@@ -332,6 +338,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 | 题库 JSON / 截图 | 跑 `skills/study-bank/SKILL.md` 3.7 的自检脚本；打开 `/study`、`/study/<topic>/<qid>` |
 | 后台 / 接口 | `/admin/login` → 新建 → 保存 → 预览 → 发布 → 撤回 → 删除，全流程走一遍 |
 | 复习页 / 学习设置 | 实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」；关掉服务看降级提示 |
+| 数据备份 / 多机同步 | 用 tmp 裸仓模拟两台机器：推送、合并、冲突选择、覆盖、安全引用；再打开 `/admin/backup` 走一遍 |
 | 搜索 | 任意页面按 `/` 或 `⌘K`，中英文关键词各搜一次 |
 | 渲染管线 / 图片尺寸 | 生产构建后看：代码块有复制按钮且无跳版；证据图加载前后不位移 |
 
@@ -352,6 +359,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 | 搞清楚 `backend/data/study/*.json` 的字段 | `skills/study-bank` 3.4 |
 | 重新抽取题库 / 同步上游 | `skills/study-bank` 3.3 |
 | 改复习页 / 学习设置 / 调度 | 1.10、`backend/data/README.md` |
+| 多机同步 / 推送 / 合并 / 覆盖 | 1.10、`backend/data/README.md` |
 | 新增页面 / 组件 / 接口、改主题与响应式 | 1.3、1.8、4.2 |
 | 排查「接口 500 / 图片 404 / 内容不更新」 | `skills/blog-writing` 2.11、`skills/study-bank` 3.9 |
 

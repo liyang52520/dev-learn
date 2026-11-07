@@ -4,13 +4,9 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
-.study-admin-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+.study-admin-section {
+  max-width: 760px;
   margin: 22px 0;
-  /* 两张卡内容量不同，别强行拉成等高留出大片空白 */
-  align-items: start;
 }
 
 .study-admin-card {
@@ -18,11 +14,6 @@
   border-radius: 14px;
   background: var(--surface);
   padding: 22px 24px;
-}
-
-/* 右列是把两张卡竖着叠起来，中间要留出和网格一致的间距 */
-.study-admin-grid > div > .study-admin-card + .study-admin-card {
-  margin-top: 18px;
 }
 
 .study-admin-card h3 {

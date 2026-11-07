@@ -4,7 +4,6 @@ import { errorMessage } from '@/shared/api/client'
 import type { ReviewConfig, ReviewStats } from '@/types/models'
 
 import { fetchStudyConfig, fetchStudyStats } from '../api'
-import { BackupCard } from './BackupCard'
 import { LimitsForm } from './LimitsForm'
 import { StudyStatsPanel } from './StudyStatsPanel'
 
@@ -53,11 +52,8 @@ export function StudySettings() {
   return (
     <>
       <StudyStatsPanel stats={stats} />
-      <div className="study-admin-grid">
+      <div className="study-admin-section">
         <LimitsForm config={config} stats={stats} onSaved={() => void load()} />
-        <div>
-          <BackupCard stats={stats} />
-        </div>
       </div>
     </>
   )

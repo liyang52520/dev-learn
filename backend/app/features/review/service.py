@@ -21,7 +21,6 @@ from app.features.review.schemas import (
     ReviewQuestion,
     ReviewQueue,
     ReviewStats,
-    SyncResult,
     UndoResult,
 )
 from app.features.study import service as study_service
@@ -180,17 +179,27 @@ def update_config(payload: ReviewConfigUpdate) -> ReviewConfig:
     return ReviewConfig(**deck_config.set_config(payload.new_per_day, payload.rev_per_day))
 
 
-def sync() -> SyncResult:
+def prepare_sync() -> str | None:
+    """git 提交前生成一致性快照并落盘 WAL；返回快照文件名。"""
     result = collection.snapshot("manual", force=True)
-    if result is None:
-        return SyncResult(status="failed", backup=None, message="快照失败，请检查服务日志")
-    snap, reused = result
-    ok, message = collection.git_sync("手动同步")
-    prefix = f"无改动，沿用最近快照 {snap.name}" if reused else f"已快照 {snap.name}"
-    if not ok:
-        return SyncResult(
-            status="partial",
-            backup=snap.name,
-            message=f"{prefix}，但 git 同步失败：{message}",
-        )
-    return SyncResult(status="ok", backup=snap.name, message=f"{prefix}；git：{message}")
+    collection.checkpoint()
+    return result[0].name if result else None
+
+
+def close_for_sync() -> None:
+    """git 改写工作区前关闭 collection。"""
+    collection.suspend()
+
+
+def resume_after_sync() -> None:
+    """同步结束：清掉可能过期的 WAL / SHM，下次访问时按需重开。"""
+    collection.clear_runtime_files()
+    collection.resume()
+
+
+def sync_suspended() -> bool:
+    return collection.is_suspended()
+
+
+def anki_available() -> bool:
+    return collection.available()

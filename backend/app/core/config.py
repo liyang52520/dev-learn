@@ -33,6 +33,12 @@ class Settings:
     max_upload_bytes: int = 20 * 1024 * 1024
     login_max_failures: int = field(default_factory=lambda: _env_int("LOGIN_MAX_FAILURES", 8))
     login_lock_seconds: int = field(default_factory=lambda: _env_int("LOGIN_LOCK_SECONDS", 120))
+    data_dir_override: str = field(
+        default_factory=lambda: os.environ.get("DEV_LEARN_DATA_DIR", "").strip()
+    )
+    data_sync_branch: str = field(
+        default_factory=lambda: os.environ.get("DATA_SYNC_BRANCH", "").strip()
+    )
 
     @property
     def backend_dir(self) -> Path:
@@ -40,7 +46,12 @@ class Settings:
 
     @property
     def data_dir(self) -> Path:
-        """全部站点数据：独立 git 仓库（dev-anki），主仓不跟踪。"""
+        """全部站点数据：独立 git 仓库（dev-anki），主仓不跟踪。
+
+        `DEV_LEARN_DATA_DIR` 用于测试与沙箱，生产保持 backend/data。
+        """
+        if self.data_dir_override:
+            return Path(self.data_dir_override).expanduser()
         return self.backend_dir / "data"
 
     @property
