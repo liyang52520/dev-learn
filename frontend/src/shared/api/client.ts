@@ -16,6 +16,13 @@ export class ApiError extends Error {
 
 type Query = Record<string, string | number | boolean | undefined | null>
 
+/** 部署在子路径时（如 /dev-learn/），接口请求也要带上同一前缀。 */
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, '')
+
+function withBase(path: string): string {
+  return `${BASE}${path}`
+}
+
 function withQuery(path: string, query?: Query): string {
   if (!query) return path
   const search = new URLSearchParams()
@@ -42,7 +49,7 @@ async function parse<T>(response: Response): Promise<T> {
 }
 
 export async function apiGet<T>(path: string, query?: Query): Promise<T> {
-  const response = await fetch(withQuery(path, query), {
+  const response = await fetch(withBase(withQuery(path, query)), {
     credentials: 'same-origin',
     headers: { Accept: 'application/json' },
   })
@@ -54,7 +61,7 @@ export async function apiSend<T>(
   path: string,
   body?: unknown,
 ): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(withBase(path), {
     method,
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -66,7 +73,7 @@ export async function apiSend<T>(
 export async function apiUpload<T>(path: string, file: File): Promise<T> {
   const form = new FormData()
   form.append('file', file)
-  const response = await fetch(path, {
+  const response = await fetch(withBase(path), {
     method: 'POST',
     credentials: 'same-origin',
     body: form,

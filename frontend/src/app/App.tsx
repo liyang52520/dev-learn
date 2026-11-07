@@ -26,10 +26,12 @@ const AdminPreviewPage = lazy(() => import('@/features/admin/posts/AdminPreviewP
 const AdminStudyPage = lazy(() => import('@/features/admin/study/AdminStudyPage'))
 const AdminBackupPage = lazy(() => import('@/features/admin/backup/AdminBackupPage'))
 
+const basename = import.meta.env.BASE_URL.replace(/\/+$/, '') || '/'
+
 export function App() {
   return (
     <Providers>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <ScrollToTop />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
