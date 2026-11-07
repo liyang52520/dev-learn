@@ -76,12 +76,116 @@
   color: var(--ink-2);
 }
 
-.code-block pre code span {
-  color: var(--shiki-light);
+/* Pygments token 配色，类名为 highlight.py 输出的短名（.k/.c1/.nf…） */
+.pyg .c,
+.pyg .ch,
+.pyg .cm,
+.pyg .c1,
+.pyg .cs,
+.pyg .cp,
+.pyg .cpf,
+.pyg .cn {
+  color: var(--syn-comment);
+  font-style: italic;
 }
 
-html.dark .code-block pre code span {
-  color: var(--shiki-dark);
+.pyg .k,
+.pyg .kc,
+.pyg .kd,
+.pyg .kn,
+.pyg .kp,
+.pyg .kr {
+  color: var(--syn-keyword);
+}
+
+.pyg .kt,
+.pyg .nc,
+.pyg .nn,
+.pyg .ne {
+  color: var(--syn-type);
+}
+
+.pyg .s,
+.pyg .s1,
+.pyg .s2,
+.pyg .sa,
+.pyg .sb,
+.pyg .sc,
+.pyg .dl,
+.pyg .sd,
+.pyg .sh,
+.pyg .si,
+.pyg .sx,
+.pyg .sr,
+.pyg .ss {
+  color: var(--syn-string);
+}
+
+.pyg .se {
+  color: var(--syn-constant);
+}
+
+.pyg .m,
+.pyg .mb,
+.pyg .mf,
+.pyg .mh,
+.pyg .mi,
+.pyg .mo,
+.pyg .no {
+  color: var(--syn-number);
+}
+
+.pyg .nf,
+.pyg .fm,
+.pyg .nb,
+.pyg .bp,
+.pyg .nd {
+  color: var(--syn-function);
+}
+
+.pyg .nv,
+.pyg .vc,
+.pyg .vg,
+.pyg .vi,
+.pyg .nl {
+  color: var(--syn-variable);
+}
+
+.pyg .na,
+.pyg .nt {
+  color: var(--syn-attr);
+}
+
+.pyg .o,
+.pyg .ow {
+  color: var(--syn-operator);
+}
+
+.pyg .p {
+  color: var(--syn-punct);
+}
+
+.pyg .gi {
+  color: var(--syn-diff-add);
+}
+
+.pyg .gd {
+  color: var(--syn-diff-del);
+}
+
+.pyg .gh,
+.pyg .gu,
+.pyg .gs {
+  color: var(--syn-tag);
+  font-weight: 600;
+}
+
+.pyg .err {
+  color: var(--syn-error);
+}
+
+.pyg .hll {
+  background: var(--code-hover-bg);
 }
 
 .code-block pre code {
