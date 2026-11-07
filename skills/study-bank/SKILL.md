@@ -184,7 +184,7 @@ node skills/study-bank/scripts/enhance-answers/verify.cjs
 ### 自动校验
 
 - 跑 `node skills/study-bank/scripts/enhance-answers/verify.cjs`：结构与题号、代码块契约（`data-lang` 合法、无 `.cl`/`tk-*`）、逐题可见文字哈希（对照 `skills/study-bank/scripts/enhance-answers/fidelity.json`，代码题已扣行号）、`search` 与规则重算、证据/配图；必须输出 `OK`。
-- `cd frontend && npm run typecheck && npm run lint && npm run test && npm run build`；`cd backend && python -m pytest`；`git status --short backend/data/study` 确认只有预期变化。
+- `cd frontend && npm run typecheck && npm run lint && npm run test && npm run build`；`cd backend && python -m pytest`；`git -C backend/data status --short study` 确认只有预期变化（`backend/data` 是独立数据仓）。
 
 ### 页面手工与视觉验收
 

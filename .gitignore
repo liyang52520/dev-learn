@@ -20,7 +20,5 @@ __pycache__/
 .mypy_cache/
 .pytest_cache/
 
-# 本地 Anki 复习数据：虚拟环境与学习状态都不入库
-backend/anki/.venv
-backend/anki/.token
-backend/anki/data
+# 站点数据：独立 git 仓库（dev-anki），主仓不跟踪
+backend/data/

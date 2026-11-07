@@ -1,6 +1,6 @@
 """Anki collection 生命周期：延迟打开、快照、git 同步与后台维护。
 
-复习状态不属于站点内容，存放在独立仓库 `backend/anki/data/`（dev-anki）。
+复习状态属于站点数据，和 blog / study 一起放在独立仓库 `backend/data/`（dev-anki）。
 本模块只管「库怎么开、怎么备份」，调度细节在 schedule.py。
 """
 
@@ -26,7 +26,7 @@ log = logging.getLogger("app.review")
 DECK_NAME = "Java面试"
 KEEP_BACKUPS = 30
 SNAPSHOT_EVERY = 10 * 60
-GIT_SYNC_EVERY = 15 * 60
+GIT_SYNC_EVERY = 24 * 60 * 60
 
 LOCK = threading.RLock()
 _dirty = {"value": False}
@@ -55,7 +55,7 @@ def instance() -> Collection:
     path = collection_path()
     if not path.is_file():
         raise AppError(
-            "复习数据尚未初始化：请先运行 python backend/anki/import.py",
+            "复习数据尚未初始化：请先运行 python -m app.features.review.importer",
             code="review_unavailable",
             status=503,
         )
@@ -85,7 +85,7 @@ def deck() -> DeckId:
     did = col.decks.id_for_name(DECK_NAME)
     if did is None:
         raise AppError(
-            f"collection 里没有 deck：{DECK_NAME}，请先运行 backend/anki/import.py",
+            f"collection 里没有 deck：{DECK_NAME}，请先运行 python -m app.features.review.importer",
             code="review_unavailable",
             status=503,
         )
@@ -160,12 +160,12 @@ def snapshot(reason: str = "auto", *, force: bool = False) -> tuple[Path, bool] 
 
 
 def git_sync(message: str) -> tuple[bool, str]:
-    """把 collection 提交并推到 dev-anki；返回真实结果，不假报成功。"""
-    repo = str(settings.anki_dir)
+    """把 anki 学习状态提交并推到 dev-anki；返回真实结果，不假报成功。"""
+    repo = str(settings.data_dir)
     # data 目录必须自己是仓库，否则 git 会一路向上找到主仓库，
-    # 把 backend/、frontend/ 等站点代码一起 add 进去。
-    if not (settings.anki_dir / ".git").exists():
-        return False, "backend/anki/data 未初始化为独立仓库，未执行 git 同步"
+    # 把 backend/app、frontend 等站点代码一起 add 进去。
+    if not (settings.data_dir / ".git").exists():
+        return False, "backend/data 未初始化为独立仓库，未执行 git 同步"
     try:
         col = _collection
         if col is not None:
@@ -175,9 +175,9 @@ def git_sync(message: str) -> tuple[bool, str]:
                 # 而 Anki 自己的连接一直开着，等待可能永不返回并长期占住 LOCK。
                 with LOCK, contextlib.suppress(Exception):
                     proxy.all("pragma wal_checkpoint(passive)")
-        repo = str(settings.anki_dir)
+        # 自动同步只提交 anki 状态；blog / study 的改动由人工按需提交。
         subprocess.run(
-            ["git", "-C", repo, "add", "-A"], check=True, timeout=60, capture_output=True
+            ["git", "-C", repo, "add", "anki"], check=True, timeout=60, capture_output=True
         )
         diff = subprocess.run(
             ["git", "-C", repo, "diff", "--cached", "--quiet"], timeout=60, capture_output=True
@@ -223,7 +223,7 @@ def _maintenance_loop() -> None:
             snapshot("timer")
             last_snapshot = now
         if now - last_git >= GIT_SYNC_EVERY and _dirty["value"]:
-            ok, _ = git_sync(f"复习 {datetime.now():%Y-%m-%d %H:%M} 自动同步")
+            ok, _ = git_sync(f"复习 {datetime.now():%Y-%m-%d} 每日同步")
             if ok:
                 _dirty["value"] = False
             last_git = now

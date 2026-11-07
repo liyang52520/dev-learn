@@ -27,7 +27,7 @@ export function BackupCard({ stats }: { stats: ReviewStats }) {
     <div className="study-admin-card">
       <h3>快照与同步</h3>
       <p className="study-admin-hint">
-        服务每 10 分钟对 collection 做一次一致性快照，保留最近 30 份；有改动时每 15 分钟自动提交并推送到 dev-anki。
+        服务每 10 分钟对 collection 做一次一致性快照，保留最近 30 份；有改动时每天自动提交并推送到 dev-anki。
         这里可以立即执行一次。
       </p>
       <p className="study-admin-hint">

@@ -39,8 +39,13 @@ class Settings:
         return self.root / "backend"
 
     @property
+    def data_dir(self) -> Path:
+        """全部站点数据：独立 git 仓库（dev-anki），主仓不跟踪。"""
+        return self.backend_dir / "data"
+
+    @property
     def content_dir(self) -> Path:
-        return self.backend_dir / "data" / "blog"
+        return self.data_dir / "blog"
 
     @property
     def blog_assets_dir(self) -> Path:
@@ -48,7 +53,7 @@ class Settings:
 
     @property
     def study_dir(self) -> Path:
-        return self.backend_dir / "data" / "study"
+        return self.data_dir / "study"
 
     @property
     def public_dir(self) -> Path:
@@ -60,7 +65,7 @@ class Settings:
 
     @property
     def anki_dir(self) -> Path:
-        return self.backend_dir / "anki" / "data"
+        return self.data_dir / "anki"
 
     @property
     def trash_dir(self) -> Path:

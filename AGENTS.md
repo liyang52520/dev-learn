@@ -10,7 +10,7 @@
 
 | 你要做的事 | 直接读 |
 | --- | --- |
-| 结构 / 命令 / 后台 / 代码约定；复习子系统 | 第一章（复习另见 `backend/anki/README.md`） |
+| 结构 / 命令 / 后台 / 代码约定；复习子系统 | 第一章（复习另见 `backend/data/README.md`） |
 | 写、改博客文章 | 先读 [`skills/blog-writing/SKILL.md`](skills/blog-writing/SKILL.md)，第二章只是索引 |
 | 维护题库、加专题 | 先读 [`skills/study-bank/SKILL.md`](skills/study-bank/SKILL.md)，第三章只是索引 |
 | 接手任务、交付自检 | 第四章 |
@@ -26,7 +26,7 @@
 - **博客**：`backend/data/blog/posts/*.md` 写文章；首页、归档、标签、分类、文章页由 React 渲染。
 - **学习**：`backend/data/study/*.json` 存专题与题目，配套 `backend/data/study/` 下 8000 多张 PDF 原文截图。
 - **后台**：`/admin` 自带本地 CMS，可新建、编辑、预览、发布文章并上传图片。
-- **复习**：可选的 Anki 调度，已并入后端进程，学习状态放在 `backend/anki/data/`。
+- **复习**：可选的 Anki 调度，已并入后端进程，学习状态放在 `backend/data/anki/`。
 
 没有数据库、没有外部 CMS、没有 Node 服务端。**仓库里的文件就是数据库**：改 Markdown 就是发文章，改 JSON 就是改题库，`git` 就是版本管理与发布记录。
 
@@ -82,15 +82,15 @@ dev-learn/
 │   │   │   ├── media/              # 图片上传
 │   │   │   └── review/             # 复习调度、快照、统计
 │   │   └── tests/                  # 跨模块测试
-│   ├── data/
+│   ├── data/                       # 独立仓库 dev-anki（见其 README）
 │   │   ├── blog/
 │   │   │   ├── posts|drafts/       # 已发布文章 / 草稿
 │   │   │   └── assets/images/      # 文章图片（uploads/ 为后台上传）
-│   │   └── study/                  # index.json + 专题 JSON + PDF 截图
+│   │   ├── study/                  # index.json + 专题 JSON + PDF 截图
+│   │   └── anki/                   # collection.anki2 + 快照（backups/ 不入库）
 │   ├── scripts/
 │   │   ├── dev.py                  # 一条命令起前后端
 │   │   └── check_structure.py      # 结构规则检查
-│   └── anki/                   # import.py + 学习数据（见其 README）
 ├── frontend/
 │   ├── public/images/              # 头像、站点图标等固定资源
 │   ├── src/
@@ -237,7 +237,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 - ❌ 重新引入 Next.js / Hexo / 任何 Node 服务端渲染。
 - ❌ 手工编辑 `backend/data/study/**` 截图；题库变更改 `backend/data/study` 的 JSON，截图由抽取流程生成。
 - ❌ 把 PDF 原文搬进仓库。
-- ❌ 提交 `node_modules/`、`frontend/dist/`、`backend/.venv/`、`backend/.trash/`、各类缓存、`backend/anki/data/`。
+- ❌ 提交 `node_modules/`、`frontend/dist/`、`backend/.venv/`、`backend/.trash/`、各类缓存、`backend/data/`（独立仓库）。
 - ❌ 手动拼 front matter 写文件；统一走序列化函数 / 后台 API。
 - ❌ 在前端组件里读写文件或拼接后端路径。
 - ❌ 为「以后可能用到」预留抽象；三个相似行好过一个提前的抽象。
@@ -248,8 +248,8 @@ npm run typecheck && npm run lint && npm run test && npm run build
 
 | 部分 | 位置 |
 | --- | --- |
-| 导入脚本 | `backend/anki/import.py` |
-| 学习状态 | `backend/anki/data/collection.anki2`（独立仓库 dev-anki，已 gitignore） |
+| 导入脚本 | `backend/app/features/review/importer.py`（`cd backend && python -m app.features.review.importer`） |
+| 学习状态 | `backend/data/anki/collection.anki2`（`backend/data` 是独立仓库 dev-anki） |
 | 调度 / 快照 / 统计 | `backend/app/features/review/` |
 | 复习页 | `frontend/src/features/review/` |
 | 后台设置 | `/admin/study` |
@@ -257,7 +257,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 约定：
 
 1. 内容归站点、状态归 Anki：复习页从 `/api/study` 渲染题面与答案，Anki 只负责「下一张卡 / 四个按钮文案 / 复习日志」。
-2. `backend/anki/data` 永不入库；服务每 10 分钟快照（`.colpkg`，保留 30 份）、15 分钟在有改动时自动 commit+push 到 dev-anki。
+2. `backend/data` 是独立仓库（remote dev-anki，主仓已忽略）：服务每 10 分钟快照（`.colpkg`，保留 30 份），每天一次在有改动时自动 commit + push，且只提交 `anki/`；blog / study 由人工提交。
 3. `/api/review/answer` 直接返回下一张卡；浏览器只回 `cardId + rating`。
 4. 写操作校验 `Origin` 同源；`/api/admin/study/*` 还需登录态。
 5. 改这块必须验：后端检查全绿，并实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」。
@@ -351,7 +351,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 | 从一份新 PDF 加一个专题 | `skills/study-bank` 3.8 |
 | 搞清楚 `backend/data/study/*.json` 的字段 | `skills/study-bank` 3.4 |
 | 重新抽取题库 / 同步上游 | `skills/study-bank` 3.3 |
-| 改复习页 / 学习设置 / 调度 | 1.10、`backend/anki/README.md` |
+| 改复习页 / 学习设置 / 调度 | 1.10、`backend/data/README.md` |
 | 新增页面 / 组件 / 接口、改主题与响应式 | 1.3、1.8、4.2 |
 | 排查「接口 500 / 图片 404 / 内容不更新」 | `skills/blog-writing` 2.11、`skills/study-bank` 3.9 |
 
