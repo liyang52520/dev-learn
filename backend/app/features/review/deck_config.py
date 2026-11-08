@@ -10,15 +10,19 @@ from app.features.review import collection
 
 def get_config() -> dict[str, Any]:
     with collection.LOCK:
-        cfg = collection.instance().decks.config_dict_for_deck_id(collection.deck())
+        col = collection.instance()
+        cfg = col.decks.config_dict_for_deck_id(collection.deck())
         return {
             "deck": collection.DECK_NAME,
             "new_per_day": cfg["new"]["perDay"],
             "rev_per_day": cfg["rev"]["perDay"],
             "learning_steps": cfg["new"].get("delays"),
-            # desiredRetention 默认就是 0.9，不能拿它判断 FSRS 是否开启。
+            # FSRS 的开关在 collection 全局配置里；desiredRetention 默认就是 0.9，不能拿它判断。
             "fsrs_enabled": bool(
-                cfg.get("fsrsEnabled") or cfg.get("fsrsWeights") or cfg.get("fsrsParams5")
+                col.get_config("fsrs", False)
+                or cfg.get("fsrsEnabled")
+                or cfg.get("fsrsWeights")
+                or cfg.get("fsrsParams5")
             ),
             "new_order": cfg.get("newGatherPriority"),
         }
