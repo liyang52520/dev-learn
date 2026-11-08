@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 
+import { toReviewPhase } from '../../review/types'
 import { useReviewLauncher } from '../hooks'
 
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '::1', '[::1]']
@@ -54,16 +55,17 @@ export function ReviewLauncher() {
     stats.revPerDay > 0
       ? Math.min(100, Math.round((stats.todayReview / stats.revPerDay) * 100))
       : 0
-  const quotaDone = stats.phase === 'newQuota'
+  const phase = toReviewPhase(stats.phase) ?? 'review'
+  const quotaDone = phase === 'new_quota'
   // dueTotal 含「学习中」的卡，而 counts.review 只算复习卡；
   // 队列今天真正排得到的是 learning + review，别拿错基数吓人。
   const queuedDue = stats.counts.learning + stats.counts.review
   const overflow = Math.max(0, stats.dueTotal - queuedDue)
-  const reviewLimitHit = stats.phase === 'reviewQuota'
-  const paused = stats.phase === 'paused'
+  const reviewLimitHit = phase === 'review_quota'
+  const paused = phase === 'paused'
 
   const headline =
-    stats.phase === 'review'
+    phase === 'review'
       ? `今日可学 ${due} 张`
       : reviewLimitHit
         ? '今日复习额度用完了'
@@ -78,6 +80,10 @@ export function ReviewLauncher() {
   // 几千张里只学了零星几张，显示 0% 会像没加载；给个「<1%」更诚实。
   const learnedLabel =
     learnedPct > 0 && learnedPct < 1 ? '<1%' : `${Math.round(learnedPct)}%`
+  // aria-valuenow 不能超过 max：超额完成时按上限显示，避免读屏报出无效进度。
+  const newMax = Math.max(stats.newPerDay, 1)
+  const revMax = Math.max(stats.revPerDay, 1)
+  const totalMax = Math.max(stats.totalCards, 1)
 
   return (
     <div className="review-launcher">
@@ -88,7 +94,8 @@ export function ReviewLauncher() {
         </p>
         <strong>{headline}</strong>
         <span>
-          连续 {stats.streak} 天 · 累计作答 {stats.totalAnswers} 次
+          {stats.streak > 0 ? `连续 ${stats.streak} 天` : '今天还没复习'} · 累计作答{' '}
+          {stats.totalAnswers} 次
         </span>
         {quotaDone && (
           <span className="review-launcher-note">
@@ -114,8 +121,8 @@ export function ReviewLauncher() {
             className="review-launcher-track"
             role="progressbar"
             aria-valuemin={0}
-            aria-valuemax={stats.newPerDay}
-            aria-valuenow={stats.todayNew}
+            aria-valuemax={newMax}
+            aria-valuenow={Math.min(stats.todayNew, newMax)}
             aria-label={`今日新卡 ${stats.todayNew} / ${stats.newPerDay}`}
           >
             <span className="review-launcher-fill" style={{ width: `${newPct}%` }} />
@@ -129,8 +136,8 @@ export function ReviewLauncher() {
             className="review-launcher-track is-soft"
             role="progressbar"
             aria-valuemin={0}
-            aria-valuemax={stats.revPerDay}
-            aria-valuenow={stats.todayReview}
+            aria-valuemax={revMax}
+            aria-valuenow={Math.min(stats.todayReview, revMax)}
             aria-label={`今日复习 ${stats.todayReview} / ${stats.revPerDay}`}
           >
             <span className="review-launcher-fill is-soft" style={{ width: `${revPct}%` }} />
@@ -146,14 +153,14 @@ export function ReviewLauncher() {
             className="review-launcher-track is-overall"
             role="progressbar"
             aria-valuemin={0}
-            aria-valuemax={stats.totalCards}
-            aria-valuenow={stats.learnedCards}
+            aria-valuemax={totalMax}
+            aria-valuenow={Math.min(stats.learnedCards, totalMax)}
             aria-label={`总进度 ${stats.learnedCards} / ${stats.totalCards}`}
           >
             <span className="review-launcher-fill is-overall" style={{ width: `${learnedPct}%` }} />
           </span>
           <span className="review-launcher-overall-note">
-            全库未学 {stats.newRemaining} · 明天新到期 {stats.dueTomorrow}
+            全库未学 {stats.newRemaining} · 明天到期 {stats.dueTomorrow}
           </span>
         </span>
 

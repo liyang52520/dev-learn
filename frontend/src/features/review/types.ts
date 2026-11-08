@@ -1,5 +1,20 @@
 export type Phase = 'loading' | 'question' | 'answer' | 'done' | 'error'
 
+/** 与后端 `_phase` 的取值保持一致（snake_case），不要使用 camelCase 比较。 */
+export type ReviewPhase = 'review' | 'review_quota' | 'new_quota' | 'paused' | 'done'
+
+const REVIEW_PHASES: readonly ReviewPhase[] = [
+  'review',
+  'review_quota',
+  'new_quota',
+  'paused',
+  'done',
+]
+
+export function toReviewPhase(value: string | null | undefined): ReviewPhase | null {
+  return REVIEW_PHASES.includes(value as ReviewPhase) ? (value as ReviewPhase) : null
+}
+
 export type CardAction = 'bury' | 'suspend' | 'flag'
 
 export const CARD_ACTION_LABELS: Record<CardAction, string> = {

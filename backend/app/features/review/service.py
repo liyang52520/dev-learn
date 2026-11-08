@@ -114,10 +114,11 @@ def _marks(ids: list[int]) -> str:
     return ",".join("?" * len(ids))
 
 
-def stats() -> ReviewStats:
+def stats(client_id: str = "") -> ReviewStats:
     with collection.LOCK:
         days, total_reviews, total_answers, streak = history.build()
         today, today_new, today_review, today_relearn = analytics.today_card_counts()
+        undo_token = schedule.undo_token(client_id)
         config = deck_config.get_config()
         ids = collection.deck_ids()
         marks = _marks(ids)
@@ -137,12 +138,12 @@ def stats() -> ReviewStats:
             db.scalar(
                 "select count(*) from cards where queue >= 0 "
                 f"and did in ({marks}) and ("
-                "(type = 2 and due = ?) or "
-                "(type in (1, 3) and queue = 1 and due >= ? and due < ?) or "
-                "(type in (1, 3) and queue = 3 and due = ?))",
+                # 到明天结束前应到期的卡：包含已经逾期、今天没清掉的卡。
+                "(type = 2 and due <= ?) or "
+                "(type in (1, 3) and queue = 1 and due < ?) or "
+                "(type in (1, 3) and queue = 3 and due <= ?))",
                 *ids,
                 daytime.today_seq() + 1,
-                tomorrow_start,
                 tomorrow_start + 86400,
                 daytime.today_seq() + 1,
             )
@@ -170,9 +171,11 @@ def stats() -> ReviewStats:
             total_cards=total_cards,
             learned_cards=min(learned_cards, total_cards),
             due_tomorrow=due_tomorrow,
-            next_due_epoch=analytics.next_due_epoch(),
-            can_undo=schedule.can_undo(),
-            undo_token=schedule.undo_token(),
+            next_due_epoch=analytics.next_due_epoch(
+                (today, today_new, today_review, today_relearn)
+            ),
+            can_undo=undo_token is not None,
+            undo_token=undo_token,
             new_remaining=new_remaining,
             last_backup=ReviewBackup(**backup) if backup else None,
             days=[ReviewDay(**row) for row in days],
@@ -245,7 +248,10 @@ def config() -> ReviewConfig:
 
 
 def update_config(payload: ReviewConfigUpdate) -> ReviewConfig:
-    return ReviewConfig(**deck_config.set_config(payload.new_per_day, payload.rev_per_day))
+    config = deck_config.set_config(payload.new_per_day, payload.rev_per_day)
+    # 改额度也是一次写操作，Anki 的撤销栈已经指向它，旧评分凭证必须作废。
+    schedule.clear_undo()
+    return ReviewConfig(**config)
 
 
 def prepare_sync() -> str | None:

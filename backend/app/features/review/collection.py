@@ -172,7 +172,12 @@ def snapshot(reason: str = "auto", *, force: bool = False) -> tuple[Path, bool] 
                 target.unlink(missing_ok=True)
             return None
         _snapshot_due["value"] = False
-        for old in sorted(backup_dir().glob("*.colpkg"))[:-KEEP_BACKUPS]:
+        # 新旧两代快照统一保留最近 KEEP_BACKUPS 份，避免旧 .anki2 一直堆积。
+        files = [
+            *backup_dir().glob("*.colpkg"),
+            *backup_dir().glob("collection-*.anki2"),
+        ]
+        for old in sorted(files, key=lambda path: path.stat().st_mtime)[:-KEEP_BACKUPS]:
             old.unlink(missing_ok=True)
         if reused:
             log.info("快照跳过(%s)：collection 无改动，沿用 %s", reason, target.name)

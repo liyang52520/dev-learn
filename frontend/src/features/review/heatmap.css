@@ -13,6 +13,19 @@
   text-align: left;
 }
 
+/* 窄屏宁可横向滚动，也不把格子压到 9px 以下；手指点按仍需要可辨识的面积。 */
+.heatmap-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: 0 -2px;
+  padding: 0 2px 2px;
+}
+
+.heatmap-months,
+.heatmap-body {
+  min-width: 386px;
+}
+
 .heatmap-months {
   display: grid;
   grid-template-columns: repeat(26, minmax(0, 1fr));
@@ -54,8 +67,7 @@
   line-height: 1;
 }
 
-/* 26 列等分容器宽度：手机上自动缩到 8px 左右，
-   不再用固定 11px 把 412px 的表格顶出视口。 */
+/* 26 列等分：保持约 12px 一格，容器不够宽时交给 .heatmap-scroll 横向滚动。 */
 .heatmap {
   display: grid;
   grid-auto-flow: column;
@@ -125,4 +137,10 @@ button.heatmap-cell {
   font-size: 10px;
   color: var(--faint);
   min-height: 1.4em;
+}
+
+@media (max-width: 430px) {
+  .heatmap-wrap {
+    --hm-gap: 2px;
+  }
 }

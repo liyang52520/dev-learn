@@ -98,11 +98,13 @@ def main() -> int:
     seen = existing_qids(col)
 
     added = skipped = 0
+    wanted_qids: set[str] = set()
     for topic in topics:
         data = load_json(study_dir / f"{topic['id']}.json")
         deck = ensure_deck(col, f"{PARENT_DECK}::{topic['label']}")
         n_added = 0
         for q in data["questions"]:
+            wanted_qids.add(q["key"])
             if q["key"] in seen:
                 skipped += 1
                 continue
@@ -129,8 +131,23 @@ def main() -> int:
     cfg["newSortOrder"] = 1  # NO_SORT
     col.decks.update_config(cfg)
 
+    # 全量导入时，题库重抽后消失的题目会成为孤儿卡；暂停而不是删除，保留历史。
+    orphan_cards = 0
+    if not args.topics and not args.limit:
+        orphan_note_ids = [
+            nid
+            for nid in col.find_notes(f"note:{NOTETYPE}")
+            if col.get_note(nid)["QID"] not in wanted_qids
+        ]
+        cards = [card.id for nid in orphan_note_ids for card in col.get_note(nid).cards()]
+        if cards:
+            col.sched.suspend_cards(cards)
+            orphan_cards = len(cards)
+
     total = len(existing_qids(col))
     print(f"\n新增 {added}，跳过已存在 {skipped}，collection 内共 {total} 个 note")
+    if orphan_cards:
+        print(f"题目已不存在的孤儿卡 {orphan_cards} 张，已暂停（保留历史，不删除）")
     print(f"collection: {coll_path}")
     col.close()
     return 0

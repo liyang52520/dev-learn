@@ -56,7 +56,7 @@ export function MergeConflictPanel({ branch, conflicts, busy, onResolve, onAbort
               <code>{item.path}</code>
               <p className="backup-branch-meta">
                 {item.kind === 'anki'
-                  ? 'Anki 学习状态是二进制文件，只能整份选择。'
+                  ? 'Anki 学习状态是二进制文件，只能整份选择；未选中那侧自上次同步以来的学习记录会丢失。'
                   : '文本文件，整份选择一侧，不做逐行合并。'}
               </p>
             </div>

@@ -19,6 +19,7 @@ type Options = {
   setDueTotal: Dispatch<SetStateAction<number>>
   setAnswerHtml: Dispatch<SetStateAction<string>>
   setToast: Dispatch<SetStateAction<string>>
+  setUndoToken: Dispatch<SetStateAction<string>>
   applyProgress: (progress?: ReviewProgress) => void
   finish: () => void
   loadNext: (retried?: boolean) => Promise<void>
@@ -38,6 +39,7 @@ export function useCardAction(options: Options) {
     setDueTotal,
     setAnswerHtml,
     setToast,
+    setUndoToken,
     applyProgress,
     finish,
     loadNext,
@@ -59,17 +61,18 @@ export function useCardAction(options: Options) {
         if (!mounted.current) return
         setCounts(data.counts)
         setDueTotal(data.dueTotal)
+        // 埋藏/暂停/标记都会写 collection，后端已作废旧评分凭证。
+        setUndoToken('')
         applyProgress(data.progress)
+        if (action === 'flag') {
+          // 标记不调度，留在当前卡上；显示中的答案不能因为按了 F 就消失。
+          setCard({ ...card, flag: flag ?? 0 })
+          setToast(flag ? '已标记' : '已取消标记')
+          void loadStats()
+          return
+        }
         setAnswerHtml('')
-        setToast(
-          action === 'bury'
-            ? '已埋藏，这张卡今天不再出现'
-            : action === 'suspend'
-              ? '已暂停这张卡，可在 Anki 里恢复'
-              : flag
-                ? '已标记'
-                : '已取消标记',
-        )
+        setToast(action === 'bury' ? '已埋藏，这张卡今天不再出现' : '已暂停这张卡，可在 Anki 里恢复')
         if (!data.next) {
           finish()
         } else {
@@ -100,6 +103,7 @@ export function useCardAction(options: Options) {
       setDueTotal,
       setAnswerHtml,
       setToast,
+      setUndoToken,
       applyProgress,
       finish,
       loadNext,

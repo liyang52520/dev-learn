@@ -1,4 +1,5 @@
 import { apiGet, apiSend } from '@/shared/api/client'
+import { currentClientId } from './client-id'
 import type {
   AnswerPayload,
   AnswerResult,
@@ -19,7 +20,8 @@ export function fetchQueue(): Promise<ReviewQueue> {
 }
 
 export function fetchStats(): Promise<ReviewStats> {
-  return apiGet<ReviewStats>('/api/review/stats')
+  // 带上标签页 id，刷新页面后仍能认出「本标签页最近一次评分」的撤销凭证。
+  return apiGet<ReviewStats>('/api/review/stats', { clientId: currentClientId() })
 }
 
 export function fetchLapses(): Promise<LapseList> {

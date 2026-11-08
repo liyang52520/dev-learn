@@ -11,6 +11,7 @@ import { useCardAction } from './useCardAction'
 import { useKeyboardShortcuts } from './useKeyboardShortcuts'
 import { useRevealAnswer } from './useRevealAnswer'
 import { useReviewStats } from './useReviewStats'
+import { useReviewUndo } from './useReviewUndo'
 import { useSessionClock } from './useSessionClock'
 
 export function useReviewSession() {
@@ -29,7 +30,6 @@ export function useReviewSession() {
   const [undoToken, setUndoToken] = useState('')
 
   const mounted = useRef(true)
-  const undoQueued = useRef(false)
   const loadNextRef = useRef<(retried?: boolean) => Promise<void>>(async () => {})
   const { stats, loadStats, applyProgress } = useReviewStats()
   const {
@@ -122,7 +122,7 @@ export function useReviewSession() {
 
   const rate = useCallback(
     async (rating: number) => {
-      if (!card || busy) return
+      if (!card || busy || revealing) return
       setBusy(true)
       try {
         const data = await reviewApi.submitAnswer({
@@ -172,51 +172,12 @@ export function useReviewSession() {
         if (mounted.current) setBusy(false)
       }
     },
-    [card, busy, applyProgress, finish, flushSegment, loadNext, loadStats, ratedIds, ratedOrder, setRatedThisTab, setTopics],
+    [card, busy, revealing, applyProgress, finish, flushSegment, loadNext, loadStats, ratedIds, ratedOrder, setRatedThisTab, setTopics],
   )
-
-  const undo = useCallback(async () => {
-    const token = undoToken || stats?.undoToken || ''
-    if (!token) {
-      setToast('没有可撤销的评分')
-      return
-    }
-    if (busy) {
-      undoQueued.current = true
-      return
-    }
-    setBusy(true)
-    try {
-      const data = await reviewApi.undoAnswer({ token, clientId: currentClientId() })
-      if (!mounted.current) return
-      setUndoToken('')
-      const last = ratedOrder.current.pop()
-      if (last) {
-        if (last.counted) {
-          ratedIds.current.delete(last.id)
-          setReviewed((value) => Math.max(0, value - 1))
-        }
-        setRatedThisTab((value) => Math.max(0, value - 1))
-      }
-      setCounts(data.counts)
-      setDueTotal(data.dueTotal)
-      applyProgress(data.progress)
-      setToast(last ? '已撤销上一张' : '已撤销最近一次评分')
-      await loadNext(true)
-      void loadStats(true)
-    } catch (err) {
-      if (mounted.current) {
-        setToast(errorMessage(err))
-        if (err instanceof ApiError && err.code === 'undo_expired') setUndoToken('')
-      }
-    } finally {
-      if (mounted.current) setBusy(false)
-    }
-  }, [busy, undoToken, stats, applyProgress, loadNext, loadStats, ratedIds, ratedOrder, setRatedThisTab])
 
   const cardAction = useCardAction({
     card,
-    busy,
+    busy: busy || revealing,
     mounted,
     setBusy,
     setCard,
@@ -225,23 +186,43 @@ export function useReviewSession() {
     setDueTotal,
     setAnswerHtml,
     setToast,
+    setUndoToken,
     applyProgress,
     finish,
     loadNext,
     loadStats,
   })
 
-  useEffect(() => {
-    if (busy || !undoQueued.current) return
-    undoQueued.current = false
-    void undo()
-  }, [busy, undo])
+  const undo = useReviewUndo({
+    busy,
+    revealing,
+    undoToken,
+    statsUndoToken: stats?.undoToken ?? '',
+    mounted,
+    setBusy,
+    setUndoToken,
+    setCounts,
+    setDueTotal,
+    setToast,
+    applyProgress,
+    loadNext,
+    loadStats,
+    ratedIds,
+    ratedOrder,
+    setReviewed,
+    setRatedThisTab,
+  })
 
   const endSession = useCallback(() => {
-    // 评分请求在途时结束，响应回来后会把页面重新拉回题面。
-    if (busy) return
+    // 评分/显示答案在途时结束，响应回来后会把页面重新拉回题面。
+    if (busy || revealing) return
+    const remaining = counts.new + counts.learning + counts.review
+    if (reviewed > 0 && remaining > 0) {
+      const ok = window.confirm(`本轮已评 ${reviewed} 张，队列还剩 ${remaining} 张，确定结束吗？`)
+      if (!ok) return
+    }
     finish()
-  }, [busy, finish])
+  }, [busy, revealing, counts, reviewed, finish])
 
   const continueRound = useCallback(() => {
     const hasRemaining = counts.new + counts.learning + counts.review > 0
@@ -260,7 +241,7 @@ export function useReviewSession() {
   }, [loadNext])
   useKeyboardShortcuts({
     phase,
-    busy,
+    busy: busy || revealing,
     reviewed,
     canUndo: Boolean(undoToken || stats?.undoToken),
     reveal: () => void reveal(),
@@ -281,7 +262,7 @@ export function useReviewSession() {
     errorStatus,
     errorCode,
     toast,
-    busy,
+    busy: busy || revealing,
     reviewed,
     elapsedMs,
     topics,

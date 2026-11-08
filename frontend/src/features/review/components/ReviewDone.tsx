@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import type { ReviewCounts, ReviewStats } from '@/types/models'
 
+import { toReviewPhase } from '../types'
 import { Heatmap } from './Heatmap'
 
 type Props = {
@@ -21,9 +22,9 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
   const remaining = counts.new + counts.learning + counts.review
   const finishedAll = remaining === 0
   const overflow = Math.max(0, dueTotal - (counts.learning + counts.review))
-  const phase = stats?.phase ?? (finishedAll ? 'done' : 'review')
+  const phase = toReviewPhase(stats?.phase) ?? (finishedAll ? 'done' : 'review')
   const paused = phase === 'paused'
-  const quota = phase === 'reviewQuota' || phase === 'newQuota'
+  const quota = phase === 'review_quota' || phase === 'new_quota'
   const outOfQuota = paused || quota
   const roundComplete = !outOfQuota
   const nextDue = stats?.nextDueEpoch ? formatNextDue(stats.nextDueEpoch) : null
@@ -123,12 +124,12 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
         </p>
       )}
 
-      {phase === 'reviewQuota' && (
+      {phase === 'review_quota' && (
         <p className="review-done-help">
           今天复习额度已满，还有 {overflow} 张到期卡；明天会自动恢复，也可以到设置里调高上限。
         </p>
       )}
-      {phase === 'newQuota' && (
+      {phase === 'new_quota' && (
         <p className="review-done-help">
           今日新卡额度已满，全库还剩 {stats?.newRemaining ?? 0} 张未学；明天会自动恢复，也可以到设置里调高上限。
         </p>

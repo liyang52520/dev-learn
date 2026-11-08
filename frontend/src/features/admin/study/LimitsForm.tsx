@@ -7,7 +7,7 @@ import { saveStudyConfig } from '../api'
 
 type Props = {
   config: ReviewConfig
-  stats: ReviewStats
+  stats: ReviewStats | null
   onSaved: () => void
 }
 
@@ -30,7 +30,9 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
     Number.isInteger(previewNew) &&
     Number.isInteger(previewRev) &&
     previewNew >= 0 &&
-    previewRev >= 0
+    previewRev >= 0 &&
+    previewNew <= 9999 &&
+    previewRev <= 9999
 
   const newChanged = previewReady && previewNew !== config.newPerDay
   const revChanged = previewReady && previewRev !== config.revPerDay
@@ -101,7 +103,7 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
           onChange={(event) => setRevPerDay(event.target.value)}
         />
       </label>
-      {previewReady && (
+      {previewReady && stats && (
         <p className="study-admin-preview">
           保存后：每天最多学 {previewNew} 张新卡、复习 {previewRev} 张。
           {previewNew > 0

@@ -23,16 +23,7 @@
     justify-content: center;
   }
 
-  .heatmap {
-    grid-template-rows: repeat(7, 9px);
-    grid-auto-columns: 9px;
-    gap: 2px;
-  }
-
-  .heatmap-cell {
-    width: 9px;
-    height: 9px;
-  }
+  /* 热力图尺寸统一由 features/review/heatmap.css 控制（窄屏横向滚动，格子不小于 12px） */
 }
 
 @media (prefers-reduced-motion: reduce) {

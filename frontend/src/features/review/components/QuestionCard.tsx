@@ -33,7 +33,7 @@ export function QuestionCard(props: Props) {
   const waiting = phase === 'loading' || !card
 
   return (
-    <div className={`review-panel${phase === 'question' ? ' is-question' : ''}`} aria-live="polite" aria-busy={busy}>
+    <div className={`review-panel${phase === 'question' ? ' is-question' : ''}`} aria-busy={busy}>
       <div className="review-meta">
         <span>{card.question?.topic || card.qid}</span>
         {card.question?.pages && <span>{card.question.pages}</span>}
@@ -69,7 +69,7 @@ export function QuestionCard(props: Props) {
               {card.flag ? '取消标记' : '标记'} <kbd>F</kbd>
             </button>
           </div>
-          <button type="button" className="review-reveal" onClick={props.onReveal} disabled={revealing}>
+          <button type="button" className="review-reveal" onClick={props.onReveal} disabled={busy || revealing}>
             {revealing ? '正在载入原文…' : '显示答案'}
             {!revealing && <kbd>空格</kbd>}
           </button>

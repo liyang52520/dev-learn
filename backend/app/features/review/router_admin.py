@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.core.security import guard_admin
 from app.features.review import service
@@ -22,5 +22,5 @@ def write_config(payload: ReviewConfigUpdate) -> ReviewConfig:
 
 
 @router.get("/stats", response_model=ReviewStats)
-def read_stats() -> ReviewStats:
-    return service.stats()
+def read_stats(client_id: str = Query("", alias="clientId", max_length=64)) -> ReviewStats:
+    return service.stats(client_id)

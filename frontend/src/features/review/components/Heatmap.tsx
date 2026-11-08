@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 
 import type { ReviewDay } from '@/types/models'
 
@@ -8,6 +8,7 @@ const WEEKS = 26
 /** 复习热力图：26 周 × 7 天，单色四档；触屏点按查看当天学过的卡数。 */
 export function Heatmap({ days, todayKey }: { days: ReviewDay[]; todayKey: string }) {
   const [selected, setSelected] = useState<number | null>(null)
+  const cellRefs = useRef<(HTMLButtonElement | null)[]>([])
   const byDate = new Map(days.map((day) => [day.date, day.count]))
   // 网格锚定服务端的 Anki 学习日，而不是浏览器自然日，避免时区/凌晨换日错位。
   const today = parseIso(todayKey)
@@ -48,42 +49,85 @@ export function Heatmap({ days, todayKey }: { days: ReviewDay[]; todayKey: strin
   const lastSelectable = cells.reduce((last, cell, index) => (cell.future ? last : index), -1)
   const focusIndex = selected !== null && !cells[selected].future ? selected : lastSelectable
 
+  const moveFocus = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const weekStart = Math.floor(index / 7) * 7
+    let step: number
+    switch (event.key) {
+      case 'ArrowLeft':
+        step = -7
+        break
+      case 'ArrowRight':
+        step = 7
+        break
+      case 'ArrowUp':
+        step = -1
+        break
+      case 'ArrowDown':
+        step = 1
+        break
+      case 'Home':
+        step = weekStart - index
+        break
+      case 'End':
+        step = weekStart + 6 - index
+        break
+      default:
+        return
+    }
+    const next = index + step
+    if (next < 0 || next >= cells.length || cells[next].future) return
+    event.preventDefault()
+    setSelected(next)
+    cellRefs.current[next]?.focus()
+  }
+
   return (
     <div className="heatmap-wrap">
-      <div className="heatmap-months" aria-hidden>
-        {monthLabels.map((label, week) => (
-          <span key={week}>{label}</span>
-        ))}
-      </div>
-      <div className="heatmap-body">
-        <div className="heatmap-days" aria-hidden>
-          {WEEKDAY_LABELS.map((label, row) => (
-            <span key={row}>{label || '\u00a0'}</span>
+      <div className="heatmap-scroll">
+        <div className="heatmap-months" aria-hidden>
+          {monthLabels.map((label, week) => (
+            <span key={week}>{label}</span>
           ))}
         </div>
-        <div
-          className="heatmap"
-          role="group"
-          aria-label={total > 0 ? `最近 26 周共复习 ${total} 张卡，单日最高 ${peak} 张` : '最近 26 周还没有复习记录'}
-        >
-          {cells.map((cell, index) => {
-            if (cell.future) return <span key={cell.date.toISOString()} className="heatmap-cell is-future" />
-            const label = `${toIso(cell.date)} · ${cell.count} 张`
-            return (
-              <button
-                key={cell.date.toISOString()}
-                type="button"
-                className={`heatmap-cell heatmap-l${level(cell.count, scale)}${selected === index ? ' is-selected' : ''}`}
-                title={label}
-                aria-label={label}
-                aria-pressed={selected === index}
-                tabIndex={index === focusIndex ? 0 : -1}
-                onClick={() => setSelected(index)}
-              />
-            )
-          })}
+        <div className="heatmap-body">
+            <div className="heatmap-days" aria-hidden>
+              {WEEKDAY_LABELS.map((label, row) => (
+                <span key={row}>{label || '\u00a0'}</span>
+              ))}
+            </div>
+            <div
+              className="heatmap"
+              role="group"
+              aria-label={
+                total > 0
+                  ? `最近 26 周共复习 ${total} 张次（按卡·天计），单日最高 ${peak} 张`
+                  : '最近 26 周还没有复习记录'
+              }
+            >
+              {cells.map((cell, index) => {
+                if (cell.future)
+                  return <span key={cell.date.toISOString()} className="heatmap-cell is-future" />
+                const label = `${toIso(cell.date)} · ${cell.count} 张`
+                return (
+                  <button
+                    key={cell.date.toISOString()}
+                    ref={(node) => {
+                      cellRefs.current[index] = node
+                    }}
+                    type="button"
+                    className={`heatmap-cell heatmap-l${level(cell.count, scale)}${selected === index ? ' is-selected' : ''}`}
+                    title={label}
+                    aria-label={label}
+                    aria-pressed={selected === index}
+                    tabIndex={index === focusIndex ? 0 : -1}
+                    onClick={() => setSelected(index)}
+                    onKeyDown={(event) => moveFocus(event, index)}
+                  />
+                )
+              })}
+            </div>
+          </div>
         </div>
-      </div>
       <div className="heatmap-legend">
         <span>少</span>
         {[0, 1, 2, 3, 4].map((value) => (
@@ -91,7 +135,7 @@ export function Heatmap({ days, todayKey }: { days: ReviewDay[]; todayKey: strin
         ))}
         <span>多</span>
         <span className="heatmap-summary">
-          {total > 0 ? `26 周 ${total} 张 · 单日最高 ${peak} 张` : '还没有复习记录'}
+          {total > 0 ? `26 周 ${total} 张次 · 单日最高 ${peak} 张` : '还没有复习记录'}
         </span>
       </div>
       <p className="heatmap-detail" aria-live="polite">

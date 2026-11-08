@@ -92,7 +92,7 @@ def next_rollover_epoch() -> int:
     return daytime.rollover_epoch()
 
 
-def next_due_epoch() -> int | None:
+def next_due_epoch(today_counts: tuple[int, int, int, int] | None = None) -> int | None:
     """下一张卡真正可以学的时间点（把日限额算进来）。"""
     ids = collection.deck_ids()
     marks = _placeholders(ids)
@@ -100,7 +100,7 @@ def next_due_epoch() -> int | None:
     now = int(time.time())
     rollover = next_rollover_epoch()
     cfg = deck_config.get_config()
-    _, new_today, review_today, _ = today_card_counts()
+    _, new_today, review_today, _ = today_counts or today_card_counts()
     review_paused = cfg["rev_per_day"] <= 0
     new_paused = cfg["new_per_day"] <= 0
     review_blocked = review_paused or review_today >= cfg["rev_per_day"]

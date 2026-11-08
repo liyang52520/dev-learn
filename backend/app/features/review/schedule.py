@@ -24,8 +24,10 @@ STATE_NAMES = {0: "new", 1: "learning", 2: "review", 3: "relearning"}
 
 # card_id -> (各评分对应的状态, 首次展示时间, 过期时间)
 _pending: dict[int, tuple[Any, float, float]] = {}
-# 每个浏览器标签页各自一份撤销凭证，互不抢占；只允许撤销该标签页的最近一次评分。
-_last_undo: dict[str, tuple[str, float]] = {}
+# 全局唯一的「可撤销评分」：Anki 的撤销栈是全局的，
+# 只要中间发生过任何写操作（评分/埋藏/标记/改配置），旧凭证就必须作废，
+# 否则撤销的会是别人的操作。
+_active_undo: dict[str, Any] | None = None
 BURY_MODES = {
     "bury": scheduler_pb2.BuryOrSuspendCardsRequest.BURY_USER,
     "suspend": scheduler_pb2.BuryOrSuspendCardsRequest.SUSPEND,
@@ -49,9 +51,17 @@ def counts() -> dict[str, int]:
         return {"new": new, "learning": learning, "review": review}
 
 
-def _valid_undo_token(client_id: str) -> str | None:
-    token, issued_at = _last_undo.get(client_id, ("", 0.0))
-    if not token or time.time() - issued_at > UNDO_TTL:
+def _clear_undo() -> None:
+    global _active_undo
+    _active_undo = None
+
+
+def _valid_undo_token(client_id: str = "") -> str | None:
+    record = _active_undo
+    if not record or record["client_id"] != client_id:
+        return None
+    if time.time() - float(record["at"]) > UNDO_TTL:
+        _clear_undo()
         return None
     with collection.LOCK:
         try:
@@ -59,7 +69,12 @@ def _valid_undo_token(client_id: str) -> str | None:
                 return None
         except Exception:  # noqa: BLE001
             return None
-    return token
+    return str(record["token"])
+
+
+def clear_undo() -> None:
+    """外部写操作（如修改每日额度）后调用，避免撤销到别的操作。"""
+    _clear_undo()
 
 
 def undo_token(client_id: str = "") -> str | None:
@@ -123,6 +138,7 @@ def touch(card_id: int) -> dict[str, Any]:
 
 
 def answer(card_id: int, rating: int, client_id: str = "") -> dict[str, Any]:
+    global _active_undo
     if rating not in (1, 2, 3, 4):
         raise AppError("rating 必须是 1-4", code="invalid_params", status=400)
     with collection.LOCK:
@@ -157,7 +173,12 @@ def answer(card_id: int, rating: int, client_id: str = "") -> dict[str, Any]:
         )
         _pending.pop(card_id, None)
         token = secrets.token_urlsafe(18)
-        _last_undo[client_id] = (token, time.time())
+        _active_undo = {
+            "token": token,
+            "client_id": client_id,
+            "card_id": card_id,
+            "at": time.time(),
+        }
         collection.mark_dirty()
         following = queue_view(1)
         return {
@@ -170,6 +191,7 @@ def answer(card_id: int, rating: int, client_id: str = "") -> dict[str, Any]:
 
 
 def undo(token: str, client_id: str = "") -> dict[str, Any]:
+    global _active_undo
     with collection.LOCK:
         expected = _valid_undo_token(client_id)
         if not expected or token != expected:
@@ -178,9 +200,13 @@ def undo(token: str, client_id: str = "") -> dict[str, Any]:
                 code="undo_expired",
                 status=409,
             )
+        record = _active_undo or {}
+        card_id = int(record.get("card_id") or 0)
         collection.instance().undo()
-        _last_undo.pop(client_id, None)
-        _pending.clear()
+        _active_undo = None
+        # 只让被撤销的卡重新排队，其他标签页已取到的卡仍然有效。
+        if card_id:
+            _pending.pop(card_id, None)
         collection.mark_dirty()
         return {
             "counts": counts(),
@@ -200,12 +226,19 @@ def card_action(
         raise AppError("不支持的卡片操作", code="invalid_params", status=400)
     with collection.LOCK:
         col = collection.instance()
+        # 任何写操作都会让 Anki 的全局撤销栈指向它，旧评分不能再撤销。
+        _clear_undo()
         if action == "flag":
             col.set_user_flag_for_cards(flag or 0, [CardId(card_id)])
-        else:
-            col._backend.bury_or_suspend_cards(
-                card_ids=[card_id], note_ids=[], mode=BURY_MODES[action]
-            )
+            collection.mark_dirty()
+            # 标记不改变到期时间，不要重新取卡，否则会丢掉已显示的答案、重置计时。
+            return {
+                "counts": counts(),
+                "due_total": analytics.due_total(),
+                "progress": progress(client_id),
+                "next": None,
+            }
+        col._backend.bury_or_suspend_cards(card_ids=[card_id], note_ids=[], mode=BURY_MODES[action])
         _pending.pop(card_id, None)
         collection.mark_dirty()
         following = queue_view(1)

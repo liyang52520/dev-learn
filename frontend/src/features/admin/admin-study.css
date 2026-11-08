@@ -9,6 +9,40 @@
   margin: 22px 0;
 }
 
+/* 宽屏把表单和热力图并排，避免设置页只占上半屏、下面一片空白 */
+.study-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  margin: 22px 0;
+}
+
+.study-admin-grid .study-admin-section {
+  max-width: none;
+  margin: 0;
+}
+
+.study-admin-grid .study-admin-heatmap {
+  margin: 0;
+}
+
+.study-admin-stats-error {
+  margin: 22px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-elev);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (min-width: 1080px) {
+  .study-admin-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
 .study-admin-card {
   border: 1px solid var(--line);
   border-radius: 14px;

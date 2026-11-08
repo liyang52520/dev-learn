@@ -22,23 +22,15 @@ _OP = threading.Lock()
 Side = Literal["local", "remote"]
 
 
-def _begin() -> None:
-    if not _OP.acquire(blocking=False):
-        raise AppError("已有同步操作在进行，请稍后再试", code="backup_busy", status=409)
-
-
-def _end() -> None:
-    _OP.release()
-
-
 @contextmanager
 def _exclusive() -> Iterator[None]:
     """所有同步操作共用：互斥锁 + 结束后刷新状态缓存。"""
-    _begin()
+    if not _OP.acquire(blocking=False):
+        raise AppError("已有同步操作在进行，请稍后再试", code="backup_busy", status=409)
     try:
         yield
     finally:
-        _end()
+        _OP.release()
         status.invalidate()
 
 
@@ -98,21 +90,31 @@ def push() -> BackupResult:
 def _push() -> BackupResult:
     _ensure_repo()
     branch = status.own_branch()
+    expected: str | None = ""
+    changed = False
+    commit = ""
     suspended = False
     try:
+        expected = repo.remote_branch_sha(branch)
         review_service.prepare_sync()
         # git 提交前必须关闭 collection：WAL 里的最后一次评分也要落进主库。
         review_service.close_for_sync()
         suspended = True
         changed, commit = repo.commit_all(f"同步 {branch} {state.stamp()}")
-        repo.push(branch, repo.remote_branch_sha(branch))
-        repo.update_tracking(branch)
     except repo.GitError as exc:
         state.record_sync(branch, False, str(exc))
         raise AppError(f"推送失败：{exc}", code="backup_push_failed", status=502) from exc
     finally:
         if suspended:
             review_service.resume_after_sync()
+
+    try:
+        # 网络推送放在恢复 collection 之后：同步期间复习页不会整段时间 503。
+        repo.push(branch, expected)
+        repo.update_tracking(branch)
+    except repo.GitError as exc:
+        state.record_sync(branch, False, str(exc))
+        raise AppError(f"推送失败：{exc}", code="backup_push_failed", status=502) from exc
 
     head = "已提交并推送" if changed else "没有新改动，已推送当前提交"
     message = f"{head}（{branch}）"
@@ -221,21 +223,20 @@ def resolve(resolutions: dict[str, str]) -> BackupResult:
 def abort() -> BackupResult:
     with _exclusive():
         branch = state.merge_branch()
-        merging = repo.repo_ready() and repo.merge_in_progress()
-        if merging:
-            # 重启后 collection 可能已被打开：先关库，再让 git 回退工作区。
-            review_service.close_for_sync()
+        if repo.repo_ready() and repo.merge_in_progress():
+            # 先关库再回退工作区；_closed 一定会恢复复习，MERGE_HEAD 守卫仍会拦住半合并数据。
             try:
-                repo.abort_merge()
+                with _closed():
+                    repo.abort_merge()
+                    repo.clear_anki_runtime_files()
             except repo.GitError as exc:
                 raise AppError(
-                    f"取消合并失败：{exc}", code="backup_abort_failed", status=500
+                    f"取消合并失败：{exc}", code="backup_abort_failed", status=502
                 ) from exc
-        state.clear_merge()
-        # 只有确实处于合并暂停态才恢复；否则这里会把正在使用的 collection 一起重置。
-        if merging or review_service.sync_suspended():
-            repo.clear_anki_runtime_files()
+        elif review_service.sync_suspended():
+            # 上次操作中途退出留下的暂停态，取消时一并恢复。
             review_service.resume_after_sync()
+        state.clear_merge()
         message = "已取消合并，本机数据保持合并前的状态。"
         return BackupResult(ok=True, status="aborted", branch=branch, message=message)
 
@@ -249,11 +250,16 @@ def overwrite(branch: str) -> BackupResult:
     with _exclusive():
         _ensure_repo()
         review_service.prepare_sync()
-        repo.commit_all(f"覆盖前保存本机 {state.stamp()}")
-        safety = repo.create_safety_ref(f"{own.replace('/', '-')}-{datetime.now():%Y%m%d-%H%M%S}")
+        safety = ""
         try:
+            # fetch 只更新远端引用，不改工作区，可以在 collection 打开时进行。
+            repo.fetch_branch(branch)
+            # 提交与 reset 会改写工作区，必须在 collection 关闭后做。
             with _closed():
-                repo.fetch_branch(branch)
+                repo.commit_all(f"覆盖前保存本机 {state.stamp()}")
+                safety = repo.create_safety_ref(
+                    f"{own.replace('/', '-')}-{datetime.now():%Y%m%d-%H%M%S}"
+                )
                 repo.reset_hard(f"origin/{branch}")
                 repo.clear_anki_runtime_files()
         except repo.GitError as exc:
@@ -277,10 +283,12 @@ def restore(ref: str) -> BackupResult:
         if not ref.startswith("refs/backup/"):
             raise AppError("只能恢复安全引用", code="invalid_params", status=400)
         review_service.prepare_sync()
-        repo.commit_all(f"恢复前保存本机 {state.stamp()}")
-        safety = repo.create_safety_ref(f"before-restore-{datetime.now():%Y%m%d-%H%M%S}")
+        safety = ""
         try:
+            # 提交与恢复都会改写工作区，必须在 collection 关闭后做。
             with _closed():
+                repo.commit_all(f"恢复前保存本机 {state.stamp()}")
+                safety = repo.create_safety_ref(f"before-restore-{datetime.now():%Y%m%d-%H%M%S}")
                 repo.restore_safety_ref(ref)
                 repo.clear_anki_runtime_files()
         except repo.GitError as exc:

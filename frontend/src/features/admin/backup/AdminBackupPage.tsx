@@ -50,7 +50,7 @@ export default function AdminBackupPage() {
 
   const merge = (branch: string) => {
     const ok = window.confirm(
-      `把 ${branch} 合并到本机？\n\n合并会先保存本机改动；如果两边改了同一文件，会暂停复习并让你逐个选择保留哪一侧。`,
+      `把 ${branch} 合并到本机？\n\n合并会先保存本机改动；如果两边改了同一文件，会暂停复习并让你逐个选择保留哪一侧。\n\n注意：Anki 学习状态是二进制文件，只能整份保留一侧；未选中那侧自上次同步以来的学习记录会丢失。`,
     )
     if (ok) void run(`merge:${branch}`, () => mergeBackup(branch))
   }

@@ -33,12 +33,13 @@ export function useKeyboardShortcuts(handlers: Handlers): void {
         }
         return
       }
+      // 忙时只允许排队撤销；空格/字母键都不能在评分或显示答案途中再发一次请求。
+      if (handlers.busy && event.key.toLowerCase() !== 'u') return
       if ((event.key === ' ' || event.key === 'Enter') && !interactive && handlers.phase === 'question') {
         event.preventDefault()
         handlers.reveal()
         return
       }
-      if (handlers.busy && event.key.toLowerCase() !== 'u') return
       if (handlers.phase === 'answer' && ['1', '2', '3', '4'].includes(event.key)) {
         event.preventDefault()
         handlers.rate(Number(event.key))

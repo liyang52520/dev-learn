@@ -1,14 +1,13 @@
-import katex from 'katex'
 import { useEffect, useLayoutEffect, useRef } from 'react'
-
-import 'katex/dist/katex.min.css'
 
 type Props = {
   html: string
   className?: string
 }
 
-function renderMath(root: HTMLElement) {
+type Katex = typeof import('katex').default
+
+function renderMath(root: HTMLElement, katex: Katex) {
   root.querySelectorAll<HTMLElement>('[data-tex]').forEach((node) => {
     const tex = node.dataset.tex ?? ''
     if (!tex || node.dataset.rendered === '1') return
@@ -30,7 +29,17 @@ export function HtmlContent({ html, className }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-    if (ref.current) renderMath(ref.current)
+    const root = ref.current
+    if (!root || !root.querySelector('[data-tex]')) return
+    let cancelled = false
+    // 公式与样式按需加载：没有数学内容时不必为 KaTeX 付 76KB。
+    void (async () => {
+      const [katex] = await Promise.all([import('katex'), import('katex/dist/katex.min.css')])
+      if (!cancelled && ref.current) renderMath(ref.current, katex.default)
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [html])
 
   useEffect(() => {

@@ -63,10 +63,11 @@ def build() -> tuple[list[dict[str, Any]], int, int, int]:
     if same_deck and now - _history["at"] < HISTORY_TTL:
         return _history["days"], _history["reviews"], _history["answers"], _history["streak"]
 
-    rows = _day_rows(ids)
     db = collection.db()
     marks = _placeholders(ids)
     last_id = int(_history["last_id"] or 0) if same_deck else 0
+    # 有增量游标时只刷新今天一格，避免每次评分都重扫 183 天热力图。
+    rows = _today_rows(_history["days"], ids) if last_id > 0 else _day_rows(ids)
     if last_id > 0:
         reviews = int(_history["reviews"]) + int(
             db.scalar(
@@ -142,6 +143,26 @@ def build() -> tuple[list[dict[str, Any]], int, int, int]:
         active=active,
     )
     return rows, reviews, answers, streak
+
+
+def _today_rows(rows: list[Any], ids: list[int], days: int = 183) -> list[dict[str, Any]]:
+    """增量构建时只重算今天，其余日期沿用缓存。"""
+    today = daytime.today_key()
+    count = int(
+        collection.db().scalar(
+            "select count(distinct r.cid) from revlog r join cards c on c.id = r.cid "
+            f"where r.id >= ? and c.did in ({_placeholders(ids)})",
+            daytime.day_start_ms(),
+            *ids,
+        )
+        or 0
+    )
+    floor = (datetime.now() - timedelta(days=days)).date().isoformat()
+    updated = [dict(row) for row in rows if str(row["date"]) >= floor and str(row["date"]) != today]
+    if count:
+        updated.append({"date": today, "count": count})
+        updated.sort(key=lambda row: str(row["date"]))
+    return updated
 
 
 def _day_rows(ids: list[int], days: int = 183) -> list[dict[str, Any]]:

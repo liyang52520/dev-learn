@@ -22,6 +22,9 @@ export function ReviewTop(props: Props) {
   const newPct = newLimit > 0 && newDone !== null ? Math.min(100, Math.round((newDone / newLimit) * 100)) : 0
   const revPct = revLimit > 0 && revDone !== null ? Math.min(100, Math.round((revDone / revLimit) * 100)) : 0
   const remaining = counts.new + counts.learning + counts.review
+  // aria-valuenow 不得超过 max；暂停时 max 至少为 1。
+  const newMax = Math.max(newLimit, 1)
+  const revMax = Math.max(revLimit, 1)
 
   return (
     <header className="review-top">
@@ -35,8 +38,8 @@ export function ReviewTop(props: Props) {
               className="review-progress-track"
               role="progressbar"
               aria-valuemin={0}
-              aria-valuemax={Math.max(newLimit, 0)}
-              aria-valuenow={newDone ?? 0}
+              aria-valuemax={newMax}
+              aria-valuenow={Math.min(newDone ?? 0, newMax)}
               aria-label={newLimit > 0 ? `今日新卡 ${newDone ?? 0} / ${newLimit}` : '今日新卡已暂停'}
             >
               <span className="review-progress-fill" style={{ width: `${newPct}%` }} />
@@ -57,8 +60,8 @@ export function ReviewTop(props: Props) {
               className="review-progress-track"
               role="progressbar"
               aria-valuemin={0}
-              aria-valuemax={Math.max(revLimit, 0)}
-              aria-valuenow={revDone ?? 0}
+              aria-valuemax={revMax}
+              aria-valuenow={Math.min(revDone ?? 0, revMax)}
               aria-label={revLimit > 0 ? `今日复习 ${revDone ?? 0} / ${revLimit}` : '今日复习已暂停'}
             >
               <span className="review-progress-fill review-progress-fill-soft" style={{ width: `${revPct}%` }} />
@@ -83,18 +86,23 @@ export function ReviewTop(props: Props) {
           <span>学习中 <strong>{loaded ? counts.learning : '—'}</strong></span>
           <span>可复习 <strong>{loaded ? counts.review : '—'}</strong></span>
           <span>到期总量 <strong>{loaded ? backlog : '—'}</strong></span>
-          <span>连续 <strong>{streak}</strong> 天</span>
+          <span>{streak > 0 ? <>连续 <strong>{streak}</strong> 天</> : '今天还没复习'}</span>
         </div>
       </div>
-      <button
-        type="button"
-        className="review-end"
-        onClick={props.onEnd}
-        disabled={busy}
-        title={busy ? '正在处理这次评分，请稍候' : '不要求清空队列，随时可以结束看小结（Esc）'}
-      >
-        结束本轮
-      </button>
+      <div className="review-top-actions">
+        <Link to="/admin/study" className="review-settings" title="每日额度、暂停与学习统计">
+          设置
+        </Link>
+        <button
+          type="button"
+          className="review-end"
+          onClick={props.onEnd}
+          disabled={busy}
+          title={busy ? '正在处理这次评分，请稍候' : '不要求清空队列，随时可以结束看小结（Esc）'}
+        >
+          结束本轮
+        </button>
+      </div>
     </header>
   )
 }

@@ -20,21 +20,40 @@ export function useSessionClock({ phase, reviewed, dayKey, setReviewed }: Option
   const segmentRef = useRef<number | null>(null)
   const ratedIds = useRef<Set<number>>(new Set())
   const ratedOrder = useRef<RatedEntry[]>([])
+  // 已经完成「恢复/清空」的学习日；在此之前不要写回，否则会把昨天的进度写到今天。
+  const sessionDay = useRef('')
+
+  const reset = useCallback(() => {
+    setReviewed(0)
+    setRatedThisTab(0)
+    setTopics([])
+    ratedIds.current = new Set()
+    ratedOrder.current = []
+    elapsedRef.current = 0
+    setElapsedMs(0)
+    segmentRef.current = null
+  }, [setReviewed])
 
   useEffect(() => {
-    if (!dayKey) return
+    if (!dayKey || sessionDay.current === dayKey) return
+    sessionDay.current = dayKey
     const stored = readSession(dayKey)
-    if (!stored) return
-    setReviewed(stored.reviewed)
-    setTopics(stored.topics)
-    ratedOrder.current = stored.stack || []
-    ratedIds.current = new Set((stored.stack || []).map((entry) => entry.id))
-    elapsedRef.current = stored.elapsedMs || 0
-    setElapsedMs(stored.elapsedMs || 0)
-  }, [dayKey, setReviewed])
+    if (stored) {
+      setReviewed(stored.reviewed)
+      setTopics(stored.topics)
+      ratedOrder.current = stored.stack || []
+      ratedIds.current = new Set((stored.stack || []).map((entry) => entry.id))
+      elapsedRef.current = stored.elapsedMs || 0
+      setElapsedMs(stored.elapsedMs || 0)
+      return
+    }
+    // 跨日（或本地没有当天的记录）：上一轮的进度必须清零，不能算到今天头上。
+    reset()
+    clearSession()
+  }, [dayKey, reset, setReviewed])
 
   useEffect(() => {
-    if (!dayKey) return
+    if (!dayKey || sessionDay.current !== dayKey) return
     if (phase !== 'question' && phase !== 'answer') return
     if (reviewed <= 0) {
       clearSession()
@@ -74,17 +93,6 @@ export function useSessionClock({ phase, reviewed, dayKey, setReviewed }: Option
     setElapsedMs(elapsedRef.current)
     return elapsedRef.current
   }, [])
-
-  const reset = useCallback(() => {
-    setReviewed(0)
-    setRatedThisTab(0)
-    setTopics([])
-    ratedIds.current = new Set()
-    ratedOrder.current = []
-    elapsedRef.current = 0
-    setElapsedMs(0)
-    segmentRef.current = null
-  }, [setReviewed])
 
   return {
     topics,

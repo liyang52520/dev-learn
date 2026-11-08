@@ -31,8 +31,8 @@ def get_queue(limit: int = Query(1, ge=1, le=20)) -> ReviewQueue:
 
 
 @router.get("/stats", response_model=ReviewStats)
-def get_stats() -> ReviewStats:
-    return service.stats()
+def get_stats(client_id: str = Query("", alias="clientId", max_length=64)) -> ReviewStats:
+    return service.stats(client_id)
 
 
 @router.get("/config", response_model=ReviewConfig)
