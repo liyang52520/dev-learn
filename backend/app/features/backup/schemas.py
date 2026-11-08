@@ -33,12 +33,21 @@ class BackupConflict(ApiModel):
     kind: Literal["text", "anki"]
 
 
+class BackupRef(ApiModel):
+    """覆盖前留下的安全引用。"""
+
+    name: str
+    ref: str
+    sha: str
+    created_at: str
+
+
 class BackupStatus(ApiModel):
     repo: bool
     branch: str
     own_branch: str
     remote: str
-    dirty: bool
+    dirty: bool | None
     merging: bool
     merge_branch: str
     conflicts: list[BackupConflict]
@@ -50,12 +59,22 @@ class BackupStatus(ApiModel):
     anki_available: bool
     suspended: bool
     message: str
+    degraded: bool = False
+    error: str = ""
+    safety_refs: list[BackupRef] = Field(default_factory=list)
 
 
 class BackupResult(ApiModel):
     ok: bool
     status: Literal[
-        "pushed", "merged", "up-to-date", "conflict", "overwritten", "aborted", "fetched"
+        "pushed",
+        "merged",
+        "up-to-date",
+        "conflict",
+        "overwritten",
+        "aborted",
+        "fetched",
+        "restored",
     ]
     branch: str
     message: str
@@ -65,6 +84,10 @@ class BackupResult(ApiModel):
 
 class BackupBranchRequest(ApiModel):
     branch: str
+
+
+class BackupRestoreRequest(ApiModel):
+    ref: str = Field(min_length=1, max_length=200)
 
 
 class BackupResolveRequest(ApiModel):

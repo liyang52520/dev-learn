@@ -1,18 +1,20 @@
 import { useEffect } from 'react'
 
-import type { Phase } from './types'
+import type { CardAction, Phase } from './types'
 
 type Handlers = {
   phase: Phase
   busy: boolean
   reviewed: number
+  canUndo: boolean
   reveal: () => void
   rate: (rating: number) => void
   undo: () => void
+  cardAction: (action: CardAction) => void
   endSession: () => void
 }
 
-/** 空格显示答案、1–4 评分、U 撤销、Esc 结束本轮。 */
+/** 空格显示答案、1–4 评分、U 撤销、B 埋藏、S 暂停、F 标记、Esc 结束本轮。 */
 export function useKeyboardShortcuts(handlers: Handlers): void {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -25,7 +27,7 @@ export function useKeyboardShortcuts(handlers: Handlers): void {
         target && typeof target.closest === 'function' && target.closest('a, button, [role="button"]'),
       )
       if (event.key === 'Escape') {
-        if (handlers.reviewed > 0) {
+        if (!handlers.busy && (handlers.phase === 'question' || handlers.phase === 'answer')) {
           event.preventDefault()
           handlers.endSession()
         }
@@ -42,10 +44,19 @@ export function useKeyboardShortcuts(handlers: Handlers): void {
         handlers.rate(Number(event.key))
         return
       }
+      const action = { b: 'bury', s: 'suspend', f: 'flag' }[event.key.toLowerCase()] as
+        | CardAction
+        | undefined
+      if (action && (handlers.phase === 'question' || handlers.phase === 'answer')) {
+        event.preventDefault()
+        handlers.cardAction(action)
+        return
+      }
       if (
         (handlers.phase === 'question' || handlers.phase === 'answer') &&
         event.key.toLowerCase() === 'u'
       ) {
+        if (!handlers.canUndo) return
         event.preventDefault()
         handlers.undo()
       }

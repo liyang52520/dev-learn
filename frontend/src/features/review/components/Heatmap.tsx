@@ -6,10 +6,11 @@ const WEEKDAY_LABELS = ['一', '', '三', '', '五', '', '日']
 const WEEKS = 26
 
 /** 复习热力图：26 周 × 7 天，单色四档；触屏点按查看当天学过的卡数。 */
-export function Heatmap({ days }: { days: ReviewDay[] }) {
+export function Heatmap({ days, todayKey }: { days: ReviewDay[]; todayKey: string }) {
   const [selected, setSelected] = useState<number | null>(null)
   const byDate = new Map(days.map((day) => [day.date, day.count]))
-  const today = new Date()
+  // 网格锚定服务端的 Anki 学习日，而不是浏览器自然日，避免时区/凌晨换日错位。
+  const today = parseIso(todayKey)
   today.setHours(0, 0, 0, 0)
 
   const monday = new Date(today)
@@ -43,6 +44,9 @@ export function Heatmap({ days }: { days: ReviewDay[] }) {
   const peak = cells.reduce((max, cell) => Math.max(max, cell.future ? 0 : cell.count), 0)
   const scale = thresholds(peak)
   const selectedCell = selected === null ? null : cells[selected]
+  // 182 个格子只保留一个 Tab 停靠点，键盘用户不会被热力图困住。
+  const lastSelectable = cells.reduce((last, cell, index) => (cell.future ? last : index), -1)
+  const focusIndex = selected !== null && !cells[selected].future ? selected : lastSelectable
 
   return (
     <div className="heatmap-wrap">
@@ -73,6 +77,7 @@ export function Heatmap({ days }: { days: ReviewDay[] }) {
                 title={label}
                 aria-label={label}
                 aria-pressed={selected === index}
+                tabIndex={index === focusIndex ? 0 : -1}
                 onClick={() => setSelected(index)}
               />
             )
@@ -113,4 +118,9 @@ function toIso(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${date.getFullYear()}-${month}-${day}`
+}
+
+function parseIso(value: string): Date {
+  const [year, month, day] = value.split('-').map(Number)
+  return new Date(year, month - 1, day)
 }

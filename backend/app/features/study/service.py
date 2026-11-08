@@ -122,11 +122,13 @@ def _evidence(question: dict[str, Any]) -> list[EvidenceGroup]:
                 )
             )
         groups.append(
-            EvidenceGroup(
-                label=group["label"],
-                from_page=group["from"],
-                to=group["to"],
-                files=files,
+            EvidenceGroup.model_validate(
+                {
+                    "label": group["label"],
+                    "from": group["from"],
+                    "to": group["to"],
+                    "files": files,
+                }
             )
         )
     return groups

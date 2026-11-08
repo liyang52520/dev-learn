@@ -466,6 +466,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/review/touch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Touch */
+        post: operations["post_touch_api_review_touch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/review/undo": {
         parameters: {
             query?: never;
@@ -477,6 +494,23 @@ export interface paths {
         put?: never;
         /** Post Undo */
         post: operations["post_undo_api_review_undo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/review/card-action": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Card Action */
+        post: operations["post_card_action_api_review_card_action_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -637,6 +671,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/backup/refs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Refs */
+        get: operations["refs_api_admin_backup_refs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backup/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore */
+        post: operations["restore_api_admin_backup_restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -647,6 +715,11 @@ export interface components {
             cardId: number;
             /** Rating */
             rating: number;
+            /**
+             * Clientid
+             * @default
+             */
+            clientId: string;
         };
         /** AnswerResult */
         AnswerResult: {
@@ -655,6 +728,8 @@ export interface components {
             dueTotal: number;
             progress: components["schemas"]["ReviewProgress"];
             next: components["schemas"]["ReviewCard"] | null;
+            /** Undotoken */
+            undoToken: string;
         };
         /** Archive */
         Archive: {
@@ -712,12 +787,31 @@ export interface components {
             /** Message */
             message: string;
         };
+        /**
+         * BackupRef
+         * @description 覆盖前留下的安全引用。
+         */
+        BackupRef: {
+            /** Name */
+            name: string;
+            /** Ref */
+            ref: string;
+            /** Sha */
+            sha: string;
+            /** Createdat */
+            createdAt: string;
+        };
         /** BackupResolveRequest */
         BackupResolveRequest: {
             /** Resolutions */
             resolutions: {
                 [key: string]: "local" | "remote";
             };
+        };
+        /** BackupRestoreRequest */
+        BackupRestoreRequest: {
+            /** Ref */
+            ref: string;
         };
         /** BackupResult */
         BackupResult: {
@@ -727,7 +821,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "pushed" | "merged" | "up-to-date" | "conflict" | "overwritten" | "aborted" | "fetched";
+            status: "pushed" | "merged" | "up-to-date" | "conflict" | "overwritten" | "aborted" | "fetched" | "restored";
             /** Branch */
             branch: string;
             /** Message */
@@ -751,7 +845,7 @@ export interface components {
             /** Remote */
             remote: string;
             /** Dirty */
-            dirty: boolean;
+            dirty: boolean | null;
             /** Merging */
             merging: boolean;
             /** Mergebranch */
@@ -773,11 +867,48 @@ export interface components {
             suspended: boolean;
             /** Message */
             message: string;
+            /**
+             * Degraded
+             * @default false
+             */
+            degraded: boolean;
+            /**
+             * Error
+             * @default
+             */
+            error: string;
+            /** Safetyrefs */
+            safetyRefs?: components["schemas"]["BackupRef"][];
         };
         /** Body_upload_api_admin_upload_post */
         Body_upload_api_admin_upload_post: {
             /** File */
             file: string;
+        };
+        /** CardActionPayload */
+        CardActionPayload: {
+            /** Cardid */
+            cardId: number;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "bury" | "suspend" | "flag";
+            /** Flag */
+            flag?: number | null;
+            /**
+             * Clientid
+             * @default
+             */
+            clientId: string;
+        };
+        /** CardActionResult */
+        CardActionResult: {
+            counts: components["schemas"]["ReviewCounts"];
+            /** Duetotal */
+            dueTotal: number;
+            progress: components["schemas"]["ReviewProgress"];
+            next: components["schemas"]["ReviewCard"] | null;
         };
         /** CardAnswer */
         CardAnswer: {
@@ -1048,6 +1179,11 @@ export interface components {
             state: string;
             /** Labels */
             labels: string[];
+            /**
+             * Flag
+             * @default 0
+             */
+            flag: number;
             question?: components["schemas"]["ReviewQuestion"] | null;
         };
         /** ReviewConfig */
@@ -1102,6 +1238,8 @@ export interface components {
             newRemaining: number;
             /** Canundo */
             canUndo: boolean;
+            /** Undotoken */
+            undoToken?: string | null;
         };
         /** ReviewQuestion */
         ReviewQuestion: {
@@ -1135,6 +1273,10 @@ export interface components {
             counts: components["schemas"]["ReviewCounts"];
             /** Duetotal */
             dueTotal: number;
+            /** Phase */
+            phase: string;
+            /** Todaykey */
+            todayKey: string;
             /** Today */
             today: number;
             /** Todaynew */
@@ -1147,6 +1289,14 @@ export interface components {
             newPerDay: number;
             /** Revperday */
             revPerDay: number;
+            /** Newpaused */
+            newPaused: boolean;
+            /** Reviewpaused */
+            reviewPaused: boolean;
+            /** Newlimithit */
+            newLimitHit: boolean;
+            /** Reviewlimithit */
+            reviewLimitHit: boolean;
             /** Streak */
             streak: number;
             /** Totalreviews */
@@ -1163,6 +1313,8 @@ export interface components {
             nextDueEpoch: number | null;
             /** Canundo */
             canUndo: boolean;
+            /** Undotoken */
+            undoToken: string | null;
             /** Newremaining */
             newRemaining: number;
             lastBackup: components["schemas"]["ReviewBackup"] | null;
@@ -1290,6 +1442,26 @@ export interface components {
             count: number;
             /** Firstqid */
             firstQid: string;
+        };
+        /** TouchPayload */
+        TouchPayload: {
+            /** Cardid */
+            cardId: number;
+        };
+        /** TouchResult */
+        TouchResult: {
+            /** Ok */
+            ok: boolean;
+        };
+        /** UndoPayload */
+        UndoPayload: {
+            /** Token */
+            token: string;
+            /**
+             * Clientid
+             * @default
+             */
+            clientId: string;
         };
         /** UndoResult */
         UndoResult: {
@@ -2182,6 +2354,39 @@ export interface operations {
             };
         };
     };
+    post_touch_api_review_touch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TouchPayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TouchResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     post_undo_api_review_undo_post: {
         parameters: {
             query?: never;
@@ -2189,7 +2394,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoPayload"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -2198,6 +2407,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UndoResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_card_action_api_review_card_action_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CardActionPayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CardActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2431,6 +2682,59 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["BackupBranchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refs_api_admin_backup_refs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRef"][];
+                };
+            };
+        };
+    };
+    restore_api_admin_backup_restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupRestoreRequest"];
             };
         };
         responses: {

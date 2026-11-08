@@ -1,5 +1,13 @@
 export type Phase = 'loading' | 'question' | 'answer' | 'done' | 'error'
 
+export type CardAction = 'bury' | 'suspend' | 'flag'
+
+export const CARD_ACTION_LABELS: Record<CardAction, string> = {
+  bury: '埋藏',
+  suspend: '暂停',
+  flag: '标记',
+}
+
 export const RATING_HINTS: Record<number, string> = { 1: '忘记', 2: '模糊', 3: '记得', 4: '简单' }
 
 export const STATE_LABELS: Record<string, string> = {

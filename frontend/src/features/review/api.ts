@@ -2,10 +2,15 @@ import { apiGet, apiSend } from '@/shared/api/client'
 import type {
   AnswerPayload,
   AnswerResult,
+  CardActionPayload,
+  CardActionResult,
   CardAnswer,
   LapseList,
   ReviewQueue,
   ReviewStats,
+  TouchPayload,
+  TouchResult,
+  UndoPayload,
   UndoResult,
 } from '@/types/models'
 
@@ -29,6 +34,14 @@ export function submitAnswer(payload: AnswerPayload): Promise<AnswerResult> {
   return apiSend<AnswerResult>('POST', '/api/review/answer', payload)
 }
 
-export function undoAnswer(): Promise<UndoResult> {
-  return apiSend<UndoResult>('POST', '/api/review/undo')
+export function touchCard(payload: TouchPayload): Promise<TouchResult> {
+  return apiSend<TouchResult>('POST', '/api/review/touch', payload)
+}
+
+export function undoAnswer(payload: UndoPayload): Promise<UndoResult> {
+  return apiSend<UndoResult>('POST', '/api/review/undo', payload)
+}
+
+export function submitCardAction(payload: CardActionPayload): Promise<CardActionResult> {
+  return apiSend<CardActionResult>('POST', '/api/review/card-action', payload)
 }

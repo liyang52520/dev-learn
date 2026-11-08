@@ -1,11 +1,16 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { login } from '../../admin/api'
 import { errorMessage } from '@/shared/api/client'
 
+type LoginState = { from?: string }
+
 export default function AdminLoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const client = useQueryClient()
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -16,7 +21,11 @@ export default function AdminLoginPage() {
     setError('')
     try {
       await login(password)
-      navigate('/admin', { replace: true })
+      client.setQueryData(['admin', 'me'], { authenticated: true })
+      const from = (location.state as LoginState | null)?.from
+      const target =
+        from && from.startsWith('/') && !from.startsWith('/admin/login') ? from : '/'
+      navigate(target, { replace: true })
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -29,17 +38,17 @@ export default function AdminLoginPage() {
       <div className="login-poster">
         <div className="login-poster-inner">
           <span className="login-mark">YG</span>
-          <p className="login-kicker">WRITING STUDIO</p>
+          <p className="login-kicker">PRIVATE SPACE</p>
           <h1>
-            把想法
+            回到
             <br />
-            写成文章。
+            你的站点。
           </h1>
-          <p className="login-quote">写作是思考的慢动作。草稿、编辑、发布，都在这里完成。</p>
+          <p className="login-quote">博客、题库与复习进度都在这里，只对一个人开放。</p>
           <div className="login-poster-foot">
-            <span>42 个学习专题</span>
-            <span>2521 道面试题</span>
-            <span>本地文件优先</span>
+            <span>博客</span>
+            <span>题库</span>
+            <span>复习</span>
           </div>
         </div>
       </div>
@@ -47,10 +56,10 @@ export default function AdminLoginPage() {
       <div className="login-form-wrap">
         <form className="login-form" onSubmit={submit}>
           <p className="login-kicker dark">SIGN IN</p>
-          <h2>进入写作台</h2>
-          <p className="login-sub">输入管理密码后继续。</p>
+          <h2>进入站点</h2>
+          <p className="login-sub">输入访问密码后继续。</p>
           <label>
-            管理密码
+            访问密码
             <input
               type="password"
               value={password}
@@ -65,9 +74,7 @@ export default function AdminLoginPage() {
           <button type="submit" className="admin-button primary" disabled={busy}>
             {busy ? '登录中…' : '登录'}
           </button>
-          <Link to="/" className="login-back">
-            ← 返回博客
-          </Link>
+          <p className="login-note">仅限本人使用，登录状态会保留 7 天。</p>
         </form>
       </div>
     </div>

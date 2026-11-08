@@ -9,6 +9,7 @@ from fastapi import FastAPI
 
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLogMiddleware, configure_logging
+from app.core.security import install_site_guard
 from app.features.auth.router import router as auth_router
 from app.features.backup import scheduler as backup_scheduler
 from app.features.backup.router import router as backup_router
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
     )
     install_error_handlers(app)
     app.add_middleware(RequestLogMiddleware)
+    install_site_guard(app)
     _include_routers(app)
     mount_site(app)
     return app

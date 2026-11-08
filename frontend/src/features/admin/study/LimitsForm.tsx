@@ -32,9 +32,16 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
     previewNew >= 0 &&
     previewRev >= 0
 
+  const newChanged = previewReady && previewNew !== config.newPerDay
+  const revChanged = previewReady && previewRev !== config.revPerDay
+
   const save = async () => {
     if (!previewReady) {
       setNotice('两个上限都要填 0–9999 的整数，不能留空')
+      return
+    }
+    if (!newChanged && !revChanged) {
+      setNotice('额度没有变化，无需保存')
       return
     }
     const warnings: string[] = []
@@ -44,7 +51,6 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
         `额度将明显提高（新卡 ${config.newPerDay} → ${previewNew}，复习 ${config.revPerDay} → ${previewRev}），每天花的时间会明显增加`,
       )
     }
-    if (stats.canUndo) warnings.push('保存会清空「撤销上一张」的历史记录')
     if (warnings.length > 0 && !window.confirm(`${warnings.join('；')}。确定要保存吗？`)) return
 
     setBusy(true)
@@ -59,9 +65,6 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
       setBusy(false)
     }
   }
-
-  const newChanged = previewReady && previewNew !== config.newPerDay
-  const revChanged = previewReady && previewRev !== config.revPerDay
 
   return (
     <div className="study-admin-card">
@@ -102,10 +105,10 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
         <p className="study-admin-preview">
           保存后：每天最多学 {previewNew} 张新卡、复习 {previewRev} 张。
           {previewNew > 0
-            ? `剩余 ${stats.newRemaining} 张新卡约需 ${Math.ceil(stats.newRemaining / previewNew)} 天学完`
+            ? `剩余 ${stats.newRemaining} 张新卡按这个速度需要 ${formatDays(Math.ceil(stats.newRemaining / previewNew))}`
             : '新卡将暂停发放'}
           {previewRev > 0 && stats.dueTotal > 0
-            ? `；${stats.dueTotal} 张到期卡约需 ${Math.ceil(stats.dueTotal / previewRev)} 天清完`
+            ? `；${stats.dueTotal} 张到期卡约需 ${formatDays(Math.ceil(stats.dueTotal / previewRev))} 清完`
             : ''}
         </p>
       )}
@@ -115,4 +118,11 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
       {notice && <p className="study-admin-notice">{notice}</p>}
     </div>
   )
+}
+
+function formatDays(days: number): string {
+  if (days <= 1) return '1 天'
+  if (days <= 60) return `${days} 天`
+  if (days <= 365) return `约 ${Math.round(days / 30)} 个月`
+  return `约 ${(days / 365).toFixed(1)} 年`
 }

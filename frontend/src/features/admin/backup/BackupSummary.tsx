@@ -13,9 +13,19 @@ function ownState(data: BackupStatus): string {
   return '与远端一致'
 }
 
+function dirtyText(data: BackupStatus): string {
+  if (data.dirty === null) return '无法读取'
+  return data.dirty ? '有未提交改动' : '干净'
+}
+
 export function BackupSummary({ data, busy, onPush }: Props) {
   return (
     <section className="backup-card">
+      {data.degraded && (
+        <p className="backup-warn" role="alert">
+          {data.error || 'git 状态读取异常，下面的数字不可信。'}
+        </p>
+      )}
       <div className="backup-summary-head">
         <div>
           <p className="backup-kicker">本机推送分支</p>
@@ -44,9 +54,7 @@ export function BackupSummary({ data, busy, onPush }: Props) {
         </div>
         <div>
           <dt>工作区</dt>
-          <dd className={data.dirty ? 'is-warn' : ''}>
-            {data.dirty ? '有未提交改动' : '干净'}
-          </dd>
+          <dd className={data.dirty === false ? '' : 'is-warn'}>{dirtyText(data)}</dd>
         </div>
         <div>
           <dt>本机分支状态</dt>

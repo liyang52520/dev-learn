@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field
 
 from app.core.pagination import ApiModel
@@ -29,6 +31,7 @@ class ReviewCard(ApiModel):
     qid: str
     state: str
     labels: list[str]
+    flag: int = 0
     question: ReviewQuestion | None = None
 
 
@@ -45,6 +48,7 @@ class ReviewProgress(ApiModel):
     today_relearn: int
     new_remaining: int
     can_undo: bool
+    undo_token: str | None = None
 
 
 class AnswerResult(ApiModel):
@@ -52,6 +56,7 @@ class AnswerResult(ApiModel):
     due_total: int
     progress: ReviewProgress
     next: ReviewCard | None
+    undo_token: str
 
 
 class UndoResult(ApiModel):
@@ -79,12 +84,18 @@ class ReviewBackup(ApiModel):
 class ReviewStats(ApiModel):
     counts: ReviewCounts
     due_total: int
+    phase: str
+    today_key: str
     today: int
     today_new: int
     today_review: int
     today_relearn: int
     new_per_day: int
     rev_per_day: int
+    new_paused: bool
+    review_paused: bool
+    new_limit_hit: bool
+    review_limit_hit: bool
     streak: int
     total_reviews: int
     total_answers: int
@@ -93,6 +104,7 @@ class ReviewStats(ApiModel):
     due_tomorrow: int
     next_due_epoch: int | None
     can_undo: bool
+    undo_token: str | None
     new_remaining: int
     last_backup: ReviewBackup | None
     days: list[ReviewDay]
@@ -115,6 +127,35 @@ class ReviewConfigUpdate(ApiModel):
 class AnswerPayload(ApiModel):
     card_id: int
     rating: int = Field(ge=1, le=4)
+    # 标签页标识：撤销凭证按标签页隔离，避免两个标签页互相抢占。
+    client_id: str = Field(default="", max_length=64)
+
+
+class UndoPayload(ApiModel):
+    token: str = Field(min_length=1, max_length=200)
+    client_id: str = Field(default="", max_length=64)
+
+
+class CardActionPayload(ApiModel):
+    card_id: int
+    action: Literal["bury", "suspend", "flag"]
+    flag: int | None = Field(default=None, ge=0, le=7)
+    client_id: str = Field(default="", max_length=64)
+
+
+class CardActionResult(ApiModel):
+    counts: ReviewCounts
+    due_total: int
+    progress: ReviewProgress
+    next: ReviewCard | None
+
+
+class TouchPayload(ApiModel):
+    card_id: int
+
+
+class TouchResult(ApiModel):
+    ok: bool
 
 
 class Lapse(ApiModel):

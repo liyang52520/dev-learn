@@ -28,8 +28,14 @@ SNAPSHOT_EVERY = 10 * 60
 LOCK = threading.RLock()
 _snapshot_due = {"value": False}
 _suspended = {"value": False}
+_generation = {"value": 0}
 _collection: Collection | None = None
 _maintenance: threading.Thread | None = None
+
+
+def generation() -> int:
+    """collection 每次打开/关闭都递增；统计缓存据此判断是否必须重算。"""
+    return _generation["value"]
 
 
 def collection_path() -> Path:
@@ -44,9 +50,20 @@ def available() -> bool:
     return collection_path().is_file()
 
 
+def _merge_pending() -> bool:
+    """跨重启也要拦住复习：残留的 merge 会改 anki 文件，绝不能在库打开时进行。"""
+    return (settings.data_dir / ".git" / "MERGE_HEAD").exists()
+
+
 def instance() -> Collection:
     """延迟打开：只有第一次真正用到复习时才读 collection。"""
     global _collection
+    if _merge_pending():
+        raise AppError(
+            "备份合并尚未完成，复习已暂停；请到「数据备份」解决或取消合并",
+            code="backup_merge_pending",
+            status=503,
+        )
     if _suspended["value"]:
         raise AppError(
             "数据同步进行中，复习暂时不可用，请稍后刷新",
@@ -77,6 +94,7 @@ def instance() -> Collection:
                 raise AppError(
                     f"复习服务启动失败：{exc}", code="review_unavailable", status=503
                 ) from exc
+            _generation["value"] += 1
             _start_maintenance()
     return _collection
 
@@ -186,6 +204,7 @@ def suspend() -> None:
             with contextlib.suppress(Exception):
                 _collection.close()
             _collection = None
+            _generation["value"] += 1
 
 
 def resume() -> None:

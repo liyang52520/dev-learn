@@ -106,3 +106,7 @@ export function abortBackup(): Promise<BackupResult> {
 export function overwriteBackup(branch: string): Promise<BackupResult> {
   return apiSend<BackupResult>('POST', '/api/admin/backup/overwrite', { branch })
 }
+
+export function restoreBackup(ref: string): Promise<BackupResult> {
+  return apiSend<BackupResult>('POST', '/api/admin/backup/restore', { ref })
+}

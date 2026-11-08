@@ -6,10 +6,12 @@
 
 from __future__ import annotations
 
+import secrets
 import time
 from typing import Any, cast
 
 from anki import scheduler_pb2
+from anki.cards import CardId
 from anki.utils import int_time
 
 from app.core.errors import AppError
@@ -17,9 +19,17 @@ from app.features.review import analytics, collection
 
 MAX_STATES = 64
 PENDING_TTL = 30 * 60
+UNDO_TTL = 10 * 60
 STATE_NAMES = {0: "new", 1: "learning", 2: "review", 3: "relearning"}
 
-_pending: dict[int, tuple[Any, float]] = {}
+# card_id -> (各评分对应的状态, 首次展示时间, 过期时间)
+_pending: dict[int, tuple[Any, float, float]] = {}
+# 每个浏览器标签页各自一份撤销凭证，互不抢占；只允许撤销该标签页的最近一次评分。
+_last_undo: dict[str, tuple[str, float]] = {}
+BURY_MODES = {
+    "bury": scheduler_pb2.BuryOrSuspendCardsRequest.BURY_USER,
+    "suspend": scheduler_pb2.BuryOrSuspendCardsRequest.SUSPEND,
+}
 
 
 def _clean_label(text: str) -> str:
@@ -28,8 +38,8 @@ def _clean_label(text: str) -> str:
 
 def _prune() -> None:
     now = time.time()
-    for key, (_, shown_at) in list(_pending.items()):
-        if now - shown_at > PENDING_TTL:
+    for key, (_, _, expires_at) in list(_pending.items()):
+        if now > expires_at:
             _pending.pop(key, None)
 
 
@@ -39,12 +49,25 @@ def counts() -> dict[str, int]:
         return {"new": new, "learning": learning, "review": review}
 
 
-def can_undo() -> bool:
+def _valid_undo_token(client_id: str) -> str | None:
+    token, issued_at = _last_undo.get(client_id, ("", 0.0))
+    if not token or time.time() - issued_at > UNDO_TTL:
+        return None
     with collection.LOCK:
         try:
-            return bool(collection.instance().undo_status().undo)
+            if not collection.instance().undo_status().undo:
+                return None
         except Exception:  # noqa: BLE001
-            return False
+            return None
+    return token
+
+
+def undo_token(client_id: str = "") -> str | None:
+    return _valid_undo_token(client_id)
+
+
+def can_undo(client_id: str = "") -> bool:
+    return _valid_undo_token(client_id) is not None
 
 
 def queue_view(limit: int = 1) -> dict[str, Any]:
@@ -58,7 +81,8 @@ def queue_view(limit: int = 1) -> dict[str, Any]:
         for queued_card in queued.cards:
             note = col.get_note(queued_card.card.note_id)
             labels = [_clean_label(text) for text in sched.describe_next_states(queued_card.states)]
-            _pending[queued_card.card.id] = (queued_card.states, time.time())
+            now = time.time()
+            _pending[queued_card.card.id] = (queued_card.states, now, now + PENDING_TTL)
             if len(_pending) > MAX_STATES:
                 for key in sorted(_pending, key=lambda k: _pending[k][1])[:-MAX_STATES]:
                     _pending.pop(key, None)
@@ -68,6 +92,8 @@ def queue_view(limit: int = 1) -> dict[str, Any]:
                     "qid": note["QID"],
                     "state": STATE_NAMES.get(queued_card.card.ctype, "unknown"),
                     "labels": labels,
+                    # 队列里的 card 是 protobuf 快照，没有 user_flag，要回库读。
+                    "flag": int(col.get_card(queued_card.card.id).user_flag() or 0),
                 }
             )
         return {
@@ -81,7 +107,22 @@ def queue_view(limit: int = 1) -> dict[str, Any]:
         }
 
 
-def answer(card_id: int, rating: int) -> dict[str, Any]:
+def touch(card_id: int) -> dict[str, Any]:
+    """显示答案时续期，避免「思考超过 30 分钟」在评分前过期。"""
+    with collection.LOCK:
+        cached = _pending.get(card_id)
+        if not cached:
+            raise AppError(
+                "这张卡已被其他标签页处理或服务已重启，请重新取卡",
+                code="card_not_pending",
+                status=409,
+            )
+        states, shown_at, _ = cached
+        _pending[card_id] = (states, shown_at, time.time() + PENDING_TTL)
+    return {"ok": True}
+
+
+def answer(card_id: int, rating: int, client_id: str = "") -> dict[str, Any]:
     if rating not in (1, 2, 3, 4):
         raise AppError("rating 必须是 1-4", code="invalid_params", status=400)
     with collection.LOCK:
@@ -92,14 +133,14 @@ def answer(card_id: int, rating: int) -> dict[str, Any]:
                 code="card_not_pending",
                 status=409,
             )
-        if time.time() - cached[1] > PENDING_TTL:
+        states, shown_at, expires_at = cached
+        if time.time() > expires_at:
             _pending.pop(card_id, None)
             raise AppError(
                 "思考时间超过 30 分钟，这张卡已重新排队，请重新取卡",
                 code="stale_card",
                 status=409,
             )
-        states, shown_at = cached
         new_state = {1: states.again, 2: states.hard, 3: states.good, 4: states.easy}[rating]
         elapsed = int((time.time() - shown_at) * 1000)
         sched = cast(Any, collection.instance().sched)
@@ -115,34 +156,77 @@ def answer(card_id: int, rating: int) -> dict[str, Any]:
             )
         )
         _pending.pop(card_id, None)
+        token = secrets.token_urlsafe(18)
+        _last_undo[client_id] = (token, time.time())
         collection.mark_dirty()
         following = queue_view(1)
         return {
             "counts": following["counts"],
             "due_total": following["due_total"],
-            "progress": progress(),
+            "progress": progress(client_id),
+            "next": following["cards"][0] if following["cards"] else None,
+            "undo_token": token,
+        }
+
+
+def undo(token: str, client_id: str = "") -> dict[str, Any]:
+    with collection.LOCK:
+        expected = _valid_undo_token(client_id)
+        if not expected or token != expected:
+            raise AppError(
+                "这次撤销已失效：只能撤销本标签页最近一次评分，且需在 10 分钟内",
+                code="undo_expired",
+                status=409,
+            )
+        collection.instance().undo()
+        _last_undo.pop(client_id, None)
+        _pending.clear()
+        collection.mark_dirty()
+        return {
+            "counts": counts(),
+            "due_total": analytics.due_total(),
+            "progress": progress(client_id),
+        }
+
+
+def card_action(
+    card_id: int, action: str, client_id: str = "", flag: int | None = None
+) -> dict[str, Any]:
+    """埋藏、暂停或标记当前卡，然后直接给出下一张。"""
+    if action == "flag":
+        if flag is None or flag < 0 or flag > 7:
+            raise AppError("flag 必须是 0-7", code="invalid_params", status=400)
+    elif action not in BURY_MODES:
+        raise AppError("不支持的卡片操作", code="invalid_params", status=400)
+    with collection.LOCK:
+        col = collection.instance()
+        if action == "flag":
+            col.set_user_flag_for_cards(flag or 0, [CardId(card_id)])
+        else:
+            col._backend.bury_or_suspend_cards(
+                card_ids=[card_id], note_ids=[], mode=BURY_MODES[action]
+            )
+        _pending.pop(card_id, None)
+        collection.mark_dirty()
+        following = queue_view(1)
+        return {
+            "counts": following["counts"],
+            "due_total": following["due_total"],
+            "progress": progress(client_id),
             "next": following["cards"][0] if following["cards"] else None,
         }
 
 
-def undo() -> dict[str, Any]:
-    with collection.LOCK:
-        if not collection.instance().undo_status().undo:
-            raise AppError("没有可撤销的操作", code="conflict", status=409)
-        collection.instance().undo()
-        _pending.clear()
-        collection.mark_dirty()
-        return {"counts": counts(), "due_total": analytics.due_total(), "progress": progress()}
-
-
-def progress() -> dict[str, Any]:
+def progress(client_id: str = "") -> dict[str, Any]:
     """评分后立即回传的轻量进度，前端不必再请求一次统计。"""
     cards_today, new_today, review_today, relearn_today = analytics.today_card_counts()
+    token = _valid_undo_token(client_id)
     return {
         "today": cards_today,
         "today_new": new_today,
         "today_review": review_today,
         "today_relearn": relearn_today,
         "new_remaining": analytics.new_remaining(),
-        "can_undo": can_undo(),
+        "can_undo": token is not None,
+        "undo_token": token,
     }

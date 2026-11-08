@@ -55,6 +55,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+.review-session {
+  color: var(--ink-2);
+}
+
+.review-session strong {
+  color: var(--ink);
+}
+
 .review-end {
   border: 1px solid var(--line);
   background: var(--surface);

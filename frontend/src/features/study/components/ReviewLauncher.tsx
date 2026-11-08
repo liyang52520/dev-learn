@@ -54,25 +54,24 @@ export function ReviewLauncher() {
     stats.revPerDay > 0
       ? Math.min(100, Math.round((stats.todayReview / stats.revPerDay) * 100))
       : 0
-  const quotaDone =
-    stats.newPerDay > 0 && stats.todayNew >= stats.newPerDay && stats.newRemaining > 0
+  const quotaDone = stats.phase === 'newQuota'
   // dueTotal 含「学习中」的卡，而 counts.review 只算复习卡；
   // 队列今天真正排得到的是 learning + review，别拿错基数吓人。
   const queuedDue = stats.counts.learning + stats.counts.review
   const overflow = Math.max(0, stats.dueTotal - queuedDue)
-  const reviewLimitHit =
-    stats.revPerDay > 0 && stats.todayReview >= stats.revPerDay && overflow > 0
-  // dueTotal 与队列计数不等，也可能是「学习中」的卡还没到点，别一律说成限额。
-  const reviewBlocked = overflow > 0 && (reviewLimitHit || stats.revPerDay === 0)
+  const reviewLimitHit = stats.phase === 'reviewQuota'
+  const paused = stats.phase === 'paused'
 
   const headline =
-    due > 0
+    stats.phase === 'review'
       ? `今日可学 ${due} 张`
       : reviewLimitHit
         ? '今日复习额度用完了'
         : quotaDone
           ? '今日新卡额度用完了'
-          : '今天的卡清空了'
+          : paused
+            ? '复习已暂停'
+            : '今天的卡清空了'
 
   const learnedPct =
     stats.totalCards > 0 ? Math.min(100, (stats.learnedCards / stats.totalCards) * 100) : 0
@@ -89,19 +88,21 @@ export function ReviewLauncher() {
         </p>
         <strong>{headline}</strong>
         <span>
-          连续 {stats.streak} 天 · 累计 {stats.totalReviews} 次
+          连续 {stats.streak} 天 · 累计作答 {stats.totalAnswers} 次
         </span>
         {quotaDone && (
           <span className="review-launcher-note">
             还剩 {stats.newRemaining} 张新卡没学，明天额度刷新后继续。
           </span>
         )}
-        {reviewBlocked && (
+        {reviewLimitHit && (
           <span className="review-launcher-note">
-            还有 {overflow} 张到期卡
-            {stats.revPerDay > 0
-              ? `超出今日复习限额（${stats.revPerDay}/天），明天继续。`
-              : '，复习已暂停，去设置里恢复额度。'}
+            还有 {overflow} 张到期卡超出今日复习限额（{stats.revPerDay}/天），明天继续。
+          </span>
+        )}
+        {paused && (
+          <span className="review-launcher-note">
+            新卡或复习额度被设为 0，去设置里调整后继续。
           </span>
         )}
 
@@ -152,7 +153,7 @@ export function ReviewLauncher() {
             <span className="review-launcher-fill is-overall" style={{ width: `${learnedPct}%` }} />
           </span>
           <span className="review-launcher-overall-note">
-            剩余新卡 {stats.newRemaining} · 明日到期 {stats.dueTomorrow}
+            全库未学 {stats.newRemaining} · 明天新到期 {stats.dueTomorrow}
           </span>
         </span>
 

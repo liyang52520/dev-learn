@@ -255,3 +255,27 @@
     width: calc(100% - 32px);
   }
 }
+
+/* 390px 窄屏：加入设置入口后顶部挤不下，收起站点文字，只留 YG 图标 */
+@media (max-width: 430px) {
+  .header-inner {
+    gap: 6px;
+  }
+
+  .brand-text {
+    display: none;
+  }
+
+  .main-nav {
+    margin-left: 2px;
+  }
+
+  .nav-link {
+    padding: 7px 9px;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+}

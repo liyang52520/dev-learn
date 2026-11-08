@@ -4,27 +4,29 @@ import { ApiError, errorMessage } from '@/shared/api/client'
 import type { ReviewCard, ReviewCounts } from '@/types/models'
 
 import * as reviewApi from './api'
+import { currentClientId } from './client-id'
 import { clearSession } from './session-store'
 import type { Phase } from './types'
+import { useCardAction } from './useCardAction'
 import { useKeyboardShortcuts } from './useKeyboardShortcuts'
+import { useRevealAnswer } from './useRevealAnswer'
 import { useReviewStats } from './useReviewStats'
 import { useSessionClock } from './useSessionClock'
-
-const EMPTY_COUNTS: ReviewCounts = { new: 0, learning: 0, review: 0 }
 
 export function useReviewSession() {
   const [phase, setPhase] = useState<Phase>('loading')
   const [card, setCard] = useState<ReviewCard | null>(null)
   const [answerHtml, setAnswerHtml] = useState('')
-  const [counts, setCounts] = useState<ReviewCounts>(EMPTY_COUNTS)
+  const [counts, setCounts] = useState<ReviewCounts>({ new: 0, learning: 0, review: 0 })
   const [dueTotal, setDueTotal] = useState(0)
   const [error, setError] = useState('')
   const [errorStatus, setErrorStatus] = useState(0)
+  const [errorCode, setErrorCode] = useState('')
   const [toast, setToast] = useState('')
   const [busy, setBusy] = useState(false)
   const [reviewed, setReviewed] = useState(0)
   const [stuck, setStuck] = useState(false)
-  const [revealing, setRevealing] = useState(false)
+  const [undoToken, setUndoToken] = useState('')
 
   const mounted = useRef(true)
   const undoQueued = useRef(false)
@@ -35,21 +37,18 @@ export function useReviewSession() {
     setTopics,
     elapsedMs,
     setElapsedMs,
-    ratedThisTab,
     setRatedThisTab,
     segmentRef,
     ratedIds,
     ratedOrder,
     flushSegment,
     reset,
-  } = useSessionClock({ phase, reviewed, setReviewed })
-
+  } = useSessionClock({ phase, reviewed, dayKey: stats?.todayKey, setReviewed })
   useEffect(() => {
     if (!toast) return
     const timer = window.setTimeout(() => setToast(''), 2400)
     return () => window.clearTimeout(timer)
   }, [toast])
-
   useEffect(() => {
     if (phase !== 'loading') {
       setStuck(false)
@@ -58,7 +57,6 @@ export function useReviewSession() {
     const timer = window.setTimeout(() => setStuck(true), 4000)
     return () => window.clearTimeout(timer)
   }, [phase])
-
   const finish = useCallback(() => {
     const spent = flushSegment()
     segmentRef.current = null
@@ -69,7 +67,6 @@ export function useReviewSession() {
     clearSession()
     void loadStats(true)
   }, [flushSegment, loadStats, segmentRef, setElapsedMs])
-
   const loadNext = useCallback(
     async (retried = false) => {
       setBusy(true)
@@ -94,6 +91,7 @@ export function useReviewSession() {
           return
         }
         setErrorStatus(err instanceof ApiError ? err.status : 0)
+        setErrorCode(err instanceof ApiError ? err.code : '')
         setError(errorMessage(err))
         setPhase('error')
       } finally {
@@ -103,44 +101,35 @@ export function useReviewSession() {
     [finish, segmentRef],
   )
 
-  useEffect(() => {
-    loadNextRef.current = loadNext
-  }, [loadNext])
+  useEffect(() => { loadNextRef.current = loadNext }, [loadNext])
 
   useEffect(() => {
     mounted.current = true
     void loadNext()
     void loadStats(true)
-    return () => {
-      mounted.current = false
-    }
+    return () => { mounted.current = false }
   }, [loadNext, loadStats])
 
-  const reveal = useCallback(async () => {
-    if (phase !== 'question' || revealing || !card) return
-    if (!card.question?.hasAnswer) {
-      setPhase('answer')
-      return
-    }
-    setRevealing(true)
-    try {
-      const data = await reviewApi.fetchCardAnswer(card.qid)
-      if (!mounted.current) return
-      setAnswerHtml(data.answerHtml)
-      setPhase('answer')
-    } catch (err) {
-      if (mounted.current) setToast(errorMessage(err))
-    } finally {
-      if (mounted.current) setRevealing(false)
-    }
-  }, [phase, revealing, card])
+  const { reveal, revealing } = useRevealAnswer({
+    card,
+    phase,
+    mounted,
+    loadNext,
+    setAnswerHtml,
+    setPhase,
+    setToast,
+  })
 
   const rate = useCallback(
     async (rating: number) => {
       if (!card || busy) return
       setBusy(true)
       try {
-        const data = await reviewApi.submitAnswer({ cardId: card.cardId, rating })
+        const data = await reviewApi.submitAnswer({
+          cardId: card.cardId,
+          rating,
+          clientId: currentClientId(),
+        })
         if (!mounted.current) return
         const counted = !ratedIds.current.has(card.cardId)
         if (counted) {
@@ -154,6 +143,7 @@ export function useReviewSession() {
         flushSegment()
         setCounts(data.counts)
         setDueTotal(data.dueTotal)
+        setUndoToken(data.undoToken)
         applyProgress(data.progress)
         setAnswerHtml('')
         if (!data.next) {
@@ -175,6 +165,7 @@ export function useReviewSession() {
           return
         }
         setErrorStatus(err instanceof ApiError ? err.status : 0)
+        setErrorCode(err instanceof ApiError ? err.code : '')
         setError(errorMessage(err))
         setPhase('error')
       } finally {
@@ -185,14 +176,20 @@ export function useReviewSession() {
   )
 
   const undo = useCallback(async () => {
+    const token = undoToken || stats?.undoToken || ''
+    if (!token) {
+      setToast('没有可撤销的评分')
+      return
+    }
     if (busy) {
       undoQueued.current = true
       return
     }
     setBusy(true)
     try {
-      const data = await reviewApi.undoAnswer()
+      const data = await reviewApi.undoAnswer({ token, clientId: currentClientId() })
       if (!mounted.current) return
+      setUndoToken('')
       const last = ratedOrder.current.pop()
       if (last) {
         if (last.counted) {
@@ -204,15 +201,35 @@ export function useReviewSession() {
       setCounts(data.counts)
       setDueTotal(data.dueTotal)
       applyProgress(data.progress)
-      setToast(last ? '已撤销上一张' : '已撤销最近一次评分（来自其他标签页）')
+      setToast(last ? '已撤销上一张' : '已撤销最近一次评分')
       await loadNext(true)
       void loadStats(true)
     } catch (err) {
-      if (mounted.current) setToast(errorMessage(err))
+      if (mounted.current) {
+        setToast(errorMessage(err))
+        if (err instanceof ApiError && err.code === 'undo_expired') setUndoToken('')
+      }
     } finally {
       if (mounted.current) setBusy(false)
     }
-  }, [busy, applyProgress, loadNext, loadStats, ratedIds, ratedOrder, setRatedThisTab])
+  }, [busy, undoToken, stats, applyProgress, loadNext, loadStats, ratedIds, ratedOrder, setRatedThisTab])
+
+  const cardAction = useCardAction({
+    card,
+    busy,
+    mounted,
+    setBusy,
+    setCard,
+    setPhase,
+    setCounts,
+    setDueTotal,
+    setAnswerHtml,
+    setToast,
+    applyProgress,
+    finish,
+    loadNext,
+    loadStats,
+  })
 
   useEffect(() => {
     if (busy || !undoQueued.current) return
@@ -237,22 +254,22 @@ export function useReviewSession() {
 
   const retry = useCallback(() => {
     setError('')
+    setErrorCode('')
     setPhase('loading')
     void loadNext()
   }, [loadNext])
-
   useKeyboardShortcuts({
     phase,
     busy,
     reviewed,
+    canUndo: Boolean(undoToken || stats?.undoToken),
     reveal: () => void reveal(),
     rate: (rating) => void rate(rating),
     undo: () => void undo(),
+    cardAction: (action) => void cardAction(action),
     endSession,
   })
-
-  const canUndo = ratedThisTab > 0 || Boolean(stats?.canUndo)
-
+  const canUndo = Boolean(undoToken || stats?.undoToken)
   return {
     phase,
     card,
@@ -262,6 +279,7 @@ export function useReviewSession() {
     stats,
     error,
     errorStatus,
+    errorCode,
     toast,
     busy,
     reviewed,
@@ -273,6 +291,7 @@ export function useReviewSession() {
     reveal,
     rate,
     undo,
+    cardAction,
     endSession,
     continueRound,
     retry,

@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from app.core.errors import AppError
-from app.features.backup import repository, service, status
+from app.features.backup import repository, scheduler, service, status
 
 
 class FakeReview:
@@ -252,8 +252,59 @@ def test_auto_push_runs_once_per_day(
     repository.write_state(state)
 
     (path / "blog" / "a.md").write_text("auto\n", encoding="utf-8")
-    service.auto_push()
+    scheduler.auto_push()
     first = git(remote, "rev-parse", "refs/heads/machine/a")
 
-    service.auto_push()
+    scheduler.auto_push()
     assert git(remote, "rev-parse", "refs/heads/machine/a") == first
+
+
+def test_restore_brings_back_safety_ref(
+    repo_a: tuple[Path, Path, FakeReview], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path, remote, _ = repo_a
+    service.push()
+    path_b, _ = make_machine_b(tmp_path, remote, monkeypatch)
+    (path_b / "blog" / "a.md").write_text("B side\n", encoding="utf-8")
+    service.push()
+
+    activate(monkeypatch, path, "machine/a")
+    (path / "blog" / "a.md").write_text("A side\n", encoding="utf-8")
+    service.overwrite("machine/b")
+    assert (path / "blog" / "a.md").read_text(encoding="utf-8") == "B side\n"
+
+    refs = status.safety_refs()
+    assert len(refs) == 1
+    assert refs[0].ref.startswith("refs/backup/")
+    assert refs[0].sha
+
+    result = service.restore(refs[0].ref)
+
+    assert result.status == "restored"
+    assert (path / "blog" / "a.md").read_text(encoding="utf-8") == "A side\n"
+    # 恢复前会再留一个安全引用，保证这一步本身也可回退。
+    assert len(status.safety_refs()) == 2
+
+
+def test_restore_rejects_other_ref(
+    repo_a: tuple[Path, Path, FakeReview],
+) -> None:
+    with pytest.raises(AppError):
+        service.restore("refs/heads/main")
+
+
+def test_status_degrades_when_git_unreadable(
+    repo_a: tuple[Path, Path, FakeReview], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(repository, "is_dirty", lambda: None)
+    monkeypatch.setattr(repository, "remote_branches", lambda: None)
+    monkeypatch.setattr(repository, "safety_refs", lambda: None)
+    status.invalidate()
+
+    current = status.read()
+
+    assert current.degraded
+    assert current.dirty is None
+    assert current.branches == []
+    assert current.safety_refs == []
+    assert "无法读取 git 状态" in current.error

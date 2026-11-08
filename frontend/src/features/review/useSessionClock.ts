@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 
-import { clearSession, readSession, todayIso, writeSession, type RatedEntry } from './session-store'
+import { clearSession, readSession, writeSession, type RatedEntry } from './session-store'
 import type { Phase } from './types'
 
 type Options = {
   phase: Phase
   reviewed: number
+  /** 服务端 Anki 学习日；未加载时为空，暂不读写本地会话，避免用错日期。 */
+  dayKey?: string
   setReviewed: Dispatch<SetStateAction<number>>
 }
 
 /** 本轮进度：本地存储恢复、计时分段与题目/撤销栈。 */
-export function useSessionClock({ phase, reviewed, setReviewed }: Options) {
+export function useSessionClock({ phase, reviewed, dayKey, setReviewed }: Options) {
   const [topics, setTopics] = useState<string[]>([])
   const [elapsedMs, setElapsedMs] = useState(0)
   const [ratedThisTab, setRatedThisTab] = useState(0)
@@ -20,7 +22,8 @@ export function useSessionClock({ phase, reviewed, setReviewed }: Options) {
   const ratedOrder = useRef<RatedEntry[]>([])
 
   useEffect(() => {
-    const stored = readSession()
+    if (!dayKey) return
+    const stored = readSession(dayKey)
     if (!stored) return
     setReviewed(stored.reviewed)
     setTopics(stored.topics)
@@ -28,22 +31,23 @@ export function useSessionClock({ phase, reviewed, setReviewed }: Options) {
     ratedIds.current = new Set((stored.stack || []).map((entry) => entry.id))
     elapsedRef.current = stored.elapsedMs || 0
     setElapsedMs(stored.elapsedMs || 0)
-  }, [setReviewed])
+  }, [dayKey, setReviewed])
 
   useEffect(() => {
+    if (!dayKey) return
     if (phase !== 'question' && phase !== 'answer') return
     if (reviewed <= 0) {
       clearSession()
       return
     }
     writeSession({
-      date: todayIso(),
+      date: dayKey,
       reviewed,
       elapsedMs,
       topics,
       stack: ratedOrder.current,
     })
-  }, [reviewed, elapsedMs, topics, phase, ratedThisTab])
+  }, [reviewed, elapsedMs, topics, phase, ratedThisTab, dayKey])
 
   useEffect(() => {
     const onVisibility = () => {

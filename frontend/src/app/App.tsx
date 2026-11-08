@@ -35,7 +35,13 @@ export function App() {
         <ScrollToTop />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
-            <Route element={<SiteLayout />}>
+            <Route
+              element={
+                <AdminGuard>
+                  <SiteLayout />
+                </AdminGuard>
+              }
+            >
               <Route index element={<HomePage />} />
               <Route path="posts/:slug" element={<PostPage />} />
               <Route path="blog/archive" element={<ArchivePage />} />
@@ -46,8 +52,16 @@ export function App() {
               <Route path="study" element={<StudyIndexPage />} />
               <Route path="study/:topic" element={<TopicPage />} />
               <Route path="study/:topic/:qid" element={<QuestionPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
-            <Route path="review" element={<ReviewPage />} />
+            <Route
+              path="review"
+              element={
+                <AdminGuard>
+                  <ReviewPage />
+                </AdminGuard>
+              }
+            />
             <Route path="admin/login" element={<AdminLoginPage />} />
             <Route
               path="admin"
@@ -89,7 +103,6 @@ export function App() {
                 </AdminGuard>
               }
             />
-            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -5,12 +5,15 @@ from __future__ import annotations
 import hmac
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse, Response
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 from starlette.requests import Request
 
 from app.core.config import settings
-from app.core.errors import AppError
+from app.core.errors import AppError, error_body
 
 _serializer = URLSafeTimedSerializer(settings.secret, salt="yg-site")
 
@@ -87,3 +90,40 @@ class LoginLimiter:
 
 
 login_limiter = LoginLimiter()
+
+
+# 登录页本身要能加载：HTML / JS / CSS 放行，数据接口与图片才拦。
+_PUBLIC_API = {
+    "/api/health",
+    "/api/admin/auth/login",
+    "/api/admin/auth/logout",
+    "/api/admin/auth/me",
+}
+_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+
+
+def _requires_login(path: str, method: str) -> bool:
+    if method == "OPTIONS":
+        return False
+    if path in _PUBLIC_API or path.startswith("/api/docs") or path == "/api/openapi.json":
+        return False
+    if path.startswith(("/assets/", "/images/")):
+        return path.startswith("/images/")
+    if path.startswith("/study/"):
+        # /study/** 既放证据截图，也放前端路由；只有图片需要登录。
+        return Path(path).suffix.lower() in _IMAGE_SUFFIXES
+    return path.startswith("/api/")
+
+
+def install_site_guard(app: FastAPI) -> None:
+    """整站登录：除登录页所需资源外，所有数据接口与图片都要求有效 cookie。"""
+
+    @app.middleware("http")
+    async def _guard(request: Request, call_next):  # type: ignore[no-untyped-def]
+        if _requires_login(request.url.path, request.method) and not verify_token(
+            request.cookies.get(settings.cookie_name)
+        ):
+            if request.url.path.startswith("/api/"):
+                return JSONResponse(error_body("unauthorized", "请先登录"), status_code=401)
+            return Response(status_code=401)
+        return await call_next(request)

@@ -6,107 +6,15 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timedelta
 from typing import Any
 
 from anki.cards import CardId
 
-from app.features.review import collection, deck_config
-
-DAY_SHIFT = "-4 hours"  # Anki 凌晨 4 点换日，SQL 取本地日期前先减 4 小时
-HISTORY_TTL = 30
-_history: dict[str, Any] = {
-    "at": 0.0,
-    "deck": None,
-    "days": [],
-    "reviews": 0,
-    "answers": 0,
-    "streak": 0,
-}
+from app.features.review import collection, daytime, deck_config
 
 
 def _placeholders(ids: list[int]) -> str:
     return ",".join("?" * len(ids))
-
-
-def invalidate_history() -> None:
-    """评分/撤销后立即让累计与热力图缓存失效。"""
-    _history["at"] = 0.0
-    _history["deck"] = None
-
-
-def today_seq() -> int:
-    return int(collection.instance().sched.today)
-
-
-def day_start_ms() -> int:
-    return int(collection.instance().sched.day_cutoff - 86400) * 1000
-
-
-def day_rows(days: int = 183) -> list[dict[str, Any]]:
-    ids = collection.deck_ids()
-    cutoff = int((time.time() - days * 86400) * 1000)
-    rows = collection.db().all(
-        "select date(r.id / 1000, 'unixepoch', 'localtime', ?) as d, count(distinct r.cid) "
-        "from revlog r join cards c on c.id = r.cid "
-        f"where r.id >= ? and c.did in ({_placeholders(ids)}) group by d order by d",
-        DAY_SHIFT,
-        cutoff,
-        *ids,
-    )
-    return [{"date": str(day), "count": int(count)} for day, count in rows]
-
-
-def history() -> tuple[list[dict[str, Any]], int, int, int]:
-    ids = collection.deck_ids()
-    key = tuple(ids)
-    now = time.time()
-    if _history["deck"] == key and now - _history["at"] < HISTORY_TTL:
-        return _history["days"], _history["reviews"], _history["answers"], _history["streak"]
-
-    rows = day_rows(183)
-    db = collection.db()
-    marks = _placeholders(ids)
-    total_reviews = int(
-        db.scalar(
-            "select count(*) from revlog r join cards c on c.id = r.cid "
-            f"where r.type in (1, 2) and c.did in ({marks})",
-            *ids,
-        )
-        or 0
-    )
-    total_answers = int(
-        db.scalar(
-            f"select count(*) from revlog r join cards c on c.id = r.cid where c.did in ({marks})",
-            *ids,
-        )
-        or 0
-    )
-    active_rows = db.all(
-        "select distinct date(r.id / 1000, 'unixepoch', 'localtime', ?) as d "
-        "from revlog r join cards c on c.id = r.cid "
-        f"where c.did in ({marks})",
-        DAY_SHIFT,
-        *ids,
-    )
-    active = {str(day) for (day,) in active_rows}
-    cursor = (datetime.now() - timedelta(hours=4)).date()
-    if cursor.isoformat() not in active:
-        cursor -= timedelta(days=1)
-    streak = 0
-    while cursor.isoformat() in active:
-        streak += 1
-        cursor -= timedelta(days=1)
-
-    _history.update(
-        at=now,
-        deck=key,
-        days=rows,
-        reviews=total_reviews,
-        answers=total_answers,
-        streak=streak,
-    )
-    return rows, total_reviews, total_answers, streak
 
 
 def due_total() -> int:
@@ -122,9 +30,9 @@ def due_total() -> int:
         "(type in (1, 3) and ((queue = 3 and due <= ?) or (queue <> 3 and due <= ?))) "
         "or (type = 2 and due <= ?))",
         *ids,
-        today_seq(),
+        daytime.today_seq(),
         int(time.time()),
-        today_seq(),
+        daytime.today_seq(),
     )
     return int(row or 0)
 
@@ -137,7 +45,7 @@ def today_card_counts() -> tuple[int, int, int, int]:
     """
     ids = collection.deck_ids()
     marks = _placeholders(ids)
-    start = day_start_ms()
+    start = daytime.day_start_ms()
     db = collection.db()
     total_today = int(
         db.scalar(
@@ -181,20 +89,22 @@ def today_card_counts() -> tuple[int, int, int, int]:
 
 
 def next_rollover_epoch() -> int:
-    return int(collection.instance().sched.day_cutoff)
+    return daytime.rollover_epoch()
 
 
 def next_due_epoch() -> int | None:
     """下一张卡真正可以学的时间点（把日限额算进来）。"""
     ids = collection.deck_ids()
     marks = _placeholders(ids)
-    today = today_seq()
+    today = daytime.today_seq()
     now = int(time.time())
     rollover = next_rollover_epoch()
     cfg = deck_config.get_config()
     _, new_today, review_today, _ = today_card_counts()
-    review_blocked = cfg["rev_per_day"] <= 0 or review_today >= cfg["rev_per_day"]
-    new_blocked = cfg["new_per_day"] <= 0 or new_today >= cfg["new_per_day"] or review_blocked
+    review_paused = cfg["rev_per_day"] <= 0
+    new_paused = cfg["new_per_day"] <= 0
+    review_blocked = review_paused or review_today >= cfg["rev_per_day"]
+    new_blocked = new_paused or review_paused or new_today >= cfg["new_per_day"] or review_blocked
 
     db = collection.db()
     candidates: list[int] = []
@@ -218,7 +128,7 @@ def next_due_epoch() -> int | None:
         f"select min(due) from cards where queue >= 0 and did in ({marks}) and type = 2",
         *ids,
     )
-    if review_day is not None:
+    if review_day is not None and not review_paused:
         due_day = int(review_day)
         if due_day <= today:
             candidates.append(rollover if review_blocked else now)
@@ -228,7 +138,8 @@ def next_due_epoch() -> int | None:
         f"select count(*) from cards where queue >= 0 and did in ({marks}) and type = 0",
         *ids,
     )
-    if int(new_left or 0):
+    # 额度为 0 等于暂停，不存在「明天自动恢复」，不要给出误导性的明日时间。
+    if int(new_left or 0) and not new_paused and not review_paused:
         candidates.append(rollover if new_blocked else now)
     if not candidates:
         return None

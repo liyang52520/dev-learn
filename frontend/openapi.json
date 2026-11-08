@@ -1171,6 +1171,47 @@
         }
       }
     },
+    "/api/review/touch": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Post Touch",
+        "operationId": "post_touch_api_review_touch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TouchPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TouchResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/review/undo": {
       "post": {
         "tags": [
@@ -1178,6 +1219,16 @@
         ],
         "summary": "Post Undo",
         "operationId": "post_undo_api_review_undo_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UndoPayload"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1185,6 +1236,57 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UndoResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/review/card-action": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Post Card Action",
+        "operationId": "post_card_action_api_review_card_action_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardActionPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardActionResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1479,6 +1581,72 @@
           }
         }
       }
+    },
+    "/api/admin/backup/refs": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Refs",
+        "operationId": "refs_api_admin_backup_refs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BackupRef"
+                  },
+                  "type": "array",
+                  "title": "Response Refs Api Admin Backup Refs Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup/restore": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Restore",
+        "operationId": "restore_api_admin_backup_restore_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupRestoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1494,6 +1662,12 @@
             "maximum": 4.0,
             "minimum": 1.0,
             "title": "Rating"
+          },
+          "clientId": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Clientid",
+            "default": ""
           }
         },
         "type": "object",
@@ -1524,6 +1698,10 @@
                 "type": "null"
               }
             ]
+          },
+          "undoToken": {
+            "type": "string",
+            "title": "Undotoken"
           }
         },
         "type": "object",
@@ -1531,7 +1709,8 @@
           "counts",
           "dueTotal",
           "progress",
-          "next"
+          "next",
+          "undoToken"
         ],
         "title": "AnswerResult"
       },
@@ -1671,6 +1850,35 @@
         ],
         "title": "BackupLastSync"
       },
+      "BackupRef": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ref": {
+            "type": "string",
+            "title": "Ref"
+          },
+          "sha": {
+            "type": "string",
+            "title": "Sha"
+          },
+          "createdAt": {
+            "type": "string",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "ref",
+          "sha",
+          "createdAt"
+        ],
+        "title": "BackupRef",
+        "description": "覆盖前留下的安全引用。"
+      },
       "BackupResolveRequest": {
         "properties": {
           "resolutions": {
@@ -1691,6 +1899,21 @@
         ],
         "title": "BackupResolveRequest"
       },
+      "BackupRestoreRequest": {
+        "properties": {
+          "ref": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Ref"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ref"
+        ],
+        "title": "BackupRestoreRequest"
+      },
       "BackupResult": {
         "properties": {
           "ok": {
@@ -1706,7 +1929,8 @@
               "conflict",
               "overwritten",
               "aborted",
-              "fetched"
+              "fetched",
+              "restored"
             ],
             "title": "Status"
           },
@@ -1759,7 +1983,14 @@
             "title": "Remote"
           },
           "dirty": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Dirty"
           },
           "merging": {
@@ -1817,6 +2048,23 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "degraded": {
+            "type": "boolean",
+            "title": "Degraded",
+            "default": false
+          },
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "default": ""
+          },
+          "safetyRefs": {
+            "items": {
+              "$ref": "#/components/schemas/BackupRef"
+            },
+            "type": "array",
+            "title": "Safetyrefs"
           }
         },
         "type": "object",
@@ -1853,6 +2101,80 @@
           "file"
         ],
         "title": "Body_upload_api_admin_upload_post"
+      },
+      "CardActionPayload": {
+        "properties": {
+          "cardId": {
+            "type": "integer",
+            "title": "Cardid"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "bury",
+              "suspend",
+              "flag"
+            ],
+            "title": "Action"
+          },
+          "flag": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 7.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag"
+          },
+          "clientId": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Clientid",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "cardId",
+          "action"
+        ],
+        "title": "CardActionPayload"
+      },
+      "CardActionResult": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/ReviewCounts"
+          },
+          "dueTotal": {
+            "type": "integer",
+            "title": "Duetotal"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/ReviewProgress"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewCard"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts",
+          "dueTotal",
+          "progress",
+          "next"
+        ],
+        "title": "CardActionResult"
       },
       "CardAnswer": {
         "properties": {
@@ -2576,6 +2898,11 @@
             "type": "array",
             "title": "Labels"
           },
+          "flag": {
+            "type": "integer",
+            "title": "Flag",
+            "default": 0
+          },
           "question": {
             "anyOf": [
               {
@@ -2749,6 +3076,17 @@
           "canUndo": {
             "type": "boolean",
             "title": "Canundo"
+          },
+          "undoToken": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Undotoken"
           }
         },
         "type": "object",
@@ -2850,6 +3188,14 @@
             "type": "integer",
             "title": "Duetotal"
           },
+          "phase": {
+            "type": "string",
+            "title": "Phase"
+          },
+          "todayKey": {
+            "type": "string",
+            "title": "Todaykey"
+          },
           "today": {
             "type": "integer",
             "title": "Today"
@@ -2873,6 +3219,22 @@
           "revPerDay": {
             "type": "integer",
             "title": "Revperday"
+          },
+          "newPaused": {
+            "type": "boolean",
+            "title": "Newpaused"
+          },
+          "reviewPaused": {
+            "type": "boolean",
+            "title": "Reviewpaused"
+          },
+          "newLimitHit": {
+            "type": "boolean",
+            "title": "Newlimithit"
+          },
+          "reviewLimitHit": {
+            "type": "boolean",
+            "title": "Reviewlimithit"
           },
           "streak": {
             "type": "integer",
@@ -2913,6 +3275,17 @@
             "type": "boolean",
             "title": "Canundo"
           },
+          "undoToken": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Undotoken"
+          },
           "newRemaining": {
             "type": "integer",
             "title": "Newremaining"
@@ -2939,12 +3312,18 @@
         "required": [
           "counts",
           "dueTotal",
+          "phase",
+          "todayKey",
           "today",
           "todayNew",
           "todayReview",
           "todayRelearn",
           "newPerDay",
           "revPerDay",
+          "newPaused",
+          "reviewPaused",
+          "newLimitHit",
+          "reviewLimitHit",
           "streak",
           "totalReviews",
           "totalAnswers",
@@ -2953,6 +3332,7 @@
           "dueTomorrow",
           "nextDueEpoch",
           "canUndo",
+          "undoToken",
           "newRemaining",
           "lastBackup",
           "days"
@@ -3272,6 +3652,53 @@
           "firstQid"
         ],
         "title": "TopicSummary"
+      },
+      "TouchPayload": {
+        "properties": {
+          "cardId": {
+            "type": "integer",
+            "title": "Cardid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cardId"
+        ],
+        "title": "TouchPayload"
+      },
+      "TouchResult": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "TouchResult"
+      },
+      "UndoPayload": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Token"
+          },
+          "clientId": {
+            "type": "string",
+            "maxLength": 64,
+            "title": "Clientid",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "UndoPayload"
       },
       "UndoResult": {
         "properties": {

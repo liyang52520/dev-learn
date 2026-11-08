@@ -11,7 +11,13 @@ from typing import Any
 from app.core.config import settings
 from app.core.errors import AppError
 from app.features.backup import repository as repo
-from app.features.backup.schemas import BackupBranch, BackupConflict, BackupLastSync, BackupStatus
+from app.features.backup.schemas import (
+    BackupBranch,
+    BackupConflict,
+    BackupLastSync,
+    BackupRef,
+    BackupStatus,
+)
 from app.features.review import service as review_service
 
 STATUS_TTL = 2.0
@@ -42,10 +48,20 @@ def safe_own_branch() -> str:
         return ""
 
 
+def safety_refs() -> list[BackupRef]:
+    rows = repo.safety_refs()
+    if rows is None:
+        raise AppError("无法读取安全引用", code="backup_status_failed", status=502)
+    return [BackupRef(**row) for row in rows]
+
+
 def conflicts() -> list[BackupConflict]:
+    paths = repo.unmerged_paths()
+    if paths is None:
+        raise AppError("无法读取合并冲突列表", code="backup_status_failed", status=502)
     return [
         BackupConflict(path=path, kind="anki" if path.startswith("anki/") else "text")
-        for path in repo.unmerged_paths()
+        for path in paths
     ]
 
 
@@ -94,10 +110,18 @@ def _build() -> BackupStatus:
     state = repo.read_state()
     merge_branch = str(state.get("merge_branch") or "") if merging else ""
     rows = repo.remote_branches()
-    own_row = next((row for row in rows if row["name"] == own), None)
+    refs = repo.safety_refs()
+    dirty = repo.is_dirty()
+    degraded = rows is None or refs is None or dirty is None
+    found: list[BackupConflict] = []
+    if merging:
+        try:
+            found = conflicts()
+        except AppError:
+            degraded = True
+    own_row = next((row for row in (rows or []) if row["name"] == own), None)
     last = state.get("last_sync")
     last_sync = BackupLastSync(**last) if isinstance(last, dict) else None
-    dirty = repo.is_dirty()
 
     message = ""
     if merging:
@@ -113,7 +137,7 @@ def _build() -> BackupStatus:
         dirty=dirty,
         merging=merging,
         merge_branch=merge_branch,
-        conflicts=conflicts() if merging else [],
+        conflicts=found,
         branches=[
             BackupBranch(
                 name=str(row["name"]),
@@ -123,7 +147,7 @@ def _build() -> BackupStatus:
                 behind=int(row["behind"]),
                 is_own=str(row["name"]) == own,
             )
-            for row in rows
+            for row in (rows or [])
         ],
         own_pushed=own_row is not None,
         own_ahead=int(own_row["ahead"]) if own_row else 0,
@@ -132,4 +156,9 @@ def _build() -> BackupStatus:
         anki_available=review_service.anki_available(),
         suspended=review_service.sync_suspended(),
         message=message,
+        degraded=degraded,
+        error=(
+            "无法读取 git 状态（权限、索引锁或仓库损坏），下面的数字不可信。" if degraded else ""
+        ),
+        safety_refs=[BackupRef(**row) for row in (refs or [])],
     )

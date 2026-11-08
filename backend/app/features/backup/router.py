@@ -8,7 +8,9 @@ from app.core.security import guard_admin
 from app.features.backup import service, status
 from app.features.backup.schemas import (
     BackupBranchRequest,
+    BackupRef,
     BackupResolveRequest,
+    BackupRestoreRequest,
     BackupResult,
     BackupStatus,
 )
@@ -49,3 +51,13 @@ def abort() -> BackupResult:
 @router.post("/overwrite", response_model=BackupResult)
 def overwrite(payload: BackupBranchRequest) -> BackupResult:
     return service.overwrite(payload.branch)
+
+
+@router.get("/refs", response_model=list[BackupRef])
+def refs() -> list[BackupRef]:
+    return status.safety_refs()
+
+
+@router.post("/restore", response_model=BackupResult)
+def restore(payload: BackupRestoreRequest) -> BackupResult:
+    return service.restore(payload.ref)

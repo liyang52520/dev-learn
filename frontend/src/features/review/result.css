@@ -17,6 +17,11 @@
   animation: review-done-pop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
 }
 
+.review-done-mark.is-paused {
+  background: var(--bg-elev);
+  color: var(--muted);
+}
+
 .review-done .eyebrow {
   display: flex;
   justify-content: center;
@@ -105,6 +110,49 @@
 
 .review-done-actions {
   animation: review-done-rise 0.5s ease 0.32s both;
+}
+
+.review-done-heatmap {
+  margin: 26px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+.review-done-heatmap summary {
+  width: fit-content;
+  margin: 0 auto;
+  padding: 5px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12.5px;
+  cursor: pointer;
+  list-style: none;
+  transition: color 0.18s ease, background 0.18s ease;
+}
+
+.review-done-heatmap summary::-webkit-details-marker {
+  display: none;
+}
+
+.review-done-heatmap summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 0.18s ease;
+}
+
+.review-done-heatmap[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.review-done-heatmap summary:hover {
+  color: var(--ink-2);
+  background: var(--bg-elev);
+}
+
+.review-done-heatmap[open] summary {
+  margin-bottom: 16px;
 }
 
 @keyframes review-done-pop {

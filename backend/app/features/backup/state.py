@@ -23,7 +23,7 @@ def write_safe(state: dict[str, Any]) -> None:
         log.warning("写入同步状态失败：%s", exc)
 
 
-def record_sync(branch: str, ok: bool, message: str) -> None:
+def record_sync(branch: str, ok: bool, message: str, *, pushed: bool = False) -> None:
     state = repo.read_state()
     state["last_sync"] = {
         "at": f"{datetime.now():%Y-%m-%d %H:%M:%S}",
@@ -31,8 +31,10 @@ def record_sync(branch: str, ok: bool, message: str) -> None:
         "ok": ok,
         "message": message,
     }
-    if ok:
+    # 只有真正推送成功才刷新自动推送计时；合并、覆盖不算「已推送」。
+    if ok and pushed:
         state["last_push_at"] = int(time.time())
+    if ok:
         state.pop("merge_branch", None)
     write_safe(state)
 

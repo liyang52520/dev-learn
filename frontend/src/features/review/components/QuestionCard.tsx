@@ -4,7 +4,7 @@ import { HtmlContent } from '@/shared/components/HtmlContent'
 import type { ReviewCard } from '@/types/models'
 
 import { RatingBar } from './RatingBar'
-import { STATE_LABELS, type Phase } from '../types'
+import { STATE_LABELS, type CardAction, type Phase } from '../types'
 
 type Props = {
   card: ReviewCard
@@ -15,6 +15,7 @@ type Props = {
   busy: boolean
   onReveal: () => void
   onUndo: () => void
+  onCardAction: (action: CardAction) => void
   onRate: (rating: number) => void
 }
 
@@ -51,6 +52,23 @@ export function QuestionCard(props: Props) {
 
       {waiting ? null : phase === 'question' ? (
         <>
+          <div className="review-tools" role="group" aria-label="卡片操作">
+            <button type="button" onClick={() => props.onCardAction('bury')} disabled={busy} title="今天不再出现 (B)">
+              埋藏 <kbd>B</kbd>
+            </button>
+            <button type="button" onClick={() => props.onCardAction('suspend')} disabled={busy} title="暂停这张卡，直到在 Anki 里恢复 (S)">
+              暂停 <kbd>S</kbd>
+            </button>
+            <button
+              type="button"
+              className={card.flag ? 'is-flagged' : ''}
+              onClick={() => props.onCardAction('flag')}
+              disabled={busy}
+              title="标记这张卡，再按一次取消 (F)"
+            >
+              {card.flag ? '取消标记' : '标记'} <kbd>F</kbd>
+            </button>
+          </div>
           <button type="button" className="review-reveal" onClick={props.onReveal} disabled={revealing}>
             {revealing ? '正在载入原文…' : '显示答案'}
             {!revealing && <kbd>空格</kbd>}

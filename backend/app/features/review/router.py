@@ -9,11 +9,16 @@ from app.features.review import service
 from app.features.review.schemas import (
     AnswerPayload,
     AnswerResult,
+    CardActionPayload,
+    CardActionResult,
     CardAnswer,
     LapseList,
     ReviewConfig,
     ReviewQueue,
     ReviewStats,
+    TouchPayload,
+    TouchResult,
+    UndoPayload,
     UndoResult,
 )
 
@@ -50,6 +55,16 @@ def post_answer(payload: AnswerPayload) -> AnswerResult:
     return service.answer(payload)
 
 
+@router.post("/touch", response_model=TouchResult, dependencies=[Depends(check_origin)])
+def post_touch(payload: TouchPayload) -> TouchResult:
+    return service.touch(payload)
+
+
 @router.post("/undo", response_model=UndoResult, dependencies=[Depends(check_origin)])
-def post_undo() -> UndoResult:
-    return service.undo()
+def post_undo(payload: UndoPayload) -> UndoResult:
+    return service.undo(payload)
+
+
+@router.post("/card-action", response_model=CardActionResult, dependencies=[Depends(check_origin)])
+def post_card_action(payload: CardActionPayload) -> CardActionResult:
+    return service.card_action(payload)

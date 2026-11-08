@@ -20,40 +20,28 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
   const perCard = reviewed > 0 ? Math.max(1, Math.round(seconds / reviewed)) : 0
   const remaining = counts.new + counts.learning + counts.review
   const finishedAll = remaining === 0
-  const newLimit = stats?.newPerDay ?? 0
-  const revLimit = stats?.revPerDay ?? 0
   const overflow = Math.max(0, dueTotal - (counts.learning + counts.review))
-  const hitNewLimit =
-    newLimit > 0 && stats !== null && stats.todayNew >= newLimit && (stats?.newRemaining ?? 0) > 0
-  const hitRevLimit = revLimit > 0 && stats !== null && stats.todayReview >= revLimit && overflow > 0
-  // 复习额度满了以后 Anki 会连新卡一起停发，此时 counts.new=0 但 newRemaining>0。
-  const reviewBlocksNew =
-    revLimit > 0 &&
-    stats !== null &&
-    stats.todayReview >= revLimit &&
-    (stats.newRemaining ?? 0) > 0 &&
-    counts.new === 0
-  const allPaused = stats !== null && newLimit === 0 && revLimit === 0
-  const outOfQuota = hitNewLimit || hitRevLimit || reviewBlocksNew || allPaused
+  const phase = stats?.phase ?? (finishedAll ? 'done' : 'review')
+  const paused = phase === 'paused'
+  const quota = phase === 'reviewQuota' || phase === 'newQuota'
+  const outOfQuota = paused || quota
+  const roundComplete = !outOfQuota
   const nextDue = stats?.nextDueEpoch ? formatNextDue(stats.nextDueEpoch) : null
-  const quotaTitle = allPaused ? '复习已暂停' : '今天的额度用完了'
-  const title =
-    reviewed > 0
-      ? finishedAll
-        ? outOfQuota
-          ? quotaTitle
-          : '今天的复习完成了'
-        : '这一轮结束了'
+
+  const title = paused
+    ? '复习已暂停'
+    : quota
+      ? '今天的额度用完了'
       : finishedAll
-        ? outOfQuota
-          ? quotaTitle
+        ? reviewed > 0
+          ? '今天的复习完成了'
           : '现在没有到期的卡'
-        : '还没有开始'
+        : '这一轮结束了'
 
   return (
     <div className="review-panel review-done">
-      <div className={`review-done-mark${finishedAll ? '' : ' is-paused'}`} aria-hidden>
-        {finishedAll ? (
+      <div className={`review-done-mark${roundComplete ? '' : ' is-paused'}`} aria-hidden>
+        {roundComplete ? (
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12.5 9.5 18 20 6.5" />
           </svg>
@@ -64,14 +52,18 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
           </svg>
         )}
       </div>
-      <p className="eyebrow">{finishedAll ? 'SESSION COMPLETE' : 'ROUND PAUSED'}</p>
+      <p className="eyebrow">{roundComplete ? 'ROUND COMPLETE' : 'ROUND PAUSED'}</p>
       <h1>{title}</h1>
       <p className="review-done-sub">
         {reviewed > 0
           ? `用时 ${duration}${perCard > 0 ? `，平均每张 ${perCard} 秒` : ''}。`
-          : finishedAll
-            ? '下一批到期后，从学习首页点「开始复习」就行。'
-            : '点下面的按钮继续，或者回到学习首页。'}
+          : paused
+            ? '每日额度被设为 0，去设置里调高后就能继续。'
+            : quota
+              ? '今日额度已经用完，明天会自动恢复，也可以现在去调整。'
+              : finishedAll
+                ? '下一批到期后，从学习首页点「开始复习」就行。'
+                : '点下面的按钮继续，或者回到学习首页。'}
       </p>
 
       {reviewed > 0 && (
@@ -88,6 +80,24 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
         <span><strong>{stats?.today ?? '—'}</strong>今日学过（张）</span>
         <span><strong>{stats?.streak ?? '—'}</strong>连续天数</span>
         <span><strong>{stats?.totalAnswers ?? '—'}</strong>累计作答（次）</span>
+      </div>
+
+      <div className="review-done-actions">
+        {outOfQuota ? (
+          <>
+            <Link to="/admin/study" className="review-btn">去调整每日额度</Link>
+            <Link to="/study" className="review-btn ghost">回到学习</Link>
+          </>
+        ) : remaining > 0 ? (
+          <>
+            <button type="button" className="review-btn" onClick={onContinue}>
+              继续复习 · 还剩 {remaining} 张
+            </button>
+            <Link to="/study" className="review-btn ghost">回到学习</Link>
+          </>
+        ) : (
+          <Link to="/study" className="review-btn">回到学习</Link>
+        )}
       </div>
 
       {stats && (
@@ -113,29 +123,27 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
         </p>
       )}
 
-      {stats && <Heatmap days={stats.days} />}
-
-      <div className="review-done-actions">
-        <button type="button" className="review-btn" onClick={onContinue}>
-          {remaining > 0 ? `继续复习 · 还剩 ${remaining} 张` : '看看有没有新卡'}
-        </button>
-        <Link to="/study" className="review-btn ghost">回到学习</Link>
-      </div>
-
-      {hitRevLimit && (
+      {phase === 'reviewQuota' && (
         <p className="review-done-help">
-          今天复习额度已满，还有 {overflow} 张到期卡，明天继续（额度可在设置里调整）。
+          今天复习额度已满，还有 {overflow} 张到期卡；明天会自动恢复，也可以到设置里调高上限。
         </p>
       )}
-      {hitNewLimit && !hitRevLimit && (
+      {phase === 'newQuota' && (
         <p className="review-done-help">
-          新卡额度打满不代表都学会了，剩下的 {stats?.newRemaining} 张明天继续。
+          今日新卡额度已满，全库还剩 {stats?.newRemaining ?? 0} 张未学；明天会自动恢复，也可以到设置里调高上限。
         </p>
       )}
-      {reviewBlocksNew && !hitRevLimit && (
+      {paused && (
         <p className="review-done-help">
-          今天复习额度已满，新卡被一起暂停；还有 {stats?.newRemaining} 张新卡，明天继续或到设置里调高复习上限。
+          新卡或复习额度有一项是 0，所以队列停住了；去设置里调整后继续。
         </p>
+      )}
+
+      {stats && (
+        <details className="review-done-heatmap">
+          <summary>查看最近 26 周的复习记录</summary>
+          <Heatmap days={stats.days} todayKey={stats.todayKey} />
+        </details>
       )}
     </div>
   )

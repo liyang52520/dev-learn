@@ -73,28 +73,28 @@ def remote_url() -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
-def is_dirty() -> bool:
-    """`git status` 会扫描整个工作区；失败时重试一次，避开瞬时 index.lock。"""
+def is_dirty() -> bool | None:
+    """`git status` 失败时返回 None，让上层显示「状态不可信」而不是「干净」。"""
     for attempt in range(2):
         result = _git("status", "--porcelain", "--untracked-files=normal")
         if result.returncode == 0:
             return bool(result.stdout.strip())
         if attempt == 0:
             time.sleep(0.2)
-    return False
+    return None
 
 
 def head_sha(short: bool = True) -> str:
     return _must("rev-parse", "--short" if short else "--verify", "HEAD")
 
 
-def _ahead_behind(ref: str) -> tuple[int, int]:
+def _ahead_behind(ref: str) -> tuple[int, int] | None:
     result = _git("rev-list", "--left-right", "--count", f"HEAD...{ref}")
     if result.returncode != 0:
-        return 0, 0
+        return None
     parts = result.stdout.split()
     if len(parts) != 2:
-        return 0, 0
+        return None
     return int(parts[0]), int(parts[1])
 
 
@@ -123,7 +123,7 @@ def fetch_all() -> None:
     _must("fetch", "--prune", "--quiet", "origin", timeout=300)
 
 
-def remote_branches() -> list[dict[str, Any]]:
+def remote_branches() -> list[dict[str, Any]] | None:
     """读远端跟踪分支，不做网络请求；ahead/behind 相对本机 HEAD。"""
     result = _git(
         "for-each-ref",
@@ -131,7 +131,7 @@ def remote_branches() -> list[dict[str, Any]]:
         "refs/remotes/origin",
     )
     if result.returncode != 0:
-        return []
+        return None
     rows: list[dict[str, Any]] = []
     for line in result.stdout.splitlines():
         parts = line.split("\t")
@@ -141,7 +141,10 @@ def remote_branches() -> list[dict[str, Any]]:
         if not ref.startswith("origin/") or ref.endswith("/HEAD"):
             continue
         name = ref[len("origin/") :]
-        ahead, behind = _ahead_behind(ref)
+        counts = _ahead_behind(ref)
+        if counts is None:
+            return None
+        ahead, behind = counts
         rows.append(
             {
                 "name": name,
@@ -185,10 +188,10 @@ def merge_no_commit(branch: str) -> None:
         raise GitError(_error_text(result))
 
 
-def unmerged_paths() -> list[str]:
+def unmerged_paths() -> list[str] | None:
     result = _git("diff", "--name-only", "--diff-filter=U")
     if result.returncode != 0:
-        return []
+        return None
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
 
 
@@ -215,6 +218,38 @@ def create_safety_ref(name: str) -> str:
     ref = f"refs/backup/{name}"
     _must("update-ref", ref, "HEAD")
     return ref
+
+
+def safety_refs() -> list[dict[str, Any]] | None:
+    """覆盖本机前留下的安全引用，可按时间倒序列出并恢复。"""
+    result = _git(
+        "for-each-ref",
+        "--format=%(refname)%09%(objectname:short)%09%(committerdate:iso-strict)",
+        "refs/backup",
+    )
+    if result.returncode != 0:
+        return None
+    rows: list[dict[str, Any]] = []
+    for line in result.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) != 3:
+            continue
+        ref, sha, created = parts
+        rows.append(
+            {
+                "ref": ref,
+                "name": ref.removeprefix("refs/backup/"),
+                "sha": sha,
+                "created_at": created,
+            }
+        )
+    return sorted(rows, key=lambda row: str(row["created_at"]), reverse=True)
+
+
+def restore_safety_ref(ref: str) -> None:
+    if not ref.startswith("refs/backup/"):
+        raise GitError("只能恢复安全引用")
+    reset_hard(ref)
 
 
 def reset_hard(ref: str) -> None:

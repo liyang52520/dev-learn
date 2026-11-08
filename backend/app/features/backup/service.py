@@ -6,9 +6,9 @@
 
 from __future__ import annotations
 
-import logging
 import threading
-import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Literal, cast
 
@@ -18,10 +18,6 @@ from app.features.backup import state, status
 from app.features.backup.schemas import BackupResult
 from app.features.review import service as review_service
 
-log = logging.getLogger("app.backup")
-
-DAILY_SECONDS = 24 * 60 * 60
-RETRY_SECONDS = 60 * 60
 _OP = threading.Lock()
 Side = Literal["local", "remote"]
 
@@ -33,6 +29,27 @@ def _begin() -> None:
 
 def _end() -> None:
     _OP.release()
+
+
+@contextmanager
+def _exclusive() -> Iterator[None]:
+    """所有同步操作共用：互斥锁 + 结束后刷新状态缓存。"""
+    _begin()
+    try:
+        yield
+    finally:
+        _end()
+        status.invalidate()
+
+
+@contextmanager
+def _closed() -> Iterator[None]:
+    """git 改写工作区前关闭 collection，结束后无论成败都恢复。"""
+    review_service.close_for_sync()
+    try:
+        yield
+    finally:
+        review_service.resume_after_sync()
 
 
 def _ensure_idle() -> None:
@@ -60,8 +77,7 @@ def _validate_branch(raw: str) -> str:
 
 def fetch_remote() -> BackupResult:
     """只更新远端跟踪分支，不改工作区，因此不用关闭 Anki。"""
-    _begin()
-    try:
+    with _exclusive():
         _ensure_repo()
         try:
             repo.fetch_all()
@@ -71,36 +87,36 @@ def fetch_remote() -> BackupResult:
             ) from exc
         message = "已获取远端分支列表。"
         return BackupResult(ok=True, status="fetched", branch=status.own_branch(), message=message)
-    finally:
-        _end()
-        status.invalidate()
 
 
 def push() -> BackupResult:
     _ensure_idle()
-    _begin()
-    try:
+    with _exclusive():
         return _push()
-    finally:
-        _end()
-        status.invalidate()
 
 
 def _push() -> BackupResult:
     _ensure_repo()
     branch = status.own_branch()
+    suspended = False
     try:
         review_service.prepare_sync()
+        # git 提交前必须关闭 collection：WAL 里的最后一次评分也要落进主库。
+        review_service.close_for_sync()
+        suspended = True
         changed, commit = repo.commit_all(f"同步 {branch} {state.stamp()}")
         repo.push(branch, repo.remote_branch_sha(branch))
         repo.update_tracking(branch)
     except repo.GitError as exc:
         state.record_sync(branch, False, str(exc))
         raise AppError(f"推送失败：{exc}", code="backup_push_failed", status=502) from exc
+    finally:
+        if suspended:
+            review_service.resume_after_sync()
 
     head = "已提交并推送" if changed else "没有新改动，已推送当前提交"
     message = f"{head}（{branch}）"
-    state.record_sync(branch, True, message)
+    state.record_sync(branch, True, message, pushed=True)
     return BackupResult(ok=True, status="pushed", branch=branch, message=message, commit=commit)
 
 
@@ -109,54 +125,54 @@ def merge(branch: str) -> BackupResult:
     if branch == status.own_branch():
         raise AppError("不能合并本机推送分支", code="invalid_params", status=400)
     _ensure_idle()
-    _begin()
     suspended = False
-    try:
-        _ensure_repo()
-        review_service.prepare_sync()
-        repo.commit_all(f"合并前保存本机 {state.stamp()}")
-        review_service.close_for_sync()
-        suspended = True
+    with _exclusive():
         try:
-            repo.fetch_branch(branch)
-            repo.merge_no_commit(branch)
-        except repo.GitError as exc:
-            raise AppError(f"合并失败：{exc}", code="backup_merge_failed", status=502) from exc
+            _ensure_repo()
+            review_service.prepare_sync()
+            review_service.close_for_sync()
+            suspended = True
+            repo.commit_all(f"合并前保存本机 {state.stamp()}")
+            try:
+                repo.fetch_branch(branch)
+                repo.merge_no_commit(branch)
+            except repo.GitError as exc:
+                raise AppError(f"合并失败：{exc}", code="backup_merge_failed", status=502) from exc
 
-        found = status.conflicts()
-        if found:
-            state.set_merge(branch)
-            suspended = False  # 交给解决或取消流程恢复复习
-            return BackupResult(
-                ok=False,
-                status="conflict",
-                branch=branch,
-                message=f"有 {len(found)} 个文件冲突，请逐个选择保留本机还是采用对方。",
-                conflicts=found,
-            )
-        if not repo.merge_in_progress():
+            found = status.conflicts()
+            if found:
+                state.set_merge(branch)
+                suspended = False  # 交给解决或取消流程恢复复习
+                return BackupResult(
+                    ok=False,
+                    status="conflict",
+                    branch=branch,
+                    message=f"有 {len(found)} 个文件冲突，请逐个选择保留本机还是采用对方。",
+                    conflicts=found,
+                )
+            if not repo.merge_in_progress():
+                review_service.resume_after_sync()
+                suspended = False
+                message = f"本机已经包含 {branch} 的全部内容，无需合并。"
+                state.record_sync(branch, True, message)
+                return BackupResult(ok=True, status="up-to-date", branch=branch, message=message)
+
+            commit = repo.commit_merge(f"合并 {branch} {state.stamp()}")
             review_service.resume_after_sync()
             suspended = False
-            message = f"本机已经包含 {branch} 的全部内容，无需合并。"
+            message = f"已合并 {branch}，改动还在本机；确认无误后点「推送本机」。"
             state.record_sync(branch, True, message)
-            return BackupResult(status="up-to-date", branch=branch, message=message)
-
-        commit = repo.commit_merge(f"合并 {branch} {state.stamp()}")
-        review_service.resume_after_sync()
-        suspended = False
-        message = f"已合并 {branch}，改动还在本机；确认无误后点「推送本机」。"
-        state.record_sync(branch, True, message)
-        return BackupResult(ok=True, status="merged", branch=branch, message=message, commit=commit)
-    finally:
-        if suspended:
-            review_service.resume_after_sync()
-        _end()
-        status.invalidate()
+            return BackupResult(
+                ok=True, status="merged", branch=branch, message=message, commit=commit
+            )
+        finally:
+            if suspended:
+                review_service.resume_after_sync()
 
 
 def resolve(resolutions: dict[str, str]) -> BackupResult:
-    _begin()
-    try:
+    suspended = False
+    with _exclusive():
         if not repo.merge_in_progress():
             raise AppError("没有进行中的合并", code="backup_merge_missing", status=409)
         found = status.conflicts()
@@ -177,29 +193,38 @@ def resolve(resolutions: dict[str, str]) -> BackupResult:
             if item.kind == "anki":
                 repo.clear_anki_runtime_files()
         remaining = repo.unmerged_paths()
+        if remaining is None:
+            raise AppError("无法读取剩余冲突", code="backup_status_failed", status=502)
         if remaining:
             raise AppError(
                 "仍有未解决的冲突：" + "、".join(remaining),
                 code="backup_unresolved",
                 status=400,
             )
-        commit = repo.commit_merge(f"合并 {branch} {state.stamp()}")
-        state.clear_merge()
-        repo.clear_anki_runtime_files()
-        review_service.resume_after_sync()
-        message = f"已合并 {branch}，改动还在本机；确认无误后点「推送本机」。"
-        state.record_sync(branch, True, message)
-        return BackupResult(ok=True, status="merged", branch=branch, message=message, commit=commit)
-    finally:
-        _end()
-        status.invalidate()
+        try:
+            # 提交合并会改写工作区，即使服务重启过也要先把 collection 关掉。
+            review_service.close_for_sync()
+            suspended = True
+            commit = repo.commit_merge(f"合并 {branch} {state.stamp()}")
+            repo.clear_anki_runtime_files()
+            state.clear_merge()
+            message = f"已合并 {branch}，改动还在本机；确认无误后点「推送本机」。"
+            state.record_sync(branch, True, message)
+            return BackupResult(
+                ok=True, status="merged", branch=branch, message=message, commit=commit
+            )
+        finally:
+            if suspended:
+                review_service.resume_after_sync()
 
 
 def abort() -> BackupResult:
-    _begin()
-    try:
+    with _exclusive():
         branch = state.merge_branch()
-        if repo.repo_ready() and repo.merge_in_progress():
+        merging = repo.repo_ready() and repo.merge_in_progress()
+        if merging:
+            # 重启后 collection 可能已被打开：先关库，再让 git 回退工作区。
+            review_service.close_for_sync()
             try:
                 repo.abort_merge()
             except repo.GitError as exc:
@@ -207,13 +232,12 @@ def abort() -> BackupResult:
                     f"取消合并失败：{exc}", code="backup_abort_failed", status=500
                 ) from exc
         state.clear_merge()
-        repo.clear_anki_runtime_files()
-        review_service.resume_after_sync()
+        # 只有确实处于合并暂停态才恢复；否则这里会把正在使用的 collection 一起重置。
+        if merging or review_service.sync_suspended():
+            repo.clear_anki_runtime_files()
+            review_service.resume_after_sync()
         message = "已取消合并，本机数据保持合并前的状态。"
         return BackupResult(ok=True, status="aborted", branch=branch, message=message)
-    finally:
-        _end()
-        status.invalidate()
 
 
 def overwrite(branch: str) -> BackupResult:
@@ -222,24 +246,18 @@ def overwrite(branch: str) -> BackupResult:
     if branch == own:
         raise AppError("不能用本机推送分支覆盖本机", code="invalid_params", status=400)
     _ensure_idle()
-    _begin()
-    suspended = False
-    try:
+    with _exclusive():
         _ensure_repo()
         review_service.prepare_sync()
         repo.commit_all(f"覆盖前保存本机 {state.stamp()}")
         safety = repo.create_safety_ref(f"{own.replace('/', '-')}-{datetime.now():%Y%m%d-%H%M%S}")
         try:
-            review_service.close_for_sync()
-            suspended = True
-            repo.fetch_branch(branch)
-            repo.reset_hard(f"origin/{branch}")
-            repo.clear_anki_runtime_files()
+            with _closed():
+                repo.fetch_branch(branch)
+                repo.reset_hard(f"origin/{branch}")
+                repo.clear_anki_runtime_files()
         except repo.GitError as exc:
             raise AppError(f"覆盖失败：{exc}", code="backup_overwrite_failed", status=502) from exc
-        finally:
-            review_service.resume_after_sync()
-            suspended = False
         message = (
             f"已用 {branch} 覆盖本机，安全引用保存在 {safety}。"
             "需要把本机分支也更新时，点「推送本机」。"
@@ -248,32 +266,27 @@ def overwrite(branch: str) -> BackupResult:
         return BackupResult(
             ok=True, status="overwritten", branch=branch, message=message, commit=repo.head_sha()
         )
-    finally:
-        if suspended:
-            review_service.resume_after_sync()
-        _end()
-        status.invalidate()
 
 
-def auto_push() -> None:
-    """每日一次：快照 anki → 提交全部改动 → 推送本机分支。失败一小时后重试。"""
-    if repo.merge_in_progress() or not repo.repo_ready():
-        return
-    data = repo.read_state()
-    now = int(time.time())
-    if now - int(data.get("last_push_at") or 0) < DAILY_SECONDS:
-        return
-    if now - int(data.get("last_attempt_at") or 0) < RETRY_SECONDS:
-        return
-    data["last_attempt_at"] = now
-    state.write_safe(data)
-    if not _OP.acquire(blocking=False):
-        return
-    try:
-        result = _push()
-        log.info("每日自动推送完成：%s", result.message)
-    except (AppError, OSError) as exc:
-        log.warning("每日自动推送失败：%s", exc)
-    finally:
-        _end()
-        status.invalidate()
+def restore(ref: str) -> BackupResult:
+    """恢复到覆盖前留下的安全引用；恢复前再留一个当前状态的安全引用。"""
+    _ensure_idle()
+    branch = status.own_branch()
+    with _exclusive():
+        _ensure_repo()
+        if not ref.startswith("refs/backup/"):
+            raise AppError("只能恢复安全引用", code="invalid_params", status=400)
+        review_service.prepare_sync()
+        repo.commit_all(f"恢复前保存本机 {state.stamp()}")
+        safety = repo.create_safety_ref(f"before-restore-{datetime.now():%Y%m%d-%H%M%S}")
+        try:
+            with _closed():
+                repo.restore_safety_ref(ref)
+                repo.clear_anki_runtime_files()
+        except repo.GitError as exc:
+            raise AppError(f"恢复失败：{exc}", code="backup_restore_failed", status=502) from exc
+        message = f"已恢复到 {ref}；恢复前的状态保存在 {safety}。"
+        state.record_sync(branch, True, message)
+        return BackupResult(
+            ok=True, status="restored", branch=branch, message=message, commit=repo.head_sha()
+        )

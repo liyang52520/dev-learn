@@ -21,6 +21,7 @@ export function ReviewTop(props: Props) {
     props
   const newPct = newLimit > 0 && newDone !== null ? Math.min(100, Math.round((newDone / newLimit) * 100)) : 0
   const revPct = revLimit > 0 && revDone !== null ? Math.min(100, Math.round((revDone / revLimit) * 100)) : 0
+  const remaining = counts.new + counts.learning + counts.review
 
   return (
     <header className="review-top">
@@ -75,10 +76,13 @@ export function ReviewTop(props: Props) {
           </span>
         </div>
         <div className="review-chips">
-          <span>待发新卡 <strong>{loaded ? counts.new : '—'}</strong></span>
+          <span className="review-session">
+            本轮已评 <strong>{reviewed}</strong> 张 · 队列剩余 <strong>{loaded ? remaining : '—'}</strong> 张
+          </span>
+          <span>新卡 <strong>{loaded ? counts.new : '—'}</strong></span>
           <span>学习中 <strong>{loaded ? counts.learning : '—'}</strong></span>
-          <span>限额内复习 <strong>{loaded ? counts.review : '—'}</strong></span>
-          <span>到期复习 <strong>{loaded ? backlog : '—'}</strong></span>
+          <span>可复习 <strong>{loaded ? counts.review : '—'}</strong></span>
+          <span>到期总量 <strong>{loaded ? backlog : '—'}</strong></span>
           <span>连续 <strong>{streak}</strong> 天</span>
         </div>
       </div>
@@ -86,7 +90,7 @@ export function ReviewTop(props: Props) {
         type="button"
         className="review-end"
         onClick={props.onEnd}
-        disabled={reviewed === 0 || busy}
+        disabled={busy}
         title={busy ? '正在处理这次评分，请稍候' : '不要求清空队列，随时可以结束看小结（Esc）'}
       >
         结束本轮

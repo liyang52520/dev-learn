@@ -121,6 +121,9 @@ dev-learn/
 | `/admin`、`/admin/login`、`/admin/study`、`/admin/backup` | 文章列表、登录、学习设置、数据备份 |
 | `/admin/edit/:type/:slug`、`/admin/preview/:type/:slug` | 编辑器、整页预览（`type` 只能是 `posts`/`drafts`） |
 
+站点是单人使用，**除 `/admin/login` 外所有页面都要登录**：未登录访问任意路由会跳 `/admin/login`，
+登录后回到原地址；顶部栏右侧的设置按钮可进入后台各页或退出登录。
+
 后端接口：
 
 | 方法 | 路径 | 说明 |
@@ -130,8 +133,8 @@ dev-learn/
 | GET | `/api/blog/archive`、`/tags`、`/tags/{tag}`、`/categories`、`/categories/{category}` | 归档与筛选 |
 | GET | `/api/search?q=` | 文章 + 题目混合结果（≤16 条） |
 | GET | `/api/study`、`/api/study/{topic}`、`/api/study/{topic}/{qid}` | 专题列表、专题导航、题目详情 |
-| GET/POST | `/api/review/*` | 队列、评分、撤销、统计、遗忘记录 |
-| GET/POST | `/api/admin/backup/*` | 备份状态、推送本机、合并远端分支、冲突解决、覆盖本机 |
+| GET/POST | `/api/review/*` | 队列、评分、撤销、埋藏/暂停/标记、统计、遗忘记录 |
+| GET/POST | `/api/admin/backup/*` | 备份状态、推送本机、合并远端分支、冲突解决、覆盖本机、安全引用与恢复 |
 | POST | `/api/admin/auth/login`、`/logout`；GET `/me` | 登录态 |
 | GET/POST | `/api/admin/posts`、`/api/admin/post`、`/preview`、`/publish`、`/upload` | 后台读写 |
 | GET/POST | `/api/admin/study/config` | 学习设置 |
@@ -167,7 +170,7 @@ cd backend && .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --po
 
 - 本机 Node 在 `C:\Users\Admin\.local\node`，未加入全局 PATH；PowerShell 里先
   `$env:PATH="C:\Users\Admin\.local\node;$env:PATH"`。
-- 后台：`/admin`，密码取 `ADMIN_PASSWORD`，未设置时默认 `yg-admin`。
+- 全站登录：密码取 `ADMIN_PASSWORD`，未设置时默认 `yg-admin`；登录态保留 7 天，未登录时只有 `/admin/login` 可访问。
 - 生产只有一个地址：`http://127.0.0.1:8000`（Vite 的 5173 只在开发时存在）。
 
 提交前必跑：
@@ -191,6 +194,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 ### 1.7 内容管理后台
 
 1. `/admin/login` 校验密码后写入 httpOnly cookie（7 天），服务端用签名 cookie 保存登录态。
+   站点只有一个人用，`core/security.py` 的全站守卫统一拦截：除登录/登出/登录态与健康检查外，
+   所有 `/api/*`、`/images/*`、`/study/**` 图片都要求登录，SPA 页面由前端 `AdminGuard` 跳登录页。
+   顶部栏右侧的设置按钮是常驻入口：内容后台、学习设置、数据备份、退出登录。
 2. `/admin` 支持「全部 / 已发布 / 草稿」筛选与关键词过滤；「新建文章」默认建在 `backend/data/blog/drafts`，文件名由标题 slug 化。
 3. 编辑器字段：`title`、`date`、`tags`（逗号分隔）、`categories`（逗号分隔）、`description`、`cover`；正文用 CodeMirror，`⌘/Ctrl+S` 保存，右侧实时预览。
 4. 「整页预览」复用同一渲染管线；「发布/撤回」只移动文件；「删除」移到 `backend/.trash/`。
@@ -263,10 +269,17 @@ npm run typecheck && npm run lint && npm run test && npm run build
    （默认 `machine/<主机名>`，可用 `DATA_SYNC_BRANCH` 覆盖）。服务每 10 分钟快照
    （`.colpkg`，保留 30 份），每天自动提交全部数据并推送本机分支；`/admin/backup`
    可手动推送、合并别的机器分支、逐文件解决冲突，或用对方整份覆盖本机（保留安全引用）。
-3. `/api/review/answer` 直接返回下一张卡；浏览器只回 `cardId + rating`。
-4. 写操作校验 `Origin` 同源；`/api/admin/study/*` 还需登录态。
+   覆盖与恢复都会写 `refs/backup/*`，`/admin/backup` 可一键恢复到任一安全引用（恢复前再留一份）。
+3. `/api/review/answer` 直接返回下一张卡；浏览器只回 `cardId + rating + clientId`。评分返回一次性
+   `undoToken`（10 分钟有效，按 `clientId` 隔离，`/api/review/undo` 校验），显示答案时调
+   `/api/review/touch` 延长该卡有效期，避免长时间停留后被判过期。埋藏/暂停/标记走
+   `POST /api/review/card-action`。
+   学习日统一按 Anki 的凌晨 4 点换日（`features/review/daytime.py`），前端热力图与暂存都用服务端
+   `todayKey`，不要用浏览器本地日期。
+4. 写操作校验 `Origin` 同源；全站接口与静态图片都要登录态。
 5. 改这块必须验：后端检查全绿，并实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」。
 6. 任何 git 改动工作区前必须关闭 collection；备份模块统一走 `prepare_sync / close_for_sync / resume_after_sync`。
+   工作区存在 `.git/MERGE_HEAD` 时 collection 拒绝打开（503 `backup_merge_pending`），避免把半合并状态当正常数据读写。
 
 ---
 

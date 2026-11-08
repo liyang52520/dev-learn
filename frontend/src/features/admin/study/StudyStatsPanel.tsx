@@ -24,7 +24,7 @@ export function StudyStatsPanel({ stats }: { stats: ReviewStats }) {
           <strong>{due}</strong>
         </div>
         <div>
-          <span>到期复习（张）</span>
+          <span>待复习（张）</span>
           <strong>{stats.dueTotal}</strong>
         </div>
         <div>
@@ -41,7 +41,7 @@ export function StudyStatsPanel({ stats }: { stats: ReviewStats }) {
               今日 {stats.today} 张 · 连续 {stats.streak} 天 · 累计作答 {stats.totalAnswers} 次
             </span>
           </div>
-          <Heatmap days={stats.days} />
+          <Heatmap days={stats.days} todayKey={stats.todayKey} />
         </section>
       )}
     </>

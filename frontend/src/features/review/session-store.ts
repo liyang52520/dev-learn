@@ -16,17 +16,14 @@ export interface StoredSession {
   stack: RatedEntry[]
 }
 
-export function todayIso(): string {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-}
-
-export function readSession(): StoredSession | null {
+/** 只有和当前 Anki 学习日一致才恢复；0:00–4:00 之间刷新不会被误清。 */
+export function readSession(dayKey: string): StoredSession | null {
+  if (!dayKey) return null
   try {
     const raw = sessionStorage.getItem(KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as StoredSession
-    return parsed.date === todayIso() ? parsed : null
+    return parsed.date === dayKey ? parsed : null
   } catch {
     return null
   }

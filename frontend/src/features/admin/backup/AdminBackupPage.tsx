@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { errorMessage } from '@/shared/api/client'
-import type { BackupResult } from '@/types/models'
+import type { BackupRef, BackupResult } from '@/types/models'
 
 import { AdminTopbar } from '../AdminTopbar'
 import {
@@ -13,11 +13,13 @@ import {
   overwriteBackup,
   pushBackup,
   resolveBackup,
+  restoreBackup,
 } from '../api'
 import { BackupNotes } from './BackupNotes'
 import { BackupSummary } from './BackupSummary'
 import { MergeConflictPanel } from './MergeConflictPanel'
 import { RemoteBranchList } from './RemoteBranchList'
+import { SafetyRefs } from './SafetyRefs'
 
 type Notice = { ok: boolean; text: string } | null
 
@@ -46,11 +48,25 @@ export default function AdminBackupPage() {
     }
   }
 
+  const merge = (branch: string) => {
+    const ok = window.confirm(
+      `把 ${branch} 合并到本机？\n\n合并会先保存本机改动；如果两边改了同一文件，会暂停复习并让你逐个选择保留哪一侧。`,
+    )
+    if (ok) void run(`merge:${branch}`, () => mergeBackup(branch))
+  }
+
   const overwrite = (branch: string) => {
     const ok = window.confirm(
       `用 ${branch} 覆盖本机？\n\n会先提交并保留 refs/backup 安全引用，但本机文章、题库和 Anki 学习进度都会被整份替换。`,
     )
     if (ok) void run(`overwrite:${branch}`, () => overwriteBackup(branch))
+  }
+
+  const restore = (item: BackupRef) => {
+    const ok = window.confirm(
+      `恢复到 ${item.name}（${item.sha}）？\n\n会先把当前状态提交并留一个新的安全引用，再整份回到这个时间点。`,
+    )
+    if (ok) void run(`restore:${item.ref}`, () => restoreBackup(item.ref))
   }
 
   return (
@@ -114,8 +130,13 @@ export default function AdminBackupPage() {
               busy={busy !== '' || data.merging}
               fetching={busy === 'fetch'}
               onFetch={() => void run('fetch', fetchBackupRemote)}
-              onMerge={(branch) => void run(`merge:${branch}`, () => mergeBackup(branch))}
+              onMerge={merge}
               onOverwrite={overwrite}
+            />
+            <SafetyRefs
+              refs={data.safetyRefs ?? []}
+              busy={busy !== '' || data.merging}
+              onRestore={restore}
             />
             <BackupNotes ownBranch={data.ownBranch} />
           </>
