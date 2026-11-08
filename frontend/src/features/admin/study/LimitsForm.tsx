@@ -48,7 +48,9 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
     }
     const warnings: string[] = []
     if (previewNew === 0 || previewRev === 0) warnings.push('设为 0 会暂停对应类型的卡，直到你改回')
-    if (previewNew >= config.newPerDay * 2 || previewRev >= config.revPerDay * 2) {
+    const newJump = previewNew > config.newPerDay && previewNew >= config.newPerDay * 2
+    const revJump = previewRev > config.revPerDay && previewRev >= config.revPerDay * 2
+    if (newJump || revJump) {
       warnings.push(
         `额度将明显提高（新卡 ${config.newPerDay} → ${previewNew}，复习 ${config.revPerDay} → ${previewRev}），每天花的时间会明显增加`,
       )
@@ -76,8 +78,9 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
         这是<b>每天的上限，不是每天的任务</b>；设成 0 等于暂停；改小立刻生效，改大当天也会补回。
       </p>
       <p className="study-admin-hint">
-        两项额度彼此独立：新卡额度只限制首次学习的卡数；复习额度只统计已经学过、按计划回到队列的卡。
-        学习步骤（1 / 10 分钟）不占用任何一项额度。但<b>复习额度用尽后，新卡也会停发</b>。
+        新卡额度只限制首次学习的卡数；复习额度只统计已经学过、按计划回到队列的卡。
+        两项<b>不是完全独立</b>：复习额度用尽后，新卡也会一起停发，避免当天总量失控。
+        学习步骤（1 / 10 分钟）不占用任何一项额度。
       </p>
       <p className="study-admin-hint">
         学习步骤：{config.learningSteps?.length ? `${config.learningSteps.join(' / ')} 分钟` : '默认'} · 调度：
@@ -107,7 +110,9 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
         <p className="study-admin-preview">
           保存后：每天最多学 {previewNew} 张新卡、复习 {previewRev} 张。
           {previewNew > 0
-            ? `剩余 ${stats.newRemaining} 张新卡按这个速度需要 ${formatDays(Math.ceil(stats.newRemaining / previewNew))}`
+            ? stats.newRemaining > 0
+              ? `剩余 ${stats.newRemaining} 张新卡按这个速度需要 ${formatDays(Math.ceil(stats.newRemaining / previewNew))}`
+              : '新卡已经全部学完'
             : '新卡将暂停发放'}
           {previewRev > 0 && stats.dueTotal > 0
             ? `；${stats.dueTotal} 张到期卡约需 ${formatDays(Math.ceil(stats.dueTotal / previewRev))} 清完`

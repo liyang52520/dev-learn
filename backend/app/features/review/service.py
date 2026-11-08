@@ -164,7 +164,9 @@ def stats(client_id: str = "") -> ReviewStats:
             new_paused=config["new_per_day"] <= 0,
             review_paused=config["rev_per_day"] <= 0,
             new_limit_hit=_new_limit_hit(config, today_new, new_remaining),
-            review_limit_hit=_review_limit_hit(config, counts, today_review, due_total),
+            review_limit_hit=_review_limit_hit(
+                config, counts, today_review, due_total, new_remaining
+            ),
             streak=streak,
             total_reviews=total_reviews,
             total_answers=total_answers,
@@ -183,10 +185,18 @@ def stats(client_id: str = "") -> ReviewStats:
 
 
 def _review_limit_hit(
-    config: dict[str, Any], counts: dict[str, int], today_review: int, due_total: int
+    config: dict[str, Any],
+    counts: dict[str, int],
+    today_review: int,
+    due_total: int,
+    new_remaining: int,
 ) -> bool:
+    if config["rev_per_day"] <= 0 or today_review < config["rev_per_day"]:
+        return False
     overflow = max(0, due_total - (counts["learning"] + counts["review"]))
-    return config["rev_per_day"] > 0 and today_review >= config["rev_per_day"] and overflow > 0
+    # 复习额度用尽后，Anki 会同时停发新卡；有新卡没学完也算额度命中，
+    # 否则会被误判成「今天的卡清空了」。
+    return overflow > 0 or new_remaining > 0
 
 
 def _new_limit_hit(config: dict[str, Any], today_new: int, new_remaining: int) -> bool:
@@ -209,12 +219,9 @@ def _phase(
     new_paused = config["new_per_day"] <= 0
     if review_paused and (due_total > 0 or new_remaining > 0):
         return "paused"
-    if _review_limit_hit(config, counts, today_review, due_total):
+    if _review_limit_hit(config, counts, today_review, due_total, new_remaining):
         return "review_quota"
-    if new_remaining > 0 and (
-        _new_limit_hit(config, today_new, new_remaining)
-        or _review_limit_hit(config, counts, today_review, due_total)
-    ):
+    if new_remaining > 0 and _new_limit_hit(config, today_new, new_remaining):
         return "new_quota"
     if new_paused and new_remaining > 0:
         return "paused"
@@ -262,14 +269,16 @@ def prepare_sync() -> str | None:
 
 
 def close_for_sync() -> None:
-    """git 改写工作区前关闭 collection。"""
+    """git 改写工作区前关闭 collection，并丢弃进程里缓存的卡片状态。"""
     collection.suspend()
+    schedule.reset_pending()
 
 
 def resume_after_sync() -> None:
-    """同步结束：清掉可能过期的 WAL / SHM，下次访问时按需重开。"""
+    """同步结束：旧卡片状态与 WAL / SHM 都已失效，下次访问时按需重开。"""
     collection.clear_runtime_files()
     collection.resume()
+    schedule.reset_pending()
 
 
 def sync_suspended() -> bool:

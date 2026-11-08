@@ -66,9 +66,9 @@ export default function ReviewPage() {
         backlog={session.dueTotal}
         streak={stats?.streak ?? 0}
         newDone={stats?.todayNew ?? null}
-        newLimit={stats?.newPerDay ?? 0}
+        newLimit={stats?.newPerDay ?? null}
         revDone={stats?.todayReview ?? null}
-        revLimit={stats?.revPerDay ?? 0}
+        revLimit={stats?.revPerDay ?? null}
         reviewed={session.reviewed}
         busy={session.busy}
         onEnd={session.endSession}

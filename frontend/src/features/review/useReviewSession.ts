@@ -87,7 +87,8 @@ export function useReviewSession() {
         if (!mounted.current) return
         if (err instanceof ApiError && err.status === 409 && !retried) {
           setToast('这张卡的状态已更新，正在重新取卡')
-          window.setTimeout(() => void loadNextRef.current(true), 250)
+          await new Promise((resolve) => window.setTimeout(resolve, 250))
+          await loadNextRef.current(true)
           return
         }
         setErrorStatus(err instanceof ApiError ? err.status : 0)
@@ -161,7 +162,7 @@ export function useReviewSession() {
               ? '思考超过 30 分钟，这张卡已重新排队，正在重新取卡'
               : '这张卡已被其他标签页处理，正在取下一张',
           )
-          void loadNext(true)
+          await loadNext(true)
           return
         }
         setErrorStatus(err instanceof ApiError ? err.status : 0)

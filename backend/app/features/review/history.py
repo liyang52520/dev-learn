@@ -18,6 +18,7 @@ _history: dict[str, Any] = {
     "at": 0.0,
     "deck": None,
     "gen": -1,
+    "day": "",
     "last_id": 0,
     "days": [],
     "reviews": 0,
@@ -59,7 +60,9 @@ def build() -> tuple[list[dict[str, Any]], int, int, int]:
     key = tuple(ids)
     gen = collection.generation()
     now = time.time()
-    same_deck = _history["deck"] == key and _history["gen"] == gen
+    today = daytime.today_key()
+    # 跨过凌晨 4 点后不能再用增量：换日前最后一条记录可能还没写进缓存。
+    same_deck = _history["deck"] == key and _history["gen"] == gen and _history["day"] == today
     if same_deck and now - _history["at"] < HISTORY_TTL:
         return _history["days"], _history["reviews"], _history["answers"], _history["streak"]
 
@@ -135,6 +138,7 @@ def build() -> tuple[list[dict[str, Any]], int, int, int]:
         at=now,
         deck=key,
         gen=gen,
+        day=today,
         last_id=newest,
         days=rows,
         reviews=reviews,

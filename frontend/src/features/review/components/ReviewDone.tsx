@@ -126,7 +126,9 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
 
       {phase === 'review_quota' && (
         <p className="review-done-help">
-          今天复习额度已满，还有 {overflow} 张到期卡；明天会自动恢复，也可以到设置里调高上限。
+          {overflow > 0
+            ? `今天复习额度已满，还有 ${overflow} 张到期卡；明天会自动恢复，也可以到设置里调高上限。`
+            : `今天复习额度已满，新卡也随之停发（还剩 ${stats?.newRemaining ?? 0} 张没学）；明天会自动恢复，也可以到设置里调高上限。`}
         </p>
       )}
       {phase === 'new_quota' && (

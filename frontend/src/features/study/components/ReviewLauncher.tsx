@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 
+import { ApiError } from '@/shared/api/client'
+
 import { toReviewPhase } from '../../review/types'
 import { useReviewLauncher } from '../hooks'
 
@@ -7,7 +9,7 @@ const LOCAL_HOSTS = ['localhost', '127.0.0.1', '::1', '[::1]']
 
 /** 学习首页的复习入口：今日额度、总进度与最近答错。 */
 export function ReviewLauncher() {
-  const { data, isPending } = useReviewLauncher()
+  const { data, isPending, error } = useReviewLauncher()
 
   // 加载态保留和成功态同高的骨架，避免 stats 回来时把整页顶下去。
   if (isPending) {
@@ -32,15 +34,17 @@ export function ReviewLauncher() {
   // 后端没起来时，公网读者看到空白即可；本机给一句明确提示，别像功能被删了。
   if (!data) {
     if (!LOCAL_HOSTS.includes(window.location.hostname)) return null
+    const syncing = error instanceof ApiError && error.code === 'sync_in_progress'
+    const detail = syncing
+      ? '同步完成后刷新页面就能继续。'
+      : '可能是本地 Anki 调度没有响应或后端尚未启动，稍后刷新页面再试。'
     return (
       <div className="review-launcher review-launcher-off">
         <div className="review-launcher-text">
-          <strong>复习服务未就绪</strong>
-          <span>本地 Anki 调度没有响应，确认后端已启动后刷新页面。</span>
+          <strong>{syncing ? '数据正在同步' : '复习统计暂时不可用'}</strong>
+          <span>{detail}</span>
         </div>
-        <Link to="/review" className="review-launcher-btn ghost">
-          去看看
-        </Link>
+        <Link to="/review" className="review-launcher-btn ghost">去看看</Link>
       </div>
     )
   }
@@ -104,7 +108,9 @@ export function ReviewLauncher() {
         )}
         {reviewLimitHit && (
           <span className="review-launcher-note">
-            还有 {overflow} 张到期卡超出今日复习限额（{stats.revPerDay}/天），明天继续。
+            {overflow > 0
+              ? `还有 ${overflow} 张到期卡超出今日复习限额（${stats.revPerDay}/天），明天继续。`
+              : `今天复习额度已满，新卡也会一起停发（还剩 ${stats.newRemaining} 张没学），明天继续。`}
           </span>
         )}
         {paused && (
@@ -115,7 +121,7 @@ export function ReviewLauncher() {
 
         <span className="review-launcher-meter">
           <span className="review-launcher-meter-label">
-            新卡 {stats.todayNew}/{stats.newPerDay}
+            {stats.newPerDay > 0 ? `新卡 ${stats.todayNew}/${stats.newPerDay}` : `新卡 ${stats.todayNew}（已暂停）`}
           </span>
           <span
             className="review-launcher-track"
@@ -123,14 +129,14 @@ export function ReviewLauncher() {
             aria-valuemin={0}
             aria-valuemax={newMax}
             aria-valuenow={Math.min(stats.todayNew, newMax)}
-            aria-label={`今日新卡 ${stats.todayNew} / ${stats.newPerDay}`}
+            aria-label={stats.newPerDay > 0 ? `今日新卡 ${stats.todayNew} / ${stats.newPerDay}` : `今日新卡 ${stats.todayNew}，已暂停`}
           >
             <span className="review-launcher-fill" style={{ width: `${newPct}%` }} />
           </span>
         </span>
         <span className="review-launcher-meter">
           <span className="review-launcher-meter-label">
-            复习 {stats.todayReview}/{stats.revPerDay}
+            {stats.revPerDay > 0 ? `复习 ${stats.todayReview}/${stats.revPerDay}` : `复习 ${stats.todayReview}（已暂停）`}
           </span>
           <span
             className="review-launcher-track is-soft"
@@ -138,7 +144,7 @@ export function ReviewLauncher() {
             aria-valuemin={0}
             aria-valuemax={revMax}
             aria-valuenow={Math.min(stats.todayReview, revMax)}
-            aria-label={`今日复习 ${stats.todayReview} / ${stats.revPerDay}`}
+            aria-label={stats.revPerDay > 0 ? `今日复习 ${stats.todayReview} / ${stats.revPerDay}` : `今日复习 ${stats.todayReview}，已暂停`}
           >
             <span className="review-launcher-fill is-soft" style={{ width: `${revPct}%` }} />
           </span>

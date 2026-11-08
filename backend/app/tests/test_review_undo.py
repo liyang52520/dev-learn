@@ -61,6 +61,17 @@ def test_any_written_operation_clears_the_token(monkeypatch: pytest.MonkeyPatch)
     assert not schedule.can_undo("tab-a")
 
 
+def test_reset_pending_drops_cards_and_undo(monkeypatch: pytest.MonkeyPatch):
+    fake_collection(monkeypatch)
+    schedule._pending = {7: (None, 0.0, time.time() + 60)}
+    schedule._active_undo = {"token": "tok", "client_id": "tab-a", "card_id": 7, "at": time.time()}
+
+    schedule.reset_pending()
+
+    assert schedule._pending == {}
+    assert not schedule.can_undo("tab-a")
+
+
 def test_new_rating_replaces_the_previous_token(monkeypatch: pytest.MonkeyPatch):
     fake_collection(monkeypatch)
     schedule._active_undo = {"token": "old", "client_id": "tab-a", "card_id": 7, "at": time.time()}
@@ -106,6 +117,8 @@ def test_phase_values_are_snake_case():
 
     assert _phase(config, {"new": 1, "learning": 0, "review": 0}, 0, 0, 0, 5) == "review"
     assert _phase(config, counts, 0, 100, 10, 0) == "review_quota"
+    # 复习额度用尽后 Anki 同时停发新卡：没有逾期卡但有新卡，也不能算 done。
+    assert _phase(config, counts, 0, 100, 0, 5) == "review_quota"
     assert _phase(config, counts, 20, 10, 0, 5) == "new_quota"
     assert _phase({"new_per_day": 0, "rev_per_day": 100}, counts, 0, 0, 0, 5) == "paused"
     assert _phase(config, counts, 0, 0, 0, 0) == "done"

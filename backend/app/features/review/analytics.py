@@ -157,28 +157,29 @@ def new_remaining() -> int:
 
 
 def recent_lapses(limit: int = 6) -> list[dict[str, Any]]:
-    ids = collection.deck_ids()
-    col = collection.instance()
-    db = collection.db()
-    cutoff = int((time.time() - 90 * 86400) * 1000)
-    rows = db.all(
-        "select r.cid, max(r.id) as last from revlog r join cards c on c.id = r.cid "
-        f"where r.ease = 1 and r.id >= ? and c.did in ({_placeholders(ids)}) "
-        "group by r.cid order by last desc limit ?",
-        cutoff,
-        *ids,
-        max(1, min(limit, 20)),
-    )
-    items: list[dict[str, Any]] = []
-    for cid, _ in rows:
-        try:
-            card = col.get_card(CardId(int(cid)))
-            note = col.get_note(card.nid)
-            qid = note["QID"]
-        except Exception:  # noqa: BLE001 - 单张卡读不到就跳过
-            continue
-        items.append({"qid": qid, "card_id": int(cid)})
-    return items
+    with collection.LOCK:
+        ids = collection.deck_ids()
+        col = collection.instance()
+        db = collection.db()
+        cutoff = int((time.time() - 90 * 86400) * 1000)
+        rows = db.all(
+            "select r.cid, max(r.id) as last from revlog r join cards c on c.id = r.cid "
+            f"where r.ease = 1 and r.id >= ? and c.did in ({_placeholders(ids)}) "
+            "group by r.cid order by last desc limit ?",
+            cutoff,
+            *ids,
+            max(1, min(limit, 20)),
+        )
+        items: list[dict[str, Any]] = []
+        for cid, _ in rows:
+            try:
+                card = col.get_card(CardId(int(cid)))
+                note = col.get_note(card.nid)
+                qid = note["QID"]
+            except Exception:  # noqa: BLE001 - 单张卡读不到就跳过
+                continue
+            items.append({"qid": qid, "card_id": int(cid)})
+        return items
 
 
 def last_backup() -> dict[str, Any] | None:

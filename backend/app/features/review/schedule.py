@@ -77,6 +77,13 @@ def clear_undo() -> None:
     _clear_undo()
 
 
+def reset_pending() -> None:
+    """collection 被 git 改写前后调用：旧卡片状态与撤销凭证都已失效。"""
+    with collection.LOCK:
+        _pending.clear()
+        _clear_undo()
+
+
 def undo_token(client_id: str = "") -> str | None:
     return _valid_undo_token(client_id)
 
@@ -132,7 +139,14 @@ def touch(card_id: int) -> dict[str, Any]:
                 code="card_not_pending",
                 status=409,
             )
-        states, shown_at, _ = cached
+        states, shown_at, expires_at = cached
+        if time.time() > expires_at:
+            _pending.pop(card_id, None)
+            raise AppError(
+                "这张卡已过期，请重新取卡",
+                code="stale_card",
+                status=409,
+            )
         _pending[card_id] = (states, shown_at, time.time() + PENDING_TTL)
     return {"ok": True}
 

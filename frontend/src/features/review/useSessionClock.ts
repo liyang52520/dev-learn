@@ -47,10 +47,11 @@ export function useSessionClock({ phase, reviewed, dayKey, setReviewed }: Option
       setElapsedMs(stored.elapsedMs || 0)
       return
     }
-    // 跨日（或本地没有当天的记录）：上一轮的进度必须清零，不能算到今天头上。
-    reset()
+    // 跨日（或本地没有当天的记录）：只有在还没开始评卡时才清零。
+    // 统计比第一张卡晚到时不能把本轮进度抹掉。
+    if (reviewed === 0) reset()
     clearSession()
-  }, [dayKey, reset, setReviewed])
+  }, [dayKey, reviewed, reset, setReviewed])
 
   useEffect(() => {
     if (!dayKey || sessionDay.current !== dayKey) return

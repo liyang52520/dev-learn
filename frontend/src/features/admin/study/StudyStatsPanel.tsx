@@ -24,7 +24,7 @@ export function StudyStatsPanel({ stats }: { stats: ReviewStats }) {
           <strong>{due}</strong>
         </div>
         <div>
-          <span>待复习（张）</span>
+          <span>到期卡片（张）</span>
           <strong>{stats.dueTotal}</strong>
         </div>
         <div>
