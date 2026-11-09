@@ -107,23 +107,13 @@
   }
 
   .admin-topbar nav a {
-    padding: 6px 9px;
+    padding: 5px 8px;
     font-size: 12px;
     white-space: nowrap;
-  }
-
-  .admin-topbar nav a:last-child,
-  .admin-env {
-    display: none;
   }
 
   .admin-topbar-right {
-    gap: 8px;
-    font-size: 12px;
-  }
-
-  .admin-topbar-right a {
-    white-space: nowrap;
+    gap: 6px;
   }
 
   .admin-page-head {
