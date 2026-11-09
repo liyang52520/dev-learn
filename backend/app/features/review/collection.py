@@ -50,6 +50,18 @@ def available() -> bool:
     return collection_path().is_file()
 
 
+def ensure_fsrs(col: Collection) -> bool:
+    """统一用 FSRS 调度：打开 collection 时自动补上全局开关。
+
+    Anki 把 FSRS 开关存在 collection 全局配置里，老库默认没有这个键。
+    新机器部署后不该再手工打开，所以这里做一次幂等的兜底。
+    """
+    if col.get_config("fsrs", False):
+        return False
+    col.set_config("fsrs", True)
+    return True
+
+
 def _merge_pending() -> bool:
     """跨重启也要拦住复习：残留的 merge 会改 anki 文件，绝不能在库打开时进行。"""
     return (settings.data_dir / ".git" / "MERGE_HEAD").exists()
@@ -95,6 +107,8 @@ def instance() -> Collection:
                     f"复习服务启动失败：{exc}", code="review_unavailable", status=503
                 ) from exc
             _generation["value"] += 1
+            if ensure_fsrs(_collection):
+                _snapshot_due["value"] = True
             _start_maintenance()
     return _collection
 

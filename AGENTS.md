@@ -265,6 +265,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 约定：
 
 1. 内容归站点、状态归 Anki：复习页从 `/api/study` 渲染题面与答案，Anki 只负责「下一张卡 / 四个按钮文案 / 复习日志」。
+   打开 collection 时会自动把全局 `fsrs` 开关置为开启（`collection.ensure_fsrs`），新机器部署无需手工设置。
 2. `backend/data` 是独立仓库（remote dev-anki，主仓已忽略）：每台机器只写自己的远端分支
    （默认 `machine/<主机名>`，可用 `DATA_SYNC_BRANCH` 覆盖）。服务每 10 分钟快照
    （`.colpkg`，保留 30 份），每天自动提交全部数据并推送本机分支；`/admin/backup`
