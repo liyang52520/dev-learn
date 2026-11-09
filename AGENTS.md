@@ -36,6 +36,7 @@
 生产：浏览器 ──▶ FastAPI :8000（单进程、单 worker）
                   ├─ /api/*      JSON 接口
                   ├─ /assets/*   frontend/dist 构建产物
+                  ├─ /disguise   伪装学习页（DeepSeek 复刻静态页）
                   ├─ /images、/study  原始静态资产
                   └─ 其他路径    返回 index.html（SPA 回退）
 
@@ -93,6 +94,7 @@ dev-learn/
 │   │   └── check_structure.py      # 结构规则检查
 ├── frontend/
 │   ├── public/images/              # 头像、站点图标等固定资源
+│   ├── public/disguise/            # 伪装学习页（DeepSeek 复刻静态页，构建时原样复制）
 │   ├── src/
 │   │   ├── app/                    # App.tsx 路由表、providers、layout、404
 │   │   ├── features/               # posts / blog / study / search / review / admin
@@ -123,6 +125,14 @@ dev-learn/
 
 站点是单人使用，**除 `/admin/login` 外所有页面都要登录**：未登录访问任意路由会跳 `/admin/login`，
 登录后回到原地址；顶部栏右侧的设置按钮可进入后台各页或退出登录。
+
+`/disguise/` 是独立于 React 的伪装学习页：`frontend/public/disguise/` 里的 DeepSeek 复刻静态页
+（真实页面 DOM/CSS + 自写 `app.js`、`data.js`），构建时原样复制到 `dist/disguise`，由 `serving.py`
+以 `StaticFiles(html=True)` 挂载，因此生产刷新仍停留在该页。左侧会话是假标题，中间是真实刷题会话：
+登录后打开会先拉 `/api/review/queue`，附件填入真实到期卡片的题面，发送时取 `/api/review/card-answer`
+渲染答案，四个评分按钮提交 `/api/review/answer`（写入 Anki）并自动换到下一张卡；评分后按钮保留选中态、
+附件才能切下一题。未登录或接口不可用时退回 `data.js` 的本地题目。点顶部分享按钮退出伪装回到 `/review`。
+该静态路径不受后端登录守卫拦截，但接口仍需要登录态。
 
 后端接口：
 

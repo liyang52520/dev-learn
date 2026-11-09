@@ -30,6 +30,13 @@ def mount_site(app: FastAPI) -> None:
     assets = settings.dist_dir / "assets"
     if assets.is_dir():
         app.mount("/assets", StaticFiles(directory=assets), name="assets")
+    disguise = settings.dist_dir / "disguise"
+    if disguise.is_dir():
+        app.mount(
+            "/disguise",
+            StaticFiles(directory=disguise, html=True),
+            name="disguise",
+        )
     _mount_spa(app)
     app.add_middleware(GZipMiddleware, minimum_size=1024)
     app.middleware("http")(_immutable_assets)
