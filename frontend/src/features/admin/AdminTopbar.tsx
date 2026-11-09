@@ -92,6 +92,9 @@ export function AdminTopbar() {
           {menuOpen && (
             <div className="account-menu" role="menu">
               <p className="account-menu-label">站点管理</p>
+              <Link role="menuitem" to="/" onClick={() => setMenuOpen(false)}>
+                返回站点
+              </Link>
               <Link role="menuitem" to="/admin" onClick={() => setMenuOpen(false)}>
                 内容后台
               </Link>
