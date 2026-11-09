@@ -40,25 +40,29 @@ def _learned_by_topic() -> dict[str, int]:
 
 
 def _activity(ids: list[int]) -> tuple[int, int]:
-    """最近 400 天的活跃天数与历史最长连续天数。"""
+    """活跃天数（最近 400 天）与历史最长连续天数（全部记录）。
+
+    活跃天数限制在 400 天是为了控制统计页开销；最长连续是「历史」指标，
+    必须扫全部记录，否则老用户的记录会被截断成更短的数字。
+    """
     cutoff = int((time.time() - 400 * 86400) * 1000)
     rows = collection.db().all(
-        "select distinct date(r.id / 1000, 'unixepoch', 'localtime', ?) as d "
+        "select date(r.id / 1000, 'unixepoch', 'localtime', ?) as d, min(r.id) "
         "from revlog r join cards c on c.id = r.cid "
-        f"where r.id >= ? and c.did in ({_placeholders(ids)})",
+        f"where c.did in ({_placeholders(ids)}) group by d",
         daytime.DAY_SHIFT,
-        cutoff,
         *ids,
     )
-    days = sorted(str(day) for (day,) in rows if day)
+    days = sorted((str(day), int(first)) for day, first in rows if day)
+    active = sum(1 for _, first in days if first >= cutoff)
     longest = current = 0
     previous: datetime | None = None
-    for value in days:
+    for value, _ in days:
         date = datetime.fromisoformat(value)
         current = current + 1 if previous and (date - previous).days == 1 else 1
         longest = max(longest, current)
         previous = date
-    return len(days), longest
+    return active, longest
 
 
 def _forecast(ids: list[int], days: int = 14) -> list[dict[str, Any]]:

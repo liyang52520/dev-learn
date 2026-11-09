@@ -25,6 +25,9 @@ def get_config() -> dict[str, Any]:
                 or cfg.get("fsrsParams5")
             ),
             "new_order": cfg.get("newGatherPriority"),
+            # Anki 默认让新卡首次作答占用当天的复习额度（newCardsIgnoreReviewLimit=false）。
+            # 应用层的「额度是否用完」必须按同一口径判断，否则会把还能学的卡判成已结束。
+            "new_ignore_review_limit": bool(col.get_config("newCardsIgnoreReviewLimit", False)),
         }
 
 

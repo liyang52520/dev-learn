@@ -67,8 +67,9 @@ export default function ReviewPage() {
         streak={stats?.streak ?? 0}
         newDone={stats?.todayNew ?? null}
         newLimit={stats?.newPerDay ?? null}
-        revDone={stats?.todayReview ?? null}
+        revUsed={stats?.reviewQuotaUsed ?? null}
         revLimit={stats?.revPerDay ?? null}
+        revShared={stats ? !stats.newIgnoreReviewLimit : true}
         reviewed={session.reviewed}
         busy={session.busy}
         onEnd={session.endSession}

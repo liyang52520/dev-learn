@@ -103,8 +103,14 @@ def next_due_epoch(today_counts: tuple[int, int, int, int] | None = None) -> int
     _, new_today, review_today, _ = today_counts or today_card_counts()
     review_paused = cfg["rev_per_day"] <= 0
     new_paused = cfg["new_per_day"] <= 0
-    review_blocked = review_paused or review_today >= cfg["rev_per_day"]
-    new_blocked = new_paused or review_paused or new_today >= cfg["new_per_day"] or review_blocked
+    # 复习额度与新卡共享：新卡首次作答默认也占一份，判断「今天还能不能学」
+    # 必须把 new_today 算进去，否则会给出已经过期的时间点。
+    shares_review_quota = not cfg.get("new_ignore_review_limit", False)
+    review_quota_used = review_today + (new_today if shares_review_quota else 0)
+    review_blocked = review_paused or review_quota_used >= cfg["rev_per_day"]
+    new_blocked = (
+        new_paused or new_today >= cfg["new_per_day"] or (review_blocked and shares_review_quota)
+    )
 
     db = collection.db()
     candidates: list[int] = []

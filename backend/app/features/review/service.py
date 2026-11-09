@@ -163,9 +163,11 @@ def stats(client_id: str = "") -> ReviewStats:
             rev_per_day=config["rev_per_day"],
             new_paused=config["new_per_day"] <= 0,
             review_paused=config["rev_per_day"] <= 0,
+            review_quota_used=_review_quota_used(config, today_new, today_review),
+            new_ignore_review_limit=config["new_ignore_review_limit"],
             new_limit_hit=_new_limit_hit(config, today_new, new_remaining),
             review_limit_hit=_review_limit_hit(
-                config, counts, today_review, due_total, new_remaining
+                config, counts, today_new, today_review, due_total, new_remaining
             ),
             streak=streak,
             total_reviews=total_reviews,
@@ -184,18 +186,27 @@ def stats(client_id: str = "") -> ReviewStats:
         )
 
 
+def _review_quota_used(config: dict[str, Any], today_new: int, today_review: int) -> int:
+    """新卡首次作答默认也占一份复习额度（`newCardsIgnoreReviewLimit` 为 false）。"""
+    if config.get("new_ignore_review_limit", False):
+        return today_review
+    return today_review + today_new
+
+
 def _review_limit_hit(
     config: dict[str, Any],
     counts: dict[str, int],
+    today_new: int,
     today_review: int,
     due_total: int,
     new_remaining: int,
 ) -> bool:
-    if config["rev_per_day"] <= 0 or today_review < config["rev_per_day"]:
+    if config["rev_per_day"] <= 0:
+        return False
+    if _review_quota_used(config, today_new, today_review) < config["rev_per_day"]:
         return False
     overflow = max(0, due_total - (counts["learning"] + counts["review"]))
-    # 复习额度用尽后，Anki 会同时停发新卡；有新卡没学完也算额度命中，
-    # 否则会被误判成「今天的卡清空了」。
+    # 复习额度用尽后 Anki 会同时停发新卡：有新卡没学完也算命中，不能误判成清空。
     return overflow > 0 or new_remaining > 0
 
 
@@ -219,7 +230,7 @@ def _phase(
     new_paused = config["new_per_day"] <= 0
     if review_paused and (due_total > 0 or new_remaining > 0):
         return "paused"
-    if _review_limit_hit(config, counts, today_review, due_total, new_remaining):
+    if _review_limit_hit(config, counts, today_new, today_review, due_total, new_remaining):
         return "review_quota"
     if new_remaining > 0 and _new_limit_hit(config, today_new, new_remaining):
         return "new_quota"

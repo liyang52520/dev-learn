@@ -57,12 +57,11 @@ export function ReviewLauncher() {
       : 0
   const revPct =
     stats.revPerDay > 0
-      ? Math.min(100, Math.round((stats.todayReview / stats.revPerDay) * 100))
+      ? Math.min(100, Math.round((stats.reviewQuotaUsed / stats.revPerDay) * 100))
       : 0
   const phase = toReviewPhase(stats.phase) ?? 'review'
   const quotaDone = phase === 'new_quota'
-  // dueTotal 含「学习中」的卡，而 counts.review 只算复习卡；
-  // 队列今天真正排得到的是 learning + review，别拿错基数吓人。
+  // dueTotal 含「学习中」的卡；今天真正排得到的是 learning + review，别拿错基数吓人。
   const queuedDue = stats.counts.learning + stats.counts.review
   const overflow = Math.max(0, stats.dueTotal - queuedDue)
   const reviewLimitHit = phase === 'review_quota'
@@ -109,8 +108,8 @@ export function ReviewLauncher() {
         {reviewLimitHit && (
           <span className="review-launcher-note">
             {overflow > 0
-              ? `还有 ${overflow} 张到期卡超出今日复习限额（${stats.revPerDay}/天），明天继续。`
-              : `今天复习额度已满，新卡也会一起停发（还剩 ${stats.newRemaining} 张没学），明天继续。`}
+              ? `还有 ${overflow} 张到期卡超出今日复习限额（${stats.revPerDay}/天${stats.newIgnoreReviewLimit ? '' : '，新卡首次作答也计入'}），明天继续。`
+              : `今天复习额度已满（新卡首次作答也计入），新卡也会一起停发（还剩 ${stats.newRemaining} 张没学），明天继续。`}
           </span>
         )}
         {paused && (
@@ -136,15 +135,21 @@ export function ReviewLauncher() {
         </span>
         <span className="review-launcher-meter">
           <span className="review-launcher-meter-label">
-            {stats.revPerDay > 0 ? `复习 ${stats.todayReview}/${stats.revPerDay}` : `复习 ${stats.todayReview}（已暂停）`}
+            {stats.revPerDay > 0
+              ? `复习额度 ${stats.reviewQuotaUsed}/${stats.revPerDay}`
+              : `复习额度 ${stats.reviewQuotaUsed}（已暂停）`}
           </span>
           <span
             className="review-launcher-track is-soft"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={revMax}
-            aria-valuenow={Math.min(stats.todayReview, revMax)}
-            aria-label={stats.revPerDay > 0 ? `今日复习 ${stats.todayReview} / ${stats.revPerDay}` : `今日复习 ${stats.todayReview}，已暂停`}
+            aria-valuenow={Math.min(stats.reviewQuotaUsed, revMax)}
+            aria-label={
+              stats.revPerDay > 0
+                ? `今日复习额度 ${stats.reviewQuotaUsed} / ${stats.revPerDay}${stats.newIgnoreReviewLimit ? '' : '，新卡首次作答也计入'}`
+                : `今日复习额度 ${stats.reviewQuotaUsed}，已暂停`
+            }
           >
             <span className="review-launcher-fill is-soft" style={{ width: `${revPct}%` }} />
           </span>

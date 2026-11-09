@@ -94,6 +94,9 @@ class ReviewStats(ApiModel):
     rev_per_day: int
     new_paused: bool
     review_paused: bool
+    # 新卡首次作答默认也占用复习额度，这里直接给合并后的口径，前端不再自行推算。
+    review_quota_used: int
+    new_ignore_review_limit: bool
     new_limit_hit: bool
     review_limit_hit: bool
     streak: int

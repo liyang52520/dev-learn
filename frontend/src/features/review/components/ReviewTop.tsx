@@ -9,23 +9,24 @@ type Props = {
   streak: number
   newDone: number | null
   newLimit: number | null
-  revDone: number | null
+  revUsed: number | null
   revLimit: number | null
+  revShared: boolean
   reviewed: number
   busy: boolean
   onEnd: () => void
 }
 
 export function ReviewTop(props: Props) {
-  const { loaded, counts, backlog, streak, newDone, newLimit, revDone, revLimit, reviewed, busy } =
+  const { loaded, counts, backlog, streak, newDone, newLimit, revUsed, revLimit, revShared, reviewed, busy } =
     props
   const newPct =
     newLimit !== null && newLimit > 0 && newDone !== null
       ? Math.min(100, Math.round((newDone / newLimit) * 100))
       : 0
   const revPct =
-    revLimit !== null && revLimit > 0 && revDone !== null
-      ? Math.min(100, Math.round((revDone / revLimit) * 100))
+    revLimit !== null && revLimit > 0 && revUsed !== null
+      ? Math.min(100, Math.round((revUsed / revLimit) * 100))
       : 0
   const remaining = counts.new + counts.learning + counts.review
   // aria-valuenow 不得超过 max；暂停时 max 至少为 1。
@@ -69,30 +70,37 @@ export function ReviewTop(props: Props) {
               )}
             </span>
           </span>
-          <span className="review-progress-item">
+          <span
+            className="review-progress-item"
+            title={
+              revShared
+                ? '今天的复习额度；新卡首次作答也计入这份额度'
+                : '今天的复习额度；只统计复习卡'
+            }
+          >
             <span
               className="review-progress-track"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={revMax}
-              aria-valuenow={Math.min(revDone ?? 0, revMax)}
+              aria-valuenow={Math.min(revUsed ?? 0, revMax)}
               aria-label={
                 revLimit === null
                   ? '今日复习额度加载中'
                   : revLimit > 0
-                    ? `今日复习 ${revDone ?? 0} / ${revLimit}`
+                    ? `今日复习额度 ${revUsed ?? 0} / ${revLimit}${revShared ? '，新卡首次作答也计入' : ''}`
                     : '今日复习已暂停'
               }
             >
               <span className="review-progress-fill review-progress-fill-soft" style={{ width: `${revPct}%` }} />
             </span>
             <span className="review-progress-label">
-              今日复习{' '}
+              今日复习额度{' '}
               {revLimit === null ? (
                 '—'
               ) : revLimit > 0 ? (
                 <>
-                  <strong>{revDone ?? '—'}</strong>/{revLimit}
+                  <strong>{revUsed ?? '—'}</strong>/{revLimit}
                 </>
               ) : (
                 '已暂停'

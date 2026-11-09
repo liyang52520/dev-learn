@@ -3295,6 +3295,14 @@
             "type": "boolean",
             "title": "Reviewpaused"
           },
+          "reviewQuotaUsed": {
+            "type": "integer",
+            "title": "Reviewquotaused"
+          },
+          "newIgnoreReviewLimit": {
+            "type": "boolean",
+            "title": "Newignorereviewlimit"
+          },
           "newLimitHit": {
             "type": "boolean",
             "title": "Newlimithit"
@@ -3389,6 +3397,8 @@
           "revPerDay",
           "newPaused",
           "reviewPaused",
+          "reviewQuotaUsed",
+          "newIgnoreReviewLimit",
           "newLimitHit",
           "reviewLimitHit",
           "streak",

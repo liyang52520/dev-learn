@@ -12,10 +12,13 @@ export function StudyTodayCard({ stats }: { stats: ReviewStats }) {
     <section className="study-admin-card">
       <div className="study-card-head">
         <h3>今天的节奏</h3>
-        <span>额度按卡算，不按看卡次数算</span>
+        <span>
+          额度按卡算，不按看卡次数算
+          {stats.newIgnoreReviewLimit ? '' : '；新卡首次作答计入复习额度'}
+        </span>
       </div>
       <QuotaRow label="新学" value={stats.todayNew} limit={stats.newPerDay} />
-      <QuotaRow label="复习" value={stats.todayReview} limit={stats.revPerDay} />
+      <QuotaRow label="复习额度" value={stats.reviewQuotaUsed} limit={stats.revPerDay} />
       <div className="study-quota-row">
         <span className="study-quota-label">重学</span>
         <strong>{stats.todayRelearn}</strong>

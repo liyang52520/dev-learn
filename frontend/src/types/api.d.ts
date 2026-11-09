@@ -1310,6 +1310,10 @@ export interface components {
             newPaused: boolean;
             /** Reviewpaused */
             reviewPaused: boolean;
+            /** Reviewquotaused */
+            reviewQuotaUsed: number;
+            /** Newignorereviewlimit */
+            newIgnoreReviewLimit: boolean;
             /** Newlimithit */
             newLimitHit: boolean;
             /** Reviewlimithit */

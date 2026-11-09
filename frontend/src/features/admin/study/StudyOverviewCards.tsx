@@ -127,7 +127,7 @@ export function StudyProgressCard({ stats, overview }: Props) {
             ))}
           </ul>
           <p className="study-admin-hint study-maturity-note">
-            年轻卡是复习间隔还不到 21 天的卡，成熟卡是间隔超过 21 天的卡；间隔越长，说明记得越牢。
+            年轻卡是复习间隔不到 21 天的卡，成熟卡是间隔达到 21 天的卡；间隔越长，说明记得越牢。
           </p>
           <dl className="study-intervals">
             <div>

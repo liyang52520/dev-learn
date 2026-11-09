@@ -36,6 +36,10 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
 
   const newChanged = previewReady && previewNew !== config.newPerDay
   const revChanged = previewReady && previewRev !== config.revPerDay
+  // 新卡首次作答默认占用复习额度，能留给复习卡的额度要先把新卡扣掉。
+  const reviewCapacity = stats?.newIgnoreReviewLimit
+    ? previewRev
+    : Math.max(0, previewRev - previewNew)
 
   const save = async () => {
     if (!previewReady) {
@@ -50,10 +54,11 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
     if (previewNew === 0 || previewRev === 0) warnings.push('设为 0 会暂停对应类型的卡，直到你改回')
     const newJump = previewNew > config.newPerDay && previewNew >= config.newPerDay * 2
     const revJump = previewRev > config.revPerDay && previewRev >= config.revPerDay * 2
-    if (newJump || revJump) {
-      warnings.push(
-        `额度将明显提高（新卡 ${config.newPerDay} → ${previewNew}，复习 ${config.revPerDay} → ${previewRev}），每天花的时间会明显增加`,
-      )
+    const jumps: string[] = []
+    if (newJump) jumps.push(`新卡 ${config.newPerDay} → ${previewNew}`)
+    if (revJump) jumps.push(`复习 ${config.revPerDay} → ${previewRev}`)
+    if (jumps.length > 0) {
+      warnings.push(`额度将明显提高（${jumps.join('，')}），每天花的时间会明显增加`)
     }
     if (warnings.length > 0 && !window.confirm(`${warnings.join('；')}。确定要保存吗？`)) return
 
@@ -87,14 +92,15 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
       <p className="study-admin-hint">
         <b>新卡 / 天</b>：每天最多拿出多少张没学过的卡，一张新卡只扣一次。
         <br />
-        <b>复习 / 天</b>：每天最多复习多少张以前学过、今天到期的卡。
+        <b>复习 / 天</b>：每天最多能安排多少张「新卡首次作答 + 复习卡」，两类共用这份额度。
       </p>
       <p className="study-admin-hint">
         新卡学完后会按上面的学习步骤再出现几次，这些重复不扣新卡额度，也不占复习额度：
         额度按“卡”算，不按“看卡次数”算。
       </p>
       <p className="study-admin-hint">
-        另外，复习额度用完时，新卡也会一起停发，这是 Anki 的默认规则，防止一天学得太多。
+        Anki 默认让新卡首次作答也扣一份复习额度，所以复习额度用完时，新卡也会一起停发；
+        例如新卡 20、复习 100，学的 20 张新卡会先占掉 20 份复习额度，当天只剩约 80 张复习卡能排进来。
       </p>
       <label className={newChanged ? 'is-changed' : undefined}>
         <span>新卡 / 天</span>
@@ -118,14 +124,20 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
       </label>
       {previewReady && stats && (
         <p className="study-admin-preview">
-          保存后：每天最多学 {previewNew} 张新卡、复习 {previewRev} 张。
+          保存后：每天最多学 {previewNew} 张新卡
           {previewNew > 0
             ? stats.newRemaining > 0
-              ? `剩余 ${stats.newRemaining} 张新卡按这个速度需要 ${formatDays(Math.ceil(stats.newRemaining / previewNew))}`
-              : '新卡已经全部学完'
-            : '新卡将暂停发放'}
+              ? `（剩余 ${stats.newRemaining} 张按这个速度需要 ${formatDays(Math.ceil(stats.newRemaining / previewNew))}）`
+              : '（新卡已经全部学完）'
+            : '（新卡暂停发放）'}
+          ；
+          {stats.newIgnoreReviewLimit
+            ? `复习额度 ${previewRev} 张。`
+            : `新卡首次作答与复习卡共享 ${previewRev} 份复习额度。`}
           {previewRev > 0 && stats.dueTotal > 0
-            ? `；${stats.dueTotal} 张到期卡约需 ${formatDays(Math.ceil(stats.dueTotal / previewRev))} 清完`
+            ? reviewCapacity > 0
+              ? ` ${stats.dueTotal} 张到期卡按每天约 ${reviewCapacity} 张的复习余量，约需 ${formatDays(Math.ceil(stats.dueTotal / reviewCapacity))} 清完。`
+              : ' 新卡额度已占满复习额度，复习卡暂时排不进来。'
             : ''}
         </p>
       )}

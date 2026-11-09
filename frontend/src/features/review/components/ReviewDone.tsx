@@ -105,8 +105,8 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
 
       {stats && (
         <p className="review-done-quota">
-          今日 新卡 {stats.todayNew}/{stats.newPerDay > 0 ? stats.newPerDay : '已暂停'} · 复习{' '}
-          {stats.todayReview}/{stats.revPerDay > 0 ? stats.revPerDay : '已暂停'}
+          今日 新卡 {stats.todayNew}/{stats.newPerDay > 0 ? stats.newPerDay : '已暂停'} · 复习额度{' '}
+          {stats.reviewQuotaUsed}/{stats.revPerDay > 0 ? stats.revPerDay : '已暂停'}
           {stats.todayRelearn > 0 ? ` · 重学 ${stats.todayRelearn}` : ''}
           {stats.newRemaining > 0 ? ` · 还有 ${stats.newRemaining} 张新卡没学` : ''}
         </p>
@@ -130,7 +130,7 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
         <p className="review-done-help">
           {overflow > 0
             ? `今天复习额度已满，还有 ${overflow} 张到期卡；明天会自动恢复，也可以到设置里调高上限。`
-            : `今天复习额度已满，新卡也随之停发（还剩 ${stats?.newRemaining ?? 0} 张没学）；明天会自动恢复，也可以到设置里调高上限。`}
+            : `今天复习额度已满（新卡首次作答也计入），新卡也随之停发（还剩 ${stats?.newRemaining ?? 0} 张没学）；明天会自动恢复，也可以到设置里调高上限。`}
         </p>
       )}
       {phase === 'new_quota' && (
