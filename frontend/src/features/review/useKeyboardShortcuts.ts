@@ -6,7 +6,6 @@ type Handlers = {
   phase: Phase
   busy: boolean
   reviewed: number
-  canUndo: boolean
   reveal: () => void
   rate: (rating: number) => void
   undo: () => void
@@ -57,7 +56,6 @@ export function useKeyboardShortcuts(handlers: Handlers): void {
         (handlers.phase === 'question' || handlers.phase === 'answer') &&
         event.key.toLowerCase() === 'u'
       ) {
-        if (!handlers.canUndo) return
         event.preventDefault()
         handlers.undo()
       }

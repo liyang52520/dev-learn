@@ -52,7 +52,7 @@ export function useReviewUndo(options: Options) {
   const undo = useCallback(async () => {
     const token = undoToken || statsUndoToken
     if (!token) {
-      setToast('没有可撤销的评分')
+      setToast('没有可撤销的评分：只能撤销本标签页最近 10 分钟内的评分')
       return
     }
     if (busy || revealing) {

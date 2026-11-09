@@ -264,21 +264,21 @@
   transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
-/* 可用 / 禁用必须一眼能看出来：禁用态灰掉，可用态给边框和底色 */
-.review-undo:not(:disabled) {
+/* 可用 / 不可撤销必须一眼能看出来：不可撤销灰掉，但仍可点击看原因 */
+.review-undo:not(.is-inactive) {
   color: var(--ink-2);
   border-color: var(--line);
   background: var(--surface);
 }
 
-.review-undo:not(:disabled):hover {
+.review-undo:not(.is-inactive):hover {
   color: var(--accent);
   border-color: var(--line-2);
   background: var(--accent-soft);
 }
 
-.review-undo:disabled {
+.review-undo.is-inactive {
   color: var(--faint);
   opacity: 0.55;
-  cursor: default;
+  cursor: not-allowed;
 }

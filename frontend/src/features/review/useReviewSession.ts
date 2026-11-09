@@ -244,7 +244,6 @@ export function useReviewSession() {
     phase,
     busy: busy || revealing,
     reviewed,
-    canUndo: Boolean(undoToken || stats?.undoToken),
     reveal: () => void reveal(),
     rate: (rating) => void rate(rating),
     undo: () => void undo(),

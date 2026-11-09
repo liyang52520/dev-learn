@@ -27,14 +27,14 @@
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.review-undo-icon:hover:not(:disabled) {
+.review-undo-icon:hover:not(.is-inactive) {
   color: var(--ink);
   border-color: var(--line-2);
 }
 
-.review-undo-icon:disabled {
+.review-undo-icon.is-inactive {
   opacity: 0.4;
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .review-rate {

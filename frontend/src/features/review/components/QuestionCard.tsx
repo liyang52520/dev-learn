@@ -76,10 +76,10 @@ export function QuestionCard(props: Props) {
           <div className="review-undo-row">
             <button
               type="button"
-              className="review-undo"
+              className={`review-undo${canUndo ? '' : ' is-inactive'}`}
               onClick={props.onUndo}
-              disabled={!canUndo}
-              title={canUndo ? '撤销最近一次评分' : '还没有可撤销的评分'}
+              aria-disabled={!canUndo}
+              title={canUndo ? '撤销最近一次评分' : '只能撤销本标签页最近 10 分钟内的评分'}
             >
               撤销上一张 <kbd>U</kbd>
             </button>
@@ -105,10 +105,10 @@ export function QuestionCard(props: Props) {
           <div className="review-bottom">
             <button
               type="button"
-              className="review-undo-icon"
+              className={`review-undo-icon${canUndo ? '' : ' is-inactive'}`}
               onClick={props.onUndo}
-              disabled={!canUndo}
-              title="撤销上一张 (U)"
+              aria-disabled={!canUndo}
+              title={canUndo ? '撤销上一张 (U)' : '只能撤销本标签页最近 10 分钟内的评分'}
               aria-label="撤销上一张"
             >
               <span aria-hidden>↩</span>
