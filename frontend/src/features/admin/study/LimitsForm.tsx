@@ -78,13 +78,23 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
         这是<b>每天的上限，不是每天的任务</b>；设成 0 等于暂停；改小立刻生效，改大当天也会补回。
       </p>
       <p className="study-admin-hint">
-        新卡额度只限制首次学习的卡数；复习额度只统计已经学过、按计划回到队列的卡。
-        两项<b>不是完全独立</b>：复习额度用尽后，新卡也会一起停发，避免当天总量失控。
-        学习步骤（1 / 10 分钟）不占用任何一项额度。
+        当前节奏：
+        {config.learningSteps?.length
+          ? `新卡答完后，会在 ${config.learningSteps.map((step) => `${step} 分钟`).join('、')}后再出现，走完这些步骤就进入长期复习。`
+          : '新卡答完后会按默认节奏再出现几次，然后进入长期复习。'}
+        {config.fsrsEnabled ? '之后的复习间隔由系统自动计算（FSRS 算法）。' : '之后的复习间隔由系统按 SM-2 算法计算。'}
       </p>
       <p className="study-admin-hint">
-        学习步骤：{config.learningSteps?.length ? `${config.learningSteps.join(' / ')} 分钟` : '默认'} · 调度：
-        {config.fsrsEnabled ? 'FSRS 已启用' : 'SM-2（FSRS 未启用）'}
+        <b>新卡 / 天</b>：每天最多拿出多少张没学过的卡，一张新卡只扣一次。
+        <br />
+        <b>复习 / 天</b>：每天最多复习多少张以前学过、今天到期的卡。
+      </p>
+      <p className="study-admin-hint">
+        新卡学完后会按上面的学习步骤再出现几次，这些重复不扣新卡额度，也不占复习额度：
+        额度按“卡”算，不按“看卡次数”算。
+      </p>
+      <p className="study-admin-hint">
+        另外，复习额度用完时，新卡也会一起停发，这是 Anki 的默认规则，防止一天学得太多。
       </p>
       <label className={newChanged ? 'is-changed' : undefined}>
         <span>新卡 / 天</span>

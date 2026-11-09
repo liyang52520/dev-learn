@@ -1031,6 +1031,19 @@
         ],
         "summary": "Get Stats",
         "operationId": "get_stats_api_review_stats_get",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "default": "",
+              "title": "Clientid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1038,6 +1051,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReviewStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1361,6 +1384,19 @@
         ],
         "summary": "Read Stats",
         "operationId": "read_stats_api_admin_study_stats_get",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "default": "",
+              "title": "Clientid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1368,6 +1404,37 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReviewStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/study/overview": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Read Overview",
+        "operationId": "read_overview_api_admin_study_overview_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudyOverview"
                 }
               }
             }
@@ -3419,6 +3486,24 @@
         ],
         "title": "SearchResult"
       },
+      "StudyForecastDay": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "count"
+        ],
+        "title": "StudyForecastDay"
+      },
       "StudyIndexResponse": {
         "properties": {
           "meta": {
@@ -3438,6 +3523,109 @@
           "topics"
         ],
         "title": "StudyIndexResponse"
+      },
+      "StudyOverview": {
+        "properties": {
+          "totalTimeMs": {
+            "type": "integer",
+            "title": "Totaltimems"
+          },
+          "newCards": {
+            "type": "integer",
+            "title": "Newcards"
+          },
+          "learningCards": {
+            "type": "integer",
+            "title": "Learningcards"
+          },
+          "youngCards": {
+            "type": "integer",
+            "title": "Youngcards"
+          },
+          "matureCards": {
+            "type": "integer",
+            "title": "Maturecards"
+          },
+          "avgIntervalDays": {
+            "type": "number",
+            "title": "Avgintervaldays"
+          },
+          "maxIntervalDays": {
+            "type": "integer",
+            "title": "Maxintervaldays"
+          },
+          "activeDays": {
+            "type": "integer",
+            "title": "Activedays"
+          },
+          "longestStreak": {
+            "type": "integer",
+            "title": "Longeststreak"
+          },
+          "forecast": {
+            "items": {
+              "$ref": "#/components/schemas/StudyForecastDay"
+            },
+            "type": "array",
+            "title": "Forecast"
+          },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/StudyTopicProgress"
+            },
+            "type": "array",
+            "title": "Topics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "totalTimeMs",
+          "newCards",
+          "learningCards",
+          "youngCards",
+          "matureCards",
+          "avgIntervalDays",
+          "maxIntervalDays",
+          "activeDays",
+          "longestStreak",
+          "forecast",
+          "topics"
+        ],
+        "title": "StudyOverview",
+        "description": "统计页专用的深度指标；与复习页高频调用的 ReviewStats 分开，避免拖慢取卡。"
+      },
+      "StudyTopicProgress": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "learned": {
+            "type": "integer",
+            "title": "Learned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "label",
+          "total",
+          "learned"
+        ],
+        "title": "StudyTopicProgress"
       },
       "TermCount": {
         "properties": {

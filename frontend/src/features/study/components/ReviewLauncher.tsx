@@ -70,7 +70,7 @@ export function ReviewLauncher() {
 
   const headline =
     phase === 'review'
-      ? `今日可学 ${due} 张`
+      ? `今日需学 ${due} 张`
       : reviewLimitHit
         ? '今日复习额度用完了'
         : quotaDone

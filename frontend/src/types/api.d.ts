@@ -552,6 +552,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/study/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Overview */
+        get: operations["read_overview_api_admin_study_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/backup/status": {
         parameters: {
             query?: never;
@@ -1355,11 +1372,59 @@ export interface components {
             /** Badge */
             badge: string;
         };
+        /** StudyForecastDay */
+        StudyForecastDay: {
+            /** Date */
+            date: string;
+            /** Count */
+            count: number;
+        };
         /** StudyIndexResponse */
         StudyIndexResponse: {
             meta: components["schemas"]["TopicMeta"];
             /** Topics */
             topics: components["schemas"]["TopicSummary"][];
+        };
+        /**
+         * StudyOverview
+         * @description 统计页专用的深度指标；与复习页高频调用的 ReviewStats 分开，避免拖慢取卡。
+         */
+        StudyOverview: {
+            /** Totaltimems */
+            totalTimeMs: number;
+            /** Newcards */
+            newCards: number;
+            /** Learningcards */
+            learningCards: number;
+            /** Youngcards */
+            youngCards: number;
+            /** Maturecards */
+            matureCards: number;
+            /** Avgintervaldays */
+            avgIntervalDays: number;
+            /** Maxintervaldays */
+            maxIntervalDays: number;
+            /** Activedays */
+            activeDays: number;
+            /** Longeststreak */
+            longestStreak: number;
+            /** Forecast */
+            forecast: components["schemas"]["StudyForecastDay"][];
+            /** Topics */
+            topics: components["schemas"]["StudyTopicProgress"][];
+        };
+        /** StudyTopicProgress */
+        StudyTopicProgress: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Label */
+            label: string;
+            /** Total */
+            total: number;
+            /** Learned */
+            learned: number;
         };
         /** TermCount */
         TermCount: {
@@ -2232,7 +2297,9 @@ export interface operations {
     };
     get_stats_api_review_stats_get: {
         parameters: {
-            query?: never;
+            query?: {
+                clientId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2246,6 +2313,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewStats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2508,7 +2584,9 @@ export interface operations {
     };
     read_stats_api_admin_study_stats_get: {
         parameters: {
-            query?: never;
+            query?: {
+                clientId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2522,6 +2600,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewStats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_overview_api_admin_study_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudyOverview"];
                 };
             };
         };

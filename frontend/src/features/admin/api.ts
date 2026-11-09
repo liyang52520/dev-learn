@@ -11,6 +11,7 @@ import type {
   ReviewConfig,
   ReviewConfigUpdate,
   ReviewStats,
+  StudyOverview,
   UploadResponse,
 } from '@/types/models'
 
@@ -77,6 +78,10 @@ export function saveStudyConfig(config: ReviewConfigUpdate): Promise<ReviewConfi
 
 export function fetchStudyStats(): Promise<ReviewStats> {
   return apiGet<ReviewStats>('/api/admin/study/stats')
+}
+
+export function fetchStudyOverview(): Promise<StudyOverview> {
+  return apiGet<StudyOverview>('/api/admin/study/overview')
 }
 
 export function fetchBackupStatus(): Promise<BackupStatus> {

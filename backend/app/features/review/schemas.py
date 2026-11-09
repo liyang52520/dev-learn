@@ -110,6 +110,35 @@ class ReviewStats(ApiModel):
     days: list[ReviewDay]
 
 
+class StudyForecastDay(ApiModel):
+    date: str
+    count: int
+
+
+class StudyTopicProgress(ApiModel):
+    id: str
+    title: str
+    label: str
+    total: int
+    learned: int
+
+
+class StudyOverview(ApiModel):
+    """统计页专用的深度指标；与复习页高频调用的 ReviewStats 分开，避免拖慢取卡。"""
+
+    total_time_ms: int
+    new_cards: int
+    learning_cards: int
+    young_cards: int
+    mature_cards: int
+    avg_interval_days: float
+    max_interval_days: int
+    active_days: int
+    longest_streak: int
+    forecast: list[StudyForecastDay]
+    topics: list[StudyTopicProgress]
+
+
 class ReviewConfig(ApiModel):
     deck: str
     new_per_day: int

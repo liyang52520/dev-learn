@@ -138,6 +138,7 @@ dev-learn/
 | POST | `/api/admin/auth/login`、`/logout`；GET `/me` | 登录态 |
 | GET/POST | `/api/admin/posts`、`/api/admin/post`、`/preview`、`/publish`、`/upload` | 后台读写 |
 | GET/POST | `/api/admin/study/config` | 学习设置 |
+| GET | `/api/admin/study/overview` | 统计页深度指标（成熟度、活跃天数、到期预测、专题进度） |
 | GET | `/api/health` | 存活检查 |
 
 ### 1.5 数据流

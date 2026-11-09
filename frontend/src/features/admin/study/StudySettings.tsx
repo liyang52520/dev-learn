@@ -5,19 +5,17 @@ import type { ReviewConfig, ReviewStats } from '@/types/models'
 
 import { fetchStudyConfig, fetchStudyStats } from '../api'
 import { LimitsForm } from './LimitsForm'
-import { StudyHeatmap, StudyStatsPanel } from './StudyStatsPanel'
 
 export function StudySettings() {
   const [config, setConfig] = useState<ReviewConfig | null>(null)
   const [stats, setStats] = useState<ReviewStats | null>(null)
   const [error, setError] = useState('')
-  const [statsError, setStatsError] = useState('')
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError('')
-    // 统计失败不应该连带隐藏设置表单：两者独立降级。
+    // 统计只用于「保存后多久学完」的估算，取不到也不影响修改上限。
     const [configResult, statsResult] = await Promise.allSettled([
       fetchStudyConfig(),
       fetchStudyStats(),
@@ -28,13 +26,7 @@ export function StudySettings() {
       setConfig(null)
       setError(errorMessage(configResult.reason))
     }
-    if (statsResult.status === 'fulfilled') {
-      setStats(statsResult.value)
-      setStatsError('')
-    } else {
-      setStats(null)
-      setStatsError(errorMessage(statsResult.reason))
-    }
+    setStats(statsResult.status === 'fulfilled' ? statsResult.value : null)
     setLoading(false)
   }, [])
 
@@ -61,20 +53,8 @@ export function StudySettings() {
   }
 
   return (
-    <>
-      {stats ? (
-        <StudyStatsPanel stats={stats} />
-      ) : (
-        <p className="study-admin-stats-error">
-          统计暂时不可用：{statsError || '请稍后重试'}。每日上限仍可修改，保存后同样生效。
-        </p>
-      )}
-      <div className="study-admin-grid">
-        <div className="study-admin-section">
-          <LimitsForm config={config} stats={stats} onSaved={() => void load()} />
-        </div>
-        {stats && <StudyHeatmap stats={stats} />}
-      </div>
-    </>
+    <div className="study-admin-section">
+      <LimitsForm config={config} stats={stats} onSaved={() => void load()} />
+    </div>
   )
 }
