@@ -14,6 +14,9 @@ import { useTheme } from '@/shared/hooks'
 
 const SearchDialog = lazy(() => import('@/features/search/components/SearchDialog'))
 
+// 伪装页是后端静态目录，不走路由，链接要带站点前缀
+const DISGUISE_HREF = `${import.meta.env.BASE_URL}disguise/`
+
 const SITE = {
   name: "YG's Blog",
   shortName: 'YG',
@@ -151,6 +154,9 @@ export function Header() {
                 <Link role="menuitem" to="/admin/backup" onClick={() => setMenuOpen(false)}>
                   数据备份
                 </Link>
+                <a role="menuitem" href={DISGUISE_HREF} onClick={() => setMenuOpen(false)}>
+                  伪装学习页
+                </a>
                 <div className="account-menu-sep" />
                 <button
                   role="menuitem"
