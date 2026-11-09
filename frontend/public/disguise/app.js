@@ -438,7 +438,7 @@
     shareBtn.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      window.location.href = '/review';
+      window.location.href = BASE + 'review';
     });
   }
 
