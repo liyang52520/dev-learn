@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import re
 import secrets
 import time
 from typing import Any, cast
@@ -34,8 +35,22 @@ BURY_MODES = {
 }
 
 
+_LABEL_UNITS = {"m": "分钟", "h": "小时", "d": "天", "mo": "个月", "y": "年"}
+_LABEL_RE = re.compile(r"^(<)?(\d+(?:\.\d+)?)(mo|m|h|d|y)$")
+
+
+def _localize_label(text: str) -> str:
+    """把 Anki 的 <1m / 9d / 4mo 转成中文，避免和月（mo）混淆。"""
+    match = _LABEL_RE.match(text)
+    if not match:
+        return text
+    prefix, value, unit = match.groups()
+    return f"{prefix or ''}{value} {_LABEL_UNITS[unit]}"
+
+
 def _clean_label(text: str) -> str:
-    return text.replace("\u2068", "").replace("\u2069", "")
+    cleaned = text.replace("\u2068", "").replace("\u2069", "")
+    return _localize_label(cleaned)
 
 
 def _prune() -> None:

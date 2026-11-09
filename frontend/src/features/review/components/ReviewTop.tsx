@@ -107,7 +107,9 @@ export function ReviewTop(props: Props) {
           <span>新卡 <strong>{loaded ? counts.new : '—'}</strong></span>
           <span>学习中 <strong>{loaded ? counts.learning : '—'}</strong></span>
           <span>可复习 <strong>{loaded ? counts.review : '—'}</strong></span>
-          <span>到期总量 <strong>{loaded ? backlog : '—'}</strong></span>
+          <span title="已到期的学习中与复习卡，不含新卡">
+            待复习总量 <strong>{loaded ? backlog : '—'}</strong>
+          </span>
           <span>{streak > 0 ? <>连续 <strong>{streak}</strong> 天</> : '今天还没复习'}</span>
         </div>
       </div>

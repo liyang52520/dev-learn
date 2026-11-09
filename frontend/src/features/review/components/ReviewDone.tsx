@@ -31,13 +31,15 @@ export function ReviewDone({ reviewed, elapsedMs, stats, counts, dueTotal, topic
 
   const title = paused
     ? '复习已暂停'
-    : quota
-      ? '今天的额度用完了'
-      : finishedAll
-        ? reviewed > 0
-          ? '今天的复习完成了'
-          : '现在没有到期的卡'
-        : '这一轮结束了'
+    : phase === 'review_quota'
+      ? '今天的复习额度用完了'
+      : phase === 'new_quota'
+        ? '今天的新卡额度用完了'
+        : finishedAll
+          ? reviewed > 0
+            ? '今天的复习完成了'
+            : '现在没有到期的卡'
+          : '这一轮结束了'
 
   return (
     <div className="review-panel review-done">

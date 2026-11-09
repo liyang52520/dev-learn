@@ -109,6 +109,26 @@ def test_expired_token_is_rejected(monkeypatch: pytest.MonkeyPatch):
     assert not schedule.can_undo("tab-a")
 
 
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("<1m", "<1 分钟"),
+        ("<10m", "<10 分钟"),
+        ("2h", "2 小时"),
+        ("9d", "9 天"),
+        ("4mo", "4 个月"),
+        ("1.2y", "1.2 年"),
+        ("unknown", "unknown"),
+    ],
+)
+def test_interval_labels_are_localized(raw: str, expected: str):
+    assert schedule._clean_label(raw) == expected
+
+
+def test_interval_label_strips_bidi_marks():
+    assert schedule._clean_label("\u2068<1m\u2069") == "<1 分钟"
+
+
 def test_phase_values_are_snake_case():
     from app.features.review.service import _phase
 
