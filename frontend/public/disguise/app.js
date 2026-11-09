@@ -64,15 +64,25 @@
     clientId: 'disguise-' + Math.random().toString(36).slice(2, 12)
   };
 
+  // 站点可能部署在子路径（如 /dev-learn/disguise/），接口要跟着前缀走
+  var BASE = (function () {
+    var i = location.pathname.indexOf('/disguise');
+    return i === -1 ? '/' : location.pathname.slice(0, i + 1);
+  })();
+
+  function apiUrl(url) {
+    return BASE + url.replace(/^\//, '');
+  }
+
   function apiGet(url) {
-    return fetch(url, { credentials: 'same-origin' }).then(function (r) {
+    return fetch(apiUrl(url), { credentials: 'same-origin' }).then(function (r) {
       if (!r.ok) throw new Error('http ' + r.status);
       return r.json();
     });
   }
 
   function apiPost(url, body) {
-    return fetch(url, {
+    return fetch(apiUrl(url), {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
