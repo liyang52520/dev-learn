@@ -1,12 +1,19 @@
 import { apiGet, apiSend, apiUpload } from '@/shared/api/client'
 import type {
   AdminPostList,
+  AdminQuestion,
   AuthState,
   BackupResult,
   BackupStatus,
+  BankListResponse,
+  CreateQuestionRequest,
+  DeleteQuestionResponse,
+  EvidenceUploadResponse,
   FrontMatter,
   PreviewResponse,
   PublishResponse,
+  QuestionMutationResponse,
+  QuestionWrite,
   RawPost,
   ReviewConfig,
   ReviewConfigUpdate,
@@ -82,6 +89,51 @@ export function fetchStudyStats(): Promise<ReviewStats> {
 
 export function fetchStudyOverview(): Promise<StudyOverview> {
   return apiGet<StudyOverview>('/api/admin/study/overview')
+}
+
+export function fetchQuestionBank(topic = '', q = ''): Promise<BankListResponse> {
+  return apiGet<BankListResponse>('/api/admin/study/bank', { topic, q })
+}
+
+export function fetchAdminQuestion(topicId: string, qid: string): Promise<AdminQuestion> {
+  return apiGet<AdminQuestion>(
+    `/api/admin/study/bank/questions/${encodeURIComponent(topicId)}/${encodeURIComponent(qid)}`,
+  )
+}
+
+export function createQuestion(payload: CreateQuestionRequest): Promise<QuestionMutationResponse> {
+  return apiSend<QuestionMutationResponse>('POST', '/api/admin/study/bank/questions', payload)
+}
+
+export function updateQuestion(
+  topicId: string,
+  qid: string,
+  payload: QuestionWrite,
+): Promise<QuestionMutationResponse> {
+  return apiSend<QuestionMutationResponse>(
+    'PUT',
+    `/api/admin/study/bank/questions/${encodeURIComponent(topicId)}/${encodeURIComponent(qid)}`,
+    payload,
+  )
+}
+
+export function deleteQuestion(topicId: string, qid: string): Promise<DeleteQuestionResponse> {
+  return apiSend<DeleteQuestionResponse>(
+    'DELETE',
+    `/api/admin/study/bank/questions/${encodeURIComponent(topicId)}/${encodeURIComponent(qid)}`,
+  )
+}
+
+export function uploadEvidence(
+  topicId: string,
+  file: File,
+  fields: { no: number; group: number; page: number },
+): Promise<EvidenceUploadResponse> {
+  return apiUpload<EvidenceUploadResponse>(
+    `/api/admin/study/bank/${encodeURIComponent(topicId)}/upload`,
+    file,
+    fields,
+  )
 }
 
 export function fetchBackupStatus(): Promise<BackupStatus> {

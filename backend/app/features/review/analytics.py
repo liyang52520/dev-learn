@@ -207,3 +207,56 @@ def last_backup() -> dict[str, Any] | None:
         "at": int(stat.st_mtime),
         "count": len(files),
     }
+
+
+def review_quota_used(config: dict[str, Any], today_new: int, today_review: int) -> int:
+    """新卡首次作答默认也占一份复习额度（`newCardsIgnoreReviewLimit` 为 false）。"""
+    if config.get("new_ignore_review_limit", False):
+        return today_review
+    return today_review + today_new
+
+
+def review_limit_hit(
+    config: dict[str, Any],
+    counts: dict[str, int],
+    today_new: int,
+    today_review: int,
+    due_total: int,
+    new_remaining: int,
+) -> bool:
+    if config["rev_per_day"] <= 0:
+        return False
+    if review_quota_used(config, today_new, today_review) < config["rev_per_day"]:
+        return False
+    overflow = max(0, due_total - (counts["learning"] + counts["review"]))
+    # 复习额度用尽后 Anki 会同时停发新卡：有新卡没学完也算命中，不能误判成清空。
+    return overflow > 0 or new_remaining > 0
+
+
+def new_limit_hit(config: dict[str, Any], today_new: int, new_remaining: int) -> bool:
+    return config["new_per_day"] > 0 and today_new >= config["new_per_day"] and new_remaining > 0
+
+
+def phase(
+    config: dict[str, Any],
+    counts: dict[str, int],
+    today_new: int,
+    today_review: int,
+    due_total: int,
+    new_remaining: int,
+) -> str:
+    """统一学习状态：review / review_quota / new_quota / paused / done。"""
+    available = counts["new"] + counts["learning"] + counts["review"]
+    if available > 0:
+        return "review"
+    review_paused = config["rev_per_day"] <= 0
+    new_paused = config["new_per_day"] <= 0
+    if review_paused and (due_total > 0 or new_remaining > 0):
+        return "paused"
+    if review_limit_hit(config, counts, today_new, today_review, due_total, new_remaining):
+        return "review_quota"
+    if new_remaining > 0 and new_limit_hit(config, today_new, new_remaining):
+        return "new_quota"
+    if new_paused and new_remaining > 0:
+        return "paused"
+    return "done"

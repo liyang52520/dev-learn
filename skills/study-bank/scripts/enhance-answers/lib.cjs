@@ -131,14 +131,34 @@ function plainText(html) {
   return decodeEntities(stripTags(html));
 }
 
-/** 对齐 / 比较用：去掉全部空白（代码行断行差异因此被忽略）。 */
+/** 对齐 / 比较用：去掉全部空白（代码行断行差异因此被忽略），并忽略 NUL 控制字符。 */
 function normalizedKey(text) {
-  return normalizeText(text).replace(/\s+/g, '');
+  return normalizeText(text).replace(/\u0000/g, '').replace(/\s+/g, '');
 }
 
 /** 整个答案的可见文字指纹（去空白），用于保证“逐字不变”。 */
 function visibleText(html) {
   return normalizedKey(plainText(html));
+}
+
+const ANSWER_FENCE = /^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[ \t]*$/gm;
+const ANSWER_BLOCK_TAG = /<(?:p|ul|ol|li|pre|figure|table|div|h[2-5])\b/i;
+const ANSWER_IMAGE = /!\[[^\]]*\]\((?:<[^>]*>|[^)\s]*)(?:\s+"([^"]*)")?\)/g;
+
+/** 答案是否已是 Markdown（围栏里的 `<p>` 等只是代码文本）。 */
+function isMarkdownAnswer(markup) {
+  return !ANSWER_BLOCK_TAG.test(String(markup).replace(ANSWER_FENCE, ''));
+}
+
+/** 答案可见文字指纹：HTML 与 Markdown 两种承载形式得到同一结果（图注算可见文字）。 */
+function answerVisibleText(markup) {
+  const source = String(markup);
+  if (!isMarkdownAnswer(source)) {
+    return visibleText(source);
+  }
+  const withCaptions = source.replace(ANSWER_IMAGE, (_match, title) => title || '');
+  // Markdown 里的文字已经过一次实体解码，这里不能再解一次（否则 `&quot;` 会被二次还原）。
+  return normalizedKey(plainTextForSearch(withCaptions, false));
 }
 
 // ---------------------------------------------------------------------------
@@ -605,11 +625,33 @@ function partToBlock(part) {
   return { type: 'ul', attrs: " class='pdf-list'", html: '', items };
 }
 
-/** 与上游 build_site.plain_text 一致：去掉 figcaption、标签换成空格、反转义、压缩空白。 */
-function plainTextForSearch(markup) {
-  let text = String(markup).replace(/<figcaption[\s\S]*?<\/figcaption>/g, ' ');
-  text = text.replace(/<[^>]+>/g, ' ');
-  text = decodeEntities(text);
+/** 答案 Markdown（兼容遗留 HTML）→ 纯文本：丢图片、留代码与正文。与后端 plain_for_search 保持一致。 */
+function plainTextForSearch(markup, decode = true) {
+  const codes = [];
+  let text = String(markup).replace(/\u0000/g, '').replace(/<figcaption[\s\S]*?<\/figcaption>/g, ' ');
+  text = text.replace(/^ {0,3}(`{3,}|~{3,})[^\n]*\n([\s\S]*?)^ {0,3}\1[ \t]*$/gm, (_m, _f, body) => {
+    codes.push(body);
+    return `\u0000${codes.length - 1}\u0000`;
+  });
+  text = text.replace(/(?<!\\)!\[[^\]]*\]\([^)]*\)/g, ' ');
+  text = text.replace(/(?<!\\)\[([^\]]*)\]\([^)]*\)/g, '$1');
+  text = text.replace(/^ {0,3}(?:#{1,6}[ \t]+|> ?|[-*+][ \t]+|\d{1,9}[.)][ \t]+)/gm, '');
+  text = text.replace(/^[ \t]*\|(?:[ \t]*:?-+:?[ \t]*\|)+[ \t]*$/gm, '');
+  // 表格行里未转义的 `|` 是单元格分隔符；`\|` 是正文里的字面竖线，留给后面的反转义。
+  text = text.replace(/^[ \t]*\|.*\|[ \t]*$/gm, (line) =>
+    ` ${line.split(/(?<!\\)\|/).map((cell) => cell.trim()).join(' ')} `,
+  );
+  // 转义过的反引号是正文字面量，不能被当作行内代码吃掉。
+  text = text.replace(/\\`/g, '\u0001');
+  text = text.replace(/(`+)([^`\n]*?)\1/g, '$2');
+  text = text.replace(/\u0001/g, '`');
+  text = text.replace(
+    /<\/?(?:p|ul|ol|li|figure|figcaption|img|pre|code|table|thead|tbody|tr|td|th|h[1-6]|div|span|br|strong|em|a|blockquote)\b[^>]*>/gi,
+    ' ',
+  );
+  text = text.replace(/\\([\\`*_{}\[\]()#+\-.!<>|~&$])/g, '$1');
+  text = text.replace(/\u0000(\d+)\u0000/g, (_m, index) => codes[Number(index)]);
+  if (decode) text = decodeEntities(text);
   return text.replace(/\s+/g, ' ').trim();
 }
 
@@ -645,6 +687,8 @@ module.exports = {
   plainText,
   normalizedKey,
   visibleText,
+  answerVisibleText,
+  isMarkdownAnswer,
   parseBlocks,
   renderBlocks,
   isMonoFont,

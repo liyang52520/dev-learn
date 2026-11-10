@@ -279,6 +279,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/study/bank": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Bank */
+        get: operations["read_bank_api_admin_study_bank_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/study/bank/questions/{topic_id}/{qid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Question */
+        get: operations["read_question_api_admin_study_bank_questions__topic_id___qid__get"];
+        /** Update Question */
+        put: operations["update_question_api_admin_study_bank_questions__topic_id___qid__put"];
+        post?: never;
+        /** Delete Question */
+        delete: operations["delete_question_api_admin_study_bank_questions__topic_id___qid__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/study/bank/questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Question */
+        post: operations["create_question_api_admin_study_bank_questions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/study/bank/{topic_id}/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Evidence */
+        post: operations["upload_evidence_api_admin_study_bank__topic_id__upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search": {
         parameters: {
             query?: never;
@@ -726,6 +796,59 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AdminEvidenceFile */
+        AdminEvidenceFile: {
+            /** Page */
+            page: number;
+            /** File */
+            file: string;
+            /** Width */
+            width?: number | null;
+            /** Height */
+            height?: number | null;
+        };
+        /** AdminEvidenceGroup */
+        AdminEvidenceGroup: {
+            /** Label */
+            label: string;
+            /** From */
+            from: number;
+            /** To */
+            to: number;
+            /** Files */
+            files: components["schemas"]["AdminEvidenceFile"][];
+        };
+        /** AdminQuestion */
+        AdminQuestion: {
+            /** Topicid */
+            topicId: string;
+            /** Topiclabel */
+            topicLabel: string;
+            /** Topicslug */
+            topicSlug: string;
+            /** Id */
+            id: string;
+            /** No */
+            no: number;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Aliases */
+            aliases: string[];
+            /** Summary */
+            summary: string[];
+            /** Note */
+            note: string;
+            /** Pages */
+            pages: string;
+            /** Firstpage */
+            firstPage: number;
+            /** Answer */
+            answer: string;
+            /** Evidence */
+            evidence: components["schemas"]["AdminEvidenceGroup"][];
+        };
         /** AnswerPayload */
         AnswerPayload: {
             /** Cardid */
@@ -897,8 +1020,62 @@ export interface components {
             /** Safetyrefs */
             safetyRefs?: components["schemas"]["BackupRef"][];
         };
+        /** BankListResponse */
+        BankListResponse: {
+            /** Topics */
+            topics: components["schemas"]["BankTopicOption"][];
+            /** Questions */
+            questions: components["schemas"]["BankQuestionRow"][];
+            /** Total */
+            total: number;
+            /** Limited */
+            limited: boolean;
+        };
+        /** BankQuestionRow */
+        BankQuestionRow: {
+            /** Key */
+            key: string;
+            /** Topicid */
+            topicId: string;
+            /** Topiclabel */
+            topicLabel: string;
+            /** Id */
+            id: string;
+            /** No */
+            no: number;
+            /** Title */
+            title: string;
+            /** Pages */
+            pages: string;
+        };
+        /** BankTopicOption */
+        BankTopicOption: {
+            /** Id */
+            id: string;
+            /** No */
+            no: string;
+            /** Label */
+            label: string;
+            /** Title */
+            title: string;
+            /** Slug */
+            slug: string;
+            /** Count */
+            count: number;
+        };
         /** Body_upload_api_admin_upload_post */
         Body_upload_api_admin_upload_post: {
+            /** File */
+            file: string;
+        };
+        /** Body_upload_evidence_api_admin_study_bank__topic_id__upload_post */
+        Body_upload_evidence_api_admin_study_bank__topic_id__upload_post: {
+            /** No */
+            no: number;
+            /** Group */
+            group: number;
+            /** Page */
+            page: number;
             /** File */
             file: string;
         };
@@ -937,6 +1114,48 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** CreateQuestionRequest */
+        CreateQuestionRequest: {
+            /** Title */
+            title: string;
+            /** Aliases */
+            aliases?: string[];
+            /** Summary */
+            summary?: string[];
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /**
+             * Pages
+             * @default
+             */
+            pages: string;
+            /** Firstpage */
+            firstPage?: number | null;
+            /**
+             * Answer
+             * @default
+             */
+            answer: string;
+            /** Evidence */
+            evidence?: components["schemas"]["EvidenceGroupInput"][];
+            /** Topicid */
+            topicId: string;
+        };
+        /** DeleteQuestionResponse */
+        DeleteQuestionResponse: {
+            /**
+             * Ok
+             * @default true
+             */
+            ok: boolean;
+            /** Carddeleted */
+            cardDeleted: boolean;
+            /** Reindexed */
+            reindexed: number;
+        };
         /** EvidenceFile */
         EvidenceFile: {
             /** Page */
@@ -948,6 +1167,13 @@ export interface components {
             /** Height */
             height?: number | null;
         };
+        /** EvidenceFileInput */
+        EvidenceFileInput: {
+            /** Page */
+            page: number;
+            /** File */
+            file: string;
+        };
         /** EvidenceGroup */
         EvidenceGroup: {
             /** Label */
@@ -958,6 +1184,35 @@ export interface components {
             to: number;
             /** Files */
             files: components["schemas"]["EvidenceFile"][];
+        };
+        /** EvidenceGroupInput */
+        EvidenceGroupInput: {
+            /**
+             * Label
+             * @default
+             */
+            label: string;
+            /**
+             * From
+             * @default 1
+             */
+            from: number;
+            /**
+             * To
+             * @default 1
+             */
+            to: number;
+            /** Files */
+            files?: components["schemas"]["EvidenceFileInput"][];
+        };
+        /** EvidenceUploadResponse */
+        EvidenceUploadResponse: {
+            /** File */
+            file: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
         };
         /** FilterResponse */
         FilterResponse: {
@@ -1148,6 +1403,17 @@ export interface components {
             prev?: components["schemas"]["QuestionNav"] | null;
             next?: components["schemas"]["QuestionNav"] | null;
         };
+        /** QuestionMutationResponse */
+        QuestionMutationResponse: {
+            question: components["schemas"]["AdminQuestion"];
+            /** Cardsynced */
+            cardSynced: boolean;
+            /**
+             * Notice
+             * @default
+             */
+            notice: string;
+        };
         /** QuestionNav */
         QuestionNav: {
             /** Id */
@@ -1158,6 +1424,34 @@ export interface components {
             title: string;
             /** Aliases */
             aliases: string[];
+        };
+        /** QuestionWrite */
+        QuestionWrite: {
+            /** Title */
+            title: string;
+            /** Aliases */
+            aliases?: string[];
+            /** Summary */
+            summary?: string[];
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /**
+             * Pages
+             * @default
+             */
+            pages: string;
+            /** Firstpage */
+            firstPage?: number | null;
+            /**
+             * Answer
+             * @default
+             */
+            answer: string;
+            /** Evidence */
+            evidence?: components["schemas"]["EvidenceGroupInput"][];
         };
         /** RawPost */
         RawPost: {
@@ -2118,6 +2412,207 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QuestionDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_bank_api_admin_study_bank_get: {
+        parameters: {
+            query?: {
+                topic?: string;
+                q?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_question_api_admin_study_bank_questions__topic_id___qid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                qid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminQuestion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_question_api_admin_study_bank_questions__topic_id___qid__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                qid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionMutationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_question_api_admin_study_bank_questions__topic_id___qid__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                qid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteQuestionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_question_api_admin_study_bank_questions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateQuestionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuestionMutationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_evidence_api_admin_study_bank__topic_id__upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_evidence_api_admin_study_bank__topic_id__upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceUploadResponse"];
                 };
             };
             /** @description Validation Error */

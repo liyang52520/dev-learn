@@ -77,8 +77,18 @@ function main() {
       if (original !== topic && !originalQuestion) fail('qid', question.key, '原始数据里找不到同 key');
 
       const answer = question.answer || '';
-      const hasCode = answer.includes('<pre');
-      if (hasCode) {
+      if (lib.isMarkdownAnswer(answer)) {
+        // 答案已是 Markdown：代码块是围栏，只校验语言白名单。
+        const fences = [...answer.matchAll(/^ {0,3}`{3,}([^\n]*)$/gm)].map((m) => m[1].trim());
+        stats.codeQuestions += fences.some(Boolean) ? 1 : 0;
+        stats.codeBlocks += fences.filter(Boolean).length;
+        for (const lang of fences) {
+          if (lang && !lib.LANGS.has(lang)) {
+            fail('contract', question.key, `非法代码语言：${lang}`);
+            stats.contractErrors += 1;
+          }
+        }
+      } else if (answer.includes('<pre')) {
         stats.codeQuestions += 1;
         const preMatches = [...answer.matchAll(/<pre\b[^>]*>/g)];
         stats.codeBlocks += preMatches.length;
@@ -102,11 +112,9 @@ function main() {
           fail('contract', question.key, `代码块格式不统一：${newFormat}/${preMatches.length}`);
           stats.contractErrors += 1;
         }
-      } else if (/<pre\b/.test(answer)) {
-        fail('contract', question.key, '含 pre 但未计入代码题');
       }
 
-      const hash = sha256(lib.visibleText(answer));
+      const hash = sha256(lib.answerVisibleText(answer));
       const expectedHash = fidelity[question.key] && fidelity[question.key].expected;
       if (!expectedHash) {
         fail('fidelity', question.key, 'fidelity.json 缺少该题');

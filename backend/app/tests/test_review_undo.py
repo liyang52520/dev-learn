@@ -130,46 +130,46 @@ def test_interval_label_strips_bidi_marks():
 
 
 def test_phase_values_are_snake_case():
-    from app.features.review.service import _phase
+    from app.features.review.analytics import phase
 
     config = {"new_per_day": 20, "rev_per_day": 100}
     counts = {"new": 0, "learning": 0, "review": 0}
 
-    assert _phase(config, {"new": 1, "learning": 0, "review": 0}, 0, 0, 0, 5) == "review"
-    assert _phase(config, counts, 0, 100, 10, 0) == "review_quota"
+    assert phase(config, {"new": 1, "learning": 0, "review": 0}, 0, 0, 0, 5) == "review"
+    assert phase(config, counts, 0, 100, 10, 0) == "review_quota"
     # 复习额度用尽后 Anki 同时停发新卡：没有逾期卡但有新卡，也不能算 done。
-    assert _phase(config, counts, 0, 100, 0, 5) == "review_quota"
-    assert _phase(config, counts, 20, 10, 0, 5) == "new_quota"
-    assert _phase({"new_per_day": 0, "rev_per_day": 100}, counts, 0, 0, 0, 5) == "paused"
-    assert _phase(config, counts, 0, 0, 0, 0) == "done"
+    assert phase(config, counts, 0, 100, 0, 5) == "review_quota"
+    assert phase(config, counts, 20, 10, 0, 5) == "new_quota"
+    assert phase({"new_per_day": 0, "rev_per_day": 100}, counts, 0, 0, 0, 5) == "paused"
+    assert phase(config, counts, 0, 0, 0, 0) == "done"
 
 
 def test_new_cards_share_the_review_quota():
-    from app.features.review.service import _review_limit_hit
+    from app.features.review.analytics import review_limit_hit
 
     counts = {"new": 0, "learning": 0, "review": 0}
     config = {"rev_per_day": 10}
     # 新学 3 + 复习 7 正好用满共享额度；还有新卡没学 → 命中。
-    assert _review_limit_hit(config, counts, 3, 7, 0, 1) is True
-    assert _review_limit_hit(config, counts, 3, 6, 0, 1) is False
+    assert review_limit_hit(config, counts, 3, 7, 0, 1) is True
+    assert review_limit_hit(config, counts, 3, 6, 0, 1) is False
     # 到期卡被复习额度挡住时同样算命中。
-    assert _review_limit_hit(config, counts, 2, 8, 4, 0) is True
+    assert review_limit_hit(config, counts, 2, 8, 4, 0) is True
 
 
 def test_ignore_review_limit_keeps_new_cards_out_of_the_quota():
-    from app.features.review.service import _review_limit_hit
+    from app.features.review.analytics import review_limit_hit
 
     counts = {"new": 0, "learning": 0, "review": 0}
     config = {"rev_per_day": 10, "new_ignore_review_limit": True}
-    assert _review_limit_hit(config, counts, 3, 7, 5, 0) is False
-    assert _review_limit_hit(config, counts, 3, 10, 5, 0) is True
+    assert review_limit_hit(config, counts, 3, 7, 5, 0) is False
+    assert review_limit_hit(config, counts, 3, 10, 5, 0) is True
 
 
 def test_phase_prefers_review_quota_when_new_cards_used_it_up():
-    from app.features.review.service import _phase
+    from app.features.review.analytics import phase
 
     config = {"new_per_day": 20, "rev_per_day": 10}
     counts = {"new": 0, "learning": 0, "review": 0}
     # 新学 3 + 复习 7 用满共享额度，新卡额度还没用完、也还有新卡没学：
     # 不能误报成「新卡额度用完」，真正的原因是复习额度。
-    assert _phase(config, counts, 3, 7, 0, 5) == "review_quota"
+    assert phase(config, counts, 3, 7, 0, 5) == "review_quota"

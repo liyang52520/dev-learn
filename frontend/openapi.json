@@ -811,6 +811,323 @@
         }
       }
     },
+    "/api/admin/study/bank": {
+      "get": {
+        "tags": [
+          "admin-study"
+        ],
+        "summary": "Read Bank",
+        "operationId": "read_bank_api_admin_study_bank_get",
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Topic"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 400,
+              "minimum": 1,
+              "default": 400,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/study/bank/questions/{topic_id}/{qid}": {
+      "get": {
+        "tags": [
+          "admin-study"
+        ],
+        "summary": "Read Question",
+        "operationId": "read_question_api_admin_study_bank_questions__topic_id___qid__get",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "qid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Qid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminQuestion"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "admin-study"
+        ],
+        "summary": "Update Question",
+        "operationId": "update_question_api_admin_study_bank_questions__topic_id___qid__put",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "qid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Qid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionWrite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionMutationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin-study"
+        ],
+        "summary": "Delete Question",
+        "operationId": "delete_question_api_admin_study_bank_questions__topic_id___qid__delete",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          },
+          {
+            "name": "qid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Qid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteQuestionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/study/bank/questions": {
+      "post": {
+        "tags": [
+          "admin-study"
+        ],
+        "summary": "Create Question",
+        "operationId": "create_question_api_admin_study_bank_questions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionMutationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/study/bank/{topic_id}/upload": {
+      "post": {
+        "tags": [
+          "admin-study"
+        ],
+        "summary": "Upload Evidence",
+        "operationId": "upload_evidence_api_admin_study_bank__topic_id__upload_post",
+        "parameters": [
+          {
+            "name": "topic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Topic Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_evidence_api_admin_study_bank__topic_id__upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/search": {
       "get": {
         "tags": [
@@ -1718,6 +2035,164 @@
   },
   "components": {
     "schemas": {
+      "AdminEvidenceFile": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page",
+          "file"
+        ],
+        "title": "AdminEvidenceFile"
+      },
+      "AdminEvidenceGroup": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "from": {
+            "type": "integer",
+            "title": "From"
+          },
+          "to": {
+            "type": "integer",
+            "title": "To"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/AdminEvidenceFile"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "from",
+          "to",
+          "files"
+        ],
+        "title": "AdminEvidenceGroup"
+      },
+      "AdminQuestion": {
+        "properties": {
+          "topicId": {
+            "type": "string",
+            "title": "Topicid"
+          },
+          "topicLabel": {
+            "type": "string",
+            "title": "Topiclabel"
+          },
+          "topicSlug": {
+            "type": "string",
+            "title": "Topicslug"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "no": {
+            "type": "integer",
+            "title": "No"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "summary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Summary"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "pages": {
+            "type": "string",
+            "title": "Pages"
+          },
+          "firstPage": {
+            "type": "integer",
+            "title": "Firstpage"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/AdminEvidenceGroup"
+            },
+            "type": "array",
+            "title": "Evidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topicId",
+          "topicLabel",
+          "topicSlug",
+          "id",
+          "no",
+          "key",
+          "title",
+          "aliases",
+          "summary",
+          "note",
+          "pages",
+          "firstPage",
+          "answer",
+          "evidence"
+        ],
+        "title": "AdminQuestion"
+      },
       "AnswerPayload": {
         "properties": {
           "cardId": {
@@ -2155,6 +2630,121 @@
         ],
         "title": "BackupStatus"
       },
+      "BankListResponse": {
+        "properties": {
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/BankTopicOption"
+            },
+            "type": "array",
+            "title": "Topics"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/BankQuestionRow"
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limited": {
+            "type": "boolean",
+            "title": "Limited"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topics",
+          "questions",
+          "total",
+          "limited"
+        ],
+        "title": "BankListResponse"
+      },
+      "BankQuestionRow": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "topicId": {
+            "type": "string",
+            "title": "Topicid"
+          },
+          "topicLabel": {
+            "type": "string",
+            "title": "Topiclabel"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "no": {
+            "type": "integer",
+            "title": "No"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "pages": {
+            "type": "string",
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "topicId",
+          "topicLabel",
+          "id",
+          "no",
+          "title",
+          "pages"
+        ],
+        "title": "BankQuestionRow"
+      },
+      "BankTopicOption": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "no": {
+            "type": "string",
+            "title": "No"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "no",
+          "label",
+          "title",
+          "slug",
+          "count"
+        ],
+        "title": "BankTopicOption"
+      },
       "Body_upload_api_admin_upload_post": {
         "properties": {
           "file": {
@@ -2168,6 +2758,35 @@
           "file"
         ],
         "title": "Body_upload_api_admin_upload_post"
+      },
+      "Body_upload_evidence_api_admin_study_bank__topic_id__upload_post": {
+        "properties": {
+          "no": {
+            "type": "integer",
+            "title": "No"
+          },
+          "group": {
+            "type": "integer",
+            "title": "Group"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "no",
+          "group",
+          "page",
+          "file"
+        ],
+        "title": "Body_upload_evidence_api_admin_study_bank__topic_id__upload_post"
       },
       "CardActionPayload": {
         "properties": {
@@ -2269,6 +2888,94 @@
         ],
         "title": "CreatePostRequest"
       },
+      "CreateQuestionRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "summary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Summary"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "pages": {
+            "type": "string",
+            "title": "Pages",
+            "default": ""
+          },
+          "firstPage": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firstpage"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer",
+            "default": ""
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceGroupInput"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "topicId": {
+            "type": "string",
+            "title": "Topicid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "topicId"
+        ],
+        "title": "CreateQuestionRequest"
+      },
+      "DeleteQuestionResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "default": true
+          },
+          "cardDeleted": {
+            "type": "boolean",
+            "title": "Carddeleted"
+          },
+          "reindexed": {
+            "type": "integer",
+            "title": "Reindexed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cardDeleted",
+          "reindexed"
+        ],
+        "title": "DeleteQuestionResponse"
+      },
       "EvidenceFile": {
         "properties": {
           "page": {
@@ -2309,6 +3016,24 @@
         ],
         "title": "EvidenceFile"
       },
+      "EvidenceFileInput": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "file": {
+            "type": "string",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page",
+          "file"
+        ],
+        "title": "EvidenceFileInput"
+      },
       "EvidenceGroup": {
         "properties": {
           "label": {
@@ -2339,6 +3064,57 @@
           "files"
         ],
         "title": "EvidenceGroup"
+      },
+      "EvidenceGroupInput": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "default": ""
+          },
+          "from": {
+            "type": "integer",
+            "title": "From",
+            "default": 1
+          },
+          "to": {
+            "type": "integer",
+            "title": "To",
+            "default": 1
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceFileInput"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "title": "EvidenceGroupInput"
+      },
+      "EvidenceUploadResponse": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "title": "File"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "width",
+          "height"
+        ],
+        "title": "EvidenceUploadResponse"
       },
       "FilterResponse": {
         "properties": {
@@ -2843,6 +3619,28 @@
         ],
         "title": "QuestionDetail"
       },
+      "QuestionMutationResponse": {
+        "properties": {
+          "question": {
+            "$ref": "#/components/schemas/AdminQuestion"
+          },
+          "cardSynced": {
+            "type": "boolean",
+            "title": "Cardsynced"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "cardSynced"
+        ],
+        "title": "QuestionMutationResponse"
+      },
       "QuestionNav": {
         "properties": {
           "id": {
@@ -2873,6 +3671,66 @@
           "aliases"
         ],
         "title": "QuestionNav"
+      },
+      "QuestionWrite": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "summary": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Summary"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "default": ""
+          },
+          "pages": {
+            "type": "string",
+            "title": "Pages",
+            "default": ""
+          },
+          "firstPage": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firstpage"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer",
+            "default": ""
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceGroupInput"
+            },
+            "type": "array",
+            "title": "Evidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "QuestionWrite"
       },
       "RawPost": {
         "properties": {

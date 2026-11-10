@@ -82,17 +82,20 @@ def _wrap_tables(body: str) -> str:
     return _TABLE.sub(wrap, body)
 
 
-def build_markdown() -> MarkdownIt:
+def build_markdown(*, math: bool = True, tasks: bool = True) -> MarkdownIt:
+    """博客用默认参数；题库答案关闭公式与任务列表，避免 `$变量$`、`- [ ]` 被误解析。"""
     md = MarkdownIt(
         "commonmark",
         {"html": True, "linkify": False, "typographer": False, "breaks": False},
     )
     md.enable(["table", "strikethrough"])
-    md.use(tasklists_plugin)
-    md.use(dollarmath_plugin, allow_space=True)
+    if tasks:
+        md.use(tasklists_plugin)
+    if math:
+        md.use(dollarmath_plugin, allow_space=True)
+        md.add_render_rule("math_inline", _math_inline)
+        md.add_render_rule("math_block", _math_block)
     md.add_render_rule("fence", _fence)
-    md.add_render_rule("math_inline", _math_inline)
-    md.add_render_rule("math_block", _math_block)
     md.add_render_rule("image", _image)
     return md
 

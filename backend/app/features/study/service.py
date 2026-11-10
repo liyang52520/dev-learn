@@ -18,7 +18,7 @@ from app.features.study.schemas import (
     TopicMeta,
     TopicSummary,
 )
-from app.rendering.answers import highlight_answer
+from app.rendering.answers import render_answer
 from app.rendering.images import dimensions_of_src
 
 _IMG = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
@@ -51,6 +51,11 @@ def list_topics() -> StudyIndexResponse:
 def index_document() -> dict[str, Any]:
     """检索使用的轻量索引（题目不含答案与证据）。"""
     return repository.load_index()
+
+
+def index_fingerprint() -> str:
+    """index.json 的版本戳：后台改题后检索缓存据此失效。"""
+    return repository.fingerprint()
 
 
 def topic_document(topic_id: str) -> dict[str, Any] | None:
@@ -143,7 +148,7 @@ def get_question(topic_id: str, qid: str) -> QuestionDetail:
     if index < 0:
         raise AppError("题目不存在", code="not_found", status=404)
     question = questions[index]
-    answer = _inject_sizes(highlight_answer(question.get("answer", "")))
+    answer = _inject_sizes(render_answer(question.get("answer", "")))
 
     def nav_of(offset: int) -> QuestionNav | None:
         position = index + offset

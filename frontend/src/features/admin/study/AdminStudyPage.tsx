@@ -1,14 +1,16 @@
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { AdminTopbar } from '../AdminTopbar'
+import { StudyBankTab } from './StudyBankTab'
 import { StudySettings } from './StudySettings'
 import { StudyStatsTab } from './StudyStatsTab'
 
-type Tab = 'stats' | 'settings'
+type Tab = 'stats' | 'bank' | 'settings'
 
 export default function AdminStudyPage() {
   const [params, setParams] = useSearchParams()
-  const tab: Tab = params.get('tab') === 'settings' ? 'settings' : 'stats'
+  const requested = params.get('tab')
+  const tab: Tab = requested === 'settings' || requested === 'bank' ? requested : 'stats'
   const switchTab = (next: Tab) => setParams(next === 'stats' ? {} : { tab: next }, { replace: true })
 
   return (
@@ -39,6 +41,15 @@ export default function AdminStudyPage() {
             </button>
             <button
               type="button"
+              className={tab === 'bank' ? 'is-active' : undefined}
+              aria-current={tab === 'bank' ? 'page' : undefined}
+              onClick={() => switchTab('bank')}
+            >
+              题库
+              <span>题目编辑、证据与卡片同步</span>
+            </button>
+            <button
+              type="button"
               className={tab === 'settings' ? 'is-active' : undefined}
               aria-current={tab === 'settings' ? 'page' : undefined}
               onClick={() => switchTab('settings')}
@@ -49,7 +60,9 @@ export default function AdminStudyPage() {
           </nav>
 
           <div className="study-admin-content">
-            {tab === 'stats' ? <StudyStatsTab /> : <StudySettings />}
+            {tab === 'stats' ? <StudyStatsTab /> : null}
+            {tab === 'bank' ? <StudyBankTab /> : null}
+            {tab === 'settings' ? <StudySettings /> : null}
           </div>
         </div>
       </main>

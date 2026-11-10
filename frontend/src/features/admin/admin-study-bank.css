@@ -1,0 +1,225 @@
+/* —— 学习后台：题库列表与布局 —— */
+
+.bank-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.bank-side {
+  position: sticky;
+  top: 78px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 110px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.bank-side-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.bank-side-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.bank-side-title strong {
+  font-size: 14px;
+}
+
+.bank-side-title span {
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.bank-input,
+.bank-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.bank-input {
+  height: 34px;
+  padding: 0 10px;
+}
+
+.bank-textarea {
+  padding: 9px 10px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.bank-input:focus,
+.bank-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.bank-list {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.bank-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bank-row:hover {
+  background: var(--bg-elev);
+}
+
+.bank-row.is-active {
+  border-color: var(--line);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-sm);
+}
+
+.bank-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bank-row-topic {
+  overflow: hidden;
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bank-row-no {
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.bank-row-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.bank-row.is-active .bank-row-title {
+  color: var(--ink);
+}
+
+.bank-row-meta {
+  color: var(--faint);
+  font-size: 10.5px;
+}
+
+.bank-empty {
+  margin: 18px 10px;
+  color: var(--faint);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.bank-side-foot {
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.bank-main {
+  min-width: 0;
+}
+
+.bank-placeholder {
+  padding: 42px 30px;
+  border: 1px dashed var(--line-2);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.bank-placeholder h2 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 17px;
+}
+
+.bank-placeholder p {
+  max-width: 560px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.bank-notice,
+.bank-error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.bank-notice {
+  border: 1px solid color-mix(in srgb, #1a7f4b 24%, var(--line));
+  background: color-mix(in srgb, #1a7f4b 7%, transparent);
+  color: #1a7f4b;
+}
+
+.bank-error {
+  border: 1px solid color-mix(in srgb, #c2413a 26%, var(--line));
+  background: color-mix(in srgb, #c2413a 7%, transparent);
+  color: #c2413a;
+}
+
+@media (max-width: 1180px) {
+  .bank-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bank-side {
+    position: static;
+    max-height: none;
+  }
+
+  .bank-list {
+    max-height: 320px;
+  }
+}

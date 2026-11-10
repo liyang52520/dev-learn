@@ -70,8 +70,13 @@ export async function apiSend<T>(
   return parse<T>(response)
 }
 
-export async function apiUpload<T>(path: string, file: File): Promise<T> {
+export async function apiUpload<T>(
+  path: string,
+  file: File,
+  fields: Record<string, string | number> = {},
+): Promise<T> {
   const form = new FormData()
+  for (const [key, value] of Object.entries(fields)) form.append(key, String(value))
   form.append('file', file)
   const response = await fetch(withBase(path), {
     method: 'POST',

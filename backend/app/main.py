@@ -21,6 +21,7 @@ from app.features.review import collection as review_collection
 from app.features.review.router import router as review_router
 from app.features.review.router_admin import router as review_admin_router
 from app.features.search.router import router as search_router
+from app.features.study.router_admin import router as study_admin_router
 from app.features.study.router_public import router as study_router
 from app.serving import mount_site
 
@@ -63,6 +64,7 @@ def _include_routers(app: FastAPI) -> None:
         posts_admin_router,
         blog_router,
         study_router,
+        study_admin_router,
         search_router,
         auth_router,
         media_router,

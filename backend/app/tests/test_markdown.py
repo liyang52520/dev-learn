@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.rendering.answers import highlight_answer
+from app.rendering.answers import highlight_answer, render_answer
 from app.rendering.markdown import render_markdown
 from app.rendering.toc import Slugger, inline_text
 
@@ -105,3 +105,24 @@ def test_answer_code_blocks_are_highlighted_and_plain_text_untouched() -> None:
 
     plain = "<p>只有文字</p>"
     assert highlight_answer(plain) == plain
+
+
+def test_answer_markdown_renders_list_code_figure_and_table() -> None:
+    source = (
+        "### 标题\n\n- 第一条\n- 第二条\n\n"
+        "```java\nint a = 1;\n```\n\n"
+        '![原文配图](/study/topic-01-jvm/assets/img/p3_0.jpg "原文配图 · p3")\n\n'
+        "| 名称 | 说明 |\n| --- | --- |\n| A | 甲 |"
+    )
+    html = render_answer(source)
+    assert html.count("<li>") == 2
+    assert 'class="code-block"' in html and 'class="code-lang">JAVA<' in html
+    assert '<figure class="pdf-img">' in html
+    assert "<figcaption>原文配图 · p3</figcaption>" in html
+    assert '<div class="table-wrap">' in html and "<th>名称</th>" in html
+
+
+def test_answer_markdown_does_not_parse_dollar_variables() -> None:
+    html = render_answer("配置 $PATH 与 $MAVEN_HOME/bin:$PATH")
+    assert "data-tex" not in html
+    assert "$PATH" in html

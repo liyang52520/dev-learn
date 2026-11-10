@@ -1,14 +1,25 @@
-"""把题库 answer 里的 <pre class='code' data-lang='java'> 换成高亮结构。"""
+"""题库答案渲染：Markdown 转 HTML，并兼容遗留的 <pre class='code'> 片段。
+
+答案在数据里存 Markdown；这里把图片还原成带图注的 <figure class="pdf-img">，
+附录的原始 HTML 代码块仍交给 highlight_answer 兜底。
+"""
 
 from __future__ import annotations
 
 import hashlib
+import html
 import re
+import threading
 from collections import OrderedDict
+from typing import Any
 
 from app.rendering.highlight import highlight_code
+from app.rendering.plugins import build_markdown, postprocess
 
 _PRE = re.compile(r"<pre class='code' data-lang='([^']*)'><code>([\s\S]*?)</code></pre>")
+_IMAGE_PARAGRAPH = re.compile(
+    r"<p>\s*((?:<figure class=\"pdf-img\">[\s\S]*?</figure>)|(?:<img\b[^>]*>))\s*</p>"
+)
 _ENTITIES = {"lt": "<", "gt": ">", "amp": "&", "quot": '"', "#39": "'"}
 _LIMIT = 240
 _MAX_BYTES = 8 * 1024 * 1024
@@ -59,3 +70,45 @@ def highlight_answer(answer: str) -> str:
     result = _PRE.sub(replace, answer)
     _cache_set(key, result)
     return result
+
+
+def _figure_image(
+    _renderer: Any, tokens: list[Any], idx: int, _options: dict[str, Any], _env: dict[str, Any]
+) -> str:
+    """题库图片：`![alt](src "图注")` → figure + figcaption，保留原文图注。"""
+    token = tokens[idx]
+    src = token.attrGet("src") or ""
+    alt = token.content or ""
+    caption = token.attrGet("title") or ""
+    image = (
+        f'<img src="{html.escape(src, quote=True)}" alt="{html.escape(alt, quote=True)}"'
+        ' loading="lazy" decoding="async">'
+    )
+    text = caption or alt
+    if not text:
+        return image
+    return f'<figure class="pdf-img">{image}<figcaption>{html.escape(text)}</figcaption></figure>'
+
+
+_local = threading.local()
+
+
+def _markdown() -> Any:
+    instance = getattr(_local, "markdown", None)
+    if instance is None:
+        instance = build_markdown(math=False, tasks=False)
+        instance.add_render_rule("image", _figure_image)
+        _local.markdown = instance
+    return instance
+
+
+def render_answer(source: str) -> str:
+    """答案 Markdown → HTML；代码块由 fence 规则高亮，表格由 postprocess 包裹。"""
+    md = _markdown()
+    env: dict[str, object] = {}
+    tokens = md.parse(source, env)
+    body = md.renderer.render(tokens, md.options, env)
+    body = postprocess(body)
+    # Markdown 图片只能是行内元素，独占一段时把外层 <p> 拆掉，保持块级 figure。
+    body = _IMAGE_PARAGRAPH.sub(lambda match: match.group(1), body)
+    return highlight_answer(body)

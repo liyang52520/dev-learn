@@ -6,6 +6,8 @@
 @import "./admin-preview.css";
 @import "./admin-study.css";
 @import "./admin-study-layout.css";
+@import "./admin-study-bank.css";
+@import "./admin-study-bank-editor.css";
 @import "./admin-study-metrics.css";
 @import "./admin-study-charts.css";
 @import "./admin-backup.css";

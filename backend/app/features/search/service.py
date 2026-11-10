@@ -37,7 +37,7 @@ class _Row:
 
 
 _lock = threading.RLock()
-_study_cache: list[_Row] | None = None
+_study_cache: tuple[str, list[_Row]] | None = None
 _post_cache: tuple[str, list[_Row]] | None = None
 
 
@@ -63,9 +63,10 @@ def _snippet(body: str, body_lower: str, terms: list[str], fallback: str, size: 
 
 def _study_index_rows() -> list[_Row]:
     global _study_cache
+    fingerprint = study_service.index_fingerprint()
     with _lock:
-        if _study_cache is not None:
-            return _study_cache
+        if _study_cache is not None and _study_cache[0] == fingerprint:
+            return _study_cache[1]
     rows: list[_Row] = []
     for topic in study_service.index_document()["topics"]:
         for question in topic["questions"]:
@@ -94,7 +95,7 @@ def _study_index_rows() -> list[_Row]:
                 )
             )
     with _lock:
-        _study_cache = rows
+        _study_cache = (fingerprint, rows)
     return rows
 
 

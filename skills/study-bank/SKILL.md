@@ -16,8 +16,9 @@ description: 维护 dev-learn 题库（backend/data/study 下的 JSON 与截图�
   → skills/study-bank/scripts/extract-study.cjs → backend/data/study/*.json（只搬数据，不搬图）
   → 手工 rsync site/<slug>/assets/ → backend/data/study/<slug>/assets/
   → skills/study-bank/scripts/enhance-answers/*（答案格式增强，见 3.5）
+  → skills/study-bank/scripts/answer-to-markdown.py（答案 HTML → Markdown，见 3.5）
   → backend/app/features/study/*（读盘、导航、证据）
-  → backend/app/rendering/answers.py（答案代码高亮）+ images.py（注入宽高）
+  → backend/app/rendering/answers.py（答案 Markdown 渲染）+ images.py（注入宽高）
   → frontend/src/features/study/** 三栏页
 ```
 
@@ -94,17 +95,27 @@ node skills/study-bank/scripts/extract-study.cjs   # 每个专题一行 + done: 
 | `pages` | 人类可读页码 `p3–5`（en dash） |
 | `firstPage` | 首个出处起始页 |
 | `search` | `title + aliases + summary + note + answer 纯文本` |
-| `answer` | 原文答案 HTML 片段，见下 |
+| `answer` | 原文答案 Markdown，见下 |
 | `evidence` | 证据分组，见下 |
 
-### answer 的 HTML 契约
+### answer 的 Markdown 契约
 
-class 依赖 `frontend/src/shared/styles/*.css`（题库区块见 `cards.css` 等），由 `HtmlContent` 的 `dangerouslySetInnerHTML` 渲染，不得注入 `<script>`/`onclick`：
+答案在 JSON 里存 Markdown，由 `backend/app/rendering/answers.py` 的 `render_answer()` 渲染成 HTML，再交给 `HtmlContent` 的 `dangerouslySetInnerHTML`；不得注入 `<script>`/`onclick`：
 
-- `<p>` 段落；`<ul class='pdf-list'><li>…`；`<table class='pdf-table'>`（首行表头）
-- 代码块：`<pre class='code' data-lang='java'><code>逐行代码（已 HTML 转义）</code></pre>`；`data-lang` 取 `backend/app/rendering/highlight.py` 的 `COMMON_LANGS`，判断不了用 `text`。渲染时由 `backend/app/rendering/answers.py` 用 Pygments 高亮成与文章页一致的 `.code-block`，**不要在 JSON 里塞 `<span class='tk-*'>` 之类的 token 标记**。
-- `<figure class='pdf-img zoomable' data-cap='原文配图 · 第 3 页 / 共 102 页'><img loading='lazy' src='/study/topic-01-jvm/assets/img/p3_0.jpg'><figcaption>…</figcaption></figure>`
-- 图片必须 `/study/…` 站内绝对路径（页面在 `/study/:topic/:qid` 两层下）。
+| 想表达 | 写法 | 渲染结果 |
+| --- | --- | --- |
+| 段落 | 空行分隔的普通文字 | `<p>` |
+| 标题 | `### 小标题`（h2–h5 对应 2–5 个 `#`） | `<h3>` 等 |
+| 列表 | `- 条目`（每行一条） | `<ul><li>` |
+| 代码 | ` ```java ` 围栏；语言取 `highlight.py` 的 `COMMON_LANGS`，判断不了用 `text` | 与文章页一致的 `.code-block` |
+| 表格 | GFM 管道表，首行为表头 | `.table-wrap > table` |
+| 插图 | `![原文配图](/study/…/p3_0.jpg "原文配图 · p3")` | `<figure class="pdf-img"><img><figcaption>`（图注取 title） |
+| 原样字符 | `\*`、`\_`、`\$`、`\<`、`\|` 等反斜杠转义 | 字面字符 |
+
+- 图片必须 `/study/…` 站内绝对路径（页面在 `/study/:topic/:qid` 两层下）；`width/height` 由 `rendering/images.py` 在内存补，不写进 JSON。
+- 段落/列表里以 `#`、`-`、`>`、`1.` 开头的文字要转义（转换脚本已处理），否则会被当成标题或列表。
+- 答案渲染关闭了公式与任务列表插件：`$PATH` 这类变量按普通文字输出，`- [ ]` 不会变成勾选框。
+- **不要**在 JSON 里塞 `<span class='tk-*'>` 之类的 Pygments token；遗留的 `<pre class='code'>` 仍能被 `highlight_answer()` 兜底高亮。
 - PDF 编辑器自带的**行号不是正文**，增强时已剔除；`answer` 的文字仍然逐字可核对（见 3.6、3.7）。
 
 ### evidence 结构
@@ -158,9 +169,15 @@ node skills/study-bank/scripts/enhance-answers/apply.cjs
 node skills/study-bank/scripts/enhance-answers/fix-noncode.cjs --write
 node skills/study-bank/scripts/enhance-answers/sync-search.cjs
 node skills/study-bank/scripts/enhance-answers/verify.cjs
+
+# 最后一步：答案 HTML → Markdown（幂等；已是 Markdown 的题目自动跳过）
+backend/.venv/bin/python skills/study-bank/scripts/answer-to-markdown.py --check
+backend/.venv/bin/python skills/study-bank/scripts/answer-to-markdown.py --write
 ```
 
 > 这套增强是「抽取后处理」：**`node skills/study-bank/scripts/extract-study.cjs` 会整体覆盖 `backend/data/study`，重抽后必须重跑**。行号剔除、代码行还原属于格式清理（不改变文字）；`verify.cjs` 用重建阶段记录的可见文字哈希兜底。`.wip-answers/` 是临时目录，不提交。
+
+`answer-to-markdown.py` 在写盘前会把每道题的新 Markdown 交给真实的 `render_answer()` 渲染，再逐块比对标题 / 段落 / 列表项 / 代码（含语言）/ 图片 / 表格单元格；任何不一致的题目保留原 HTML 并计入失败，退出码非 0。`--topic=jvm` 可只处理单个专题，`--check` 只验证不写盘。它只改 `answer` 字段，不动 `search`、`evidence` 与 `index.json`。
 
 **应急：只在本仓库小修**（补 note/summary/截图；整题增删仍走上游，否则下次抽取全丢）：
 
@@ -183,7 +200,8 @@ node skills/study-bank/scripts/enhance-answers/verify.cjs
 
 ### 自动校验
 
-- 跑 `node skills/study-bank/scripts/enhance-answers/verify.cjs`：结构与题号、代码块契约（`data-lang` 合法、无 `.cl`/`tk-*`）、逐题可见文字哈希（对照 `skills/study-bank/scripts/enhance-answers/fidelity.json`，代码题已扣行号）、`search` 与规则重算、证据/配图；必须输出 `OK`。
+- 跑 `node skills/study-bank/scripts/enhance-answers/verify.cjs`：结构与题号、代码块契约、逐题可见文字哈希（对照 `skills/study-bank/scripts/enhance-answers/fidelity.json`，代码题已扣行号）、`search` 与规则重算、证据/配图；必须输出 `OK`。答案已是 Markdown 时，代码契约改为校验围栏语言白名单，可见文字哈希按 Markdown 等价文本计算（图片取图注、实体只解一次、忽略 NUL），因此 HTML 阶段与转换后都能直接跑。
+- 跑 `backend/.venv/bin/python skills/study-bank/scripts/answer-to-markdown.py --check`：答案 Markdown 逐题渲染比对，必须 `0 题失败`。
 - `cd frontend && npm run typecheck && npm run lint && npm run test && npm run build`；`cd backend && python -m pytest`；`git -C backend/data status --short study` 确认只有预期变化（`backend/data` 是独立数据仓）。
 
 ### 页面手工与视觉验收
@@ -231,14 +249,17 @@ node skills/study-bank/scripts/enhance-answers/verify.cjs
 | 答案里的代码被拆成 pre→列表→pre | 中文注释行字体不同，上游按正文/列表抽取 | `reconstruct.cjs` 合并回同一代码块；模型审阅兜底（见 3.5） |
 | 改 answer 后 search 与正文不一致 / 索引旧 | `search` 是预计算字段，index 与专题两份 | 跑 `node skills/study-bank/scripts/enhance-answers/sync-search.cjs`（或重抽）重算并同步 |
 | 代码块被压成一行 / 重抽后格式退回旧样 | 只有 token span；`extract-study.cjs` 会覆盖 backend/data/study | 统一成 `data-lang` + 后端 Pygments（`AGENTS.md` 1.8、3.4），重抽后重跑 3.5 的增强流水线 |
+| 重抽后答案又变回 HTML | `extract-study.cjs` 只搬上游 HTML | 重跑 3.5 最后一步 `answer-to-markdown.py --write`（幂等，已是 Markdown 的题目自动跳过） |
+| 转换后 `verify.cjs` 报代码块契约失败 | 旧的契约校验只认 `<pre class='code'>` | 现在按 `isMarkdownAnswer()` 分流：Markdown 走围栏语言白名单，HTML 走原契约；两种状态都能输出 `OK` |
+| Markdown 里 `1.`、`- `、`#` 开头的正文变成列表/标题 | 块级标记被解析 | 转换脚本会转义行首标记；手工编辑时同样加 `\` |
 
 ## 3.10 硬性禁止
 
 - 不在本仓库运行/移植上游 Python 工具链（`tools/`、`build/`、`.venv_pdf` 都不在）。
 - 不手改 `backend/data/study/**` 的截图内容或文件名（被 JSON 的 `file` 引用）。
 - 不把 `backend/data/study/*.json` 当题库的「源」：源在上游 `questions.p*.json` + PDF。
-- 不改写原文答案、不摘要替代、不删段落、不合并多题。排版/代码块格式规范化走 3.5 的增强脚本（只允许改空白与块结构，`verify.cjs` 校验非空白文字不变），不要手工逐题改答案 HTML。
+- 不改写原文答案、不摘要替代、不删段落、不合并多题。排版/代码块格式规范化走 3.5 的增强脚本（只允许改空白与块结构，`verify.cjs` 校验非空白文字不变）；答案用 Markdown 编辑（后台或转换脚本），不要手写 HTML 片段。
 - 不伪造证据：无对应页截图不出现该题，不 P 图、不裁掉红框题干。
 - 不跳过自检与页面/视觉验收；批量改题必须走两个只读 agent 审计。
-- 不把不可信 HTML 写进 `answer`（页面用 `dangerouslySetInnerHTML` 渲染）。
+- 不把不可信 HTML/Markdown 写进 `answer`（页面用 `dangerouslySetInnerHTML` 渲染，服务端只拦 `<script>`/`on*=`/`javascript:`）。
 - 不提交 `frontend/dist/`、临时截图、`/tmp` 产物；`backend/data/study` 约 755 MB，不复制第二份。

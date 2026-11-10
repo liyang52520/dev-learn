@@ -120,7 +120,7 @@ dev-learn/
 | `/blog/archive`、`/blog/tags`、`/blog/tags/:tag`、`/blog/categories`、`/blog/categories/:category` | 归档、标签云与筛选、分类云与筛选 |
 | `/study`、`/study/:topic`、`/study/:topic/:qid` | 专题总览、专题首页（跳第一题）、三栏题目页 |
 | `/review` | 复习页（专注布局，不套 Header/Footer） |
-| `/admin`、`/admin/login`、`/admin/study`、`/admin/backup` | 文章列表、登录、学习设置、数据备份 |
+| `/admin`、`/admin/login`、`/admin/study`、`/admin/backup` | 文章列表、登录、学习设置（`?tab=stats\|bank\|settings`）、数据备份 |
 | `/admin/edit/:type/:slug`、`/admin/preview/:type/:slug` | 编辑器、整页预览（`type` 只能是 `posts`/`drafts`） |
 
 站点是单人使用，**除 `/admin/login` 外所有页面都要登录**：未登录访问任意路由会跳 `/admin/login`，
@@ -149,6 +149,7 @@ dev-learn/
 | POST | `/api/admin/auth/login`、`/logout`；GET `/me` | 登录态 |
 | GET/POST | `/api/admin/posts`、`/api/admin/post`、`/preview`、`/publish`、`/upload` | 后台读写 |
 | GET/POST | `/api/admin/study/config` | 学习设置 |
+| GET/POST/PUT/DELETE | `/api/admin/study/bank/*` | 题库列表筛选、题目详情、新增/编辑/删除、证据截图上传 |
 | GET | `/api/admin/study/overview` | 统计页深度指标（成熟度、活跃天数、到期预测、专题进度） |
 | GET | `/api/health` | 存活检查 |
 
@@ -156,7 +157,7 @@ dev-learn/
 
 **博客**：`backend/data/blog/posts/*.md` → `features/posts/repository.py`（frontmatter 解析、目录缓存）→ `features/posts/service.py`（排序、分页、上一篇/下一篇）→ `rendering/markdown.py`（Markdown → HTML + TOC）→ JSON → 前端 `HtmlContent`（KaTeX 渲染 + 代码复制事件委托）。
 
-**题库**：`backend/data/study/index.json` → 专题列表；`backend/data/study/<id>.json` → 题目与答案 HTML；`rendering/answers.py` 把答案里的 `<pre class='code'>` 高亮成 `.code-block`（按 sha1 缓存）；`rendering/images.py` 读文件头注入 `width/height`。
+**题库**：`backend/data/study/index.json` → 专题列表；`backend/data/study/<id>.json` → 题目与答案 Markdown；`rendering/answers.py` 把答案 Markdown 渲染成 HTML（代码围栏 → `.code-block`、表格 → `.table-wrap`、图片 → 带图注的 `figure.pdf-img`，遗留 `<pre class='code'>` 仍兜底高亮）；`rendering/images.py` 读文件头注入 `width/height`。
 
 **后台**：`/admin` → `/api/admin/*` → `features/posts/repository.py` 原子写（临时文件 + `os.replace`）；发布/撤回 = 在 `backend/data/blog/posts` 与 `backend/data/blog/drafts` 间移动；删除 = 移入 `backend/.trash/<type>/<时间戳>-<slug>.md`；上传 = 落 `backend/data/blog/assets/images/uploads/<年>/<月>/`，URL 仍为 `/images/uploads/…`。
 
@@ -213,6 +214,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 3. 编辑器字段：`title`、`date`、`tags`（逗号分隔）、`categories`（逗号分隔）、`description`、`cover`；正文用 CodeMirror，`⌘/Ctrl+S` 保存，右侧实时预览。
 4. 「整页预览」复用同一渲染管线；「发布/撤回」只移动文件；「删除」移到 `backend/.trash/`。
 5. 上传仅支持 png/jpeg/webp/gif、≤ 20 MB，服务端会校验真实图片头，落 `backend/data/blog/assets/images/uploads/`，返回 `/images/uploads/YYYY/MM/…`；`frontend/public/images/` 只放头像、站点图标等固定资源。
+6. `/admin/study?tab=bank` 是题库后台：左栏按专题筛选 + 关键词搜索（服务端截断 400 题并提示），右侧编辑题目标题、要点、别名、备注、页码、答案 Markdown 与证据截图；新增按当前专题最大题号追加，删除会清理截图并前移后续题号。读写走 `features/study/admin_service.py`，卡片同步规则见 1.10。
 
 后台只编辑已知字段；手写在 front matter 里的额外字段会被保留，但新增字段的完整支持需同时改
 `features/posts/frontmatter.py`、`features/posts/schemas.py`、`frontend/src/types/models.ts` 与编辑器组件。
@@ -293,6 +295,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 5. 改这块必须验：后端检查全绿，并实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」。
 6. 任何 git 改动工作区前必须关闭 collection；备份模块统一走 `prepare_sync / close_for_sync / resume_after_sync`。
    工作区存在 `.git/MERGE_HEAD` 时 collection 拒绝打开（503 `backup_merge_pending`），避免把半合并状态当正常数据读写。
+7. 题库编辑与卡片同步（`features/review/bank_sync.py`）：改题只重写 note 字段（QID/Question/Aliases/Summary/Topic/Pages），
+   不碰调度状态与卡片本体；删题删除对应 note（卡片随之消失），并把后续题的 QID 逐个前移以保住它们已有的学习进度；
+   新增题建新 note。卡片同步失败时不回滚题库文件，只返回「题库已保存，但卡片同步失败」提示。
 
 ---
 

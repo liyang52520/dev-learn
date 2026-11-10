@@ -3894,7 +3894,7 @@
     "gutterLines": 0
   },
   "linux/q078": {
-    "expected": "66c3c1487002b8077bb00c02754bd6cd842e7555d632cdcb48f3e3f3cc3e3417",
+    "expected": "4e4da4352ebb3173a4c72497d25092f0bb583dbee5905b0cd1c88cedb05206a5",
     "matched": true,
     "gutterLines": 0
   },
@@ -4568,7 +4568,7 @@
     "gutterLines": 3
   },
   "mysql/q243": {
-    "expected": "2107bb0cc398f2d2165320fc6c62040bbe0eb5455d7f3e47c68c81ab1a34160c",
+    "expected": "9fb3da12632f25a08d0dca869f350f5f23eb13c50d7d63df391cc32aef31b1b9",
     "matched": true,
     "gutterLines": 42
   },
@@ -5750,7 +5750,7 @@
     "matched": false
   },
   "mq/q038": {
-    "expected": "cff4d1ab9c7aa614b836b935d20ad74beeec252c042d335826cf8bd801f2feaf",
+    "expected": "b7db1f36948702c7978235f42d2feb63ca3b006c0519ee795ce0f6bf5cf45649",
     "matched": false
   },
   "mq/q039": {
@@ -5762,7 +5762,7 @@
     "matched": false
   },
   "mq/q041": {
-    "expected": "fa21dbc6148b29613456920f13285b5e1c86de42d0416b016509cbf753d39723",
+    "expected": "a3d5d98b6b2fe56aa5d4c1a3a2dabc174430c05b21a32f7cd02693fb39de5ca4",
     "matched": false
   },
   "mq/q042": {
