@@ -207,7 +207,7 @@
     return node;
   }
 
-  function aiNode(html, rate) {
+  function aiNode(html, rate, labels) {
     var node = aiTpl.cloneNode(true);
     node.removeAttribute('data-virtual-list-item-key');
     var root = node.querySelector('._74c0879');
@@ -234,11 +234,12 @@
     bar.setAttribute('data-rated', '0');
     var buttons = bar.querySelectorAll('.ds-button');
     Array.prototype.slice.call(buttons, 4).forEach(function (b) { b.remove(); });
-    var rateTips = ['重来', '困难', '良好', '容易'];
+    var rateTips = ['忘记', '模糊', '记得', '简单'];
     [].slice.call(buttons, 0, 4).forEach(function (b, i) {
+      var tip = rateTips[i] + (labels && labels[i] ? ' · 下次 ' + labels[i] : '');
       b.setAttribute('data-rate', String(i + 1));
-      b.setAttribute('data-tip', rateTips[i] + '（' + (i + 1) + '）');
-      b.setAttribute('aria-label', rateTips[i]);
+      b.setAttribute('data-tip', tip);
+      b.setAttribute('aria-label', tip);
       b.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -251,11 +252,11 @@
   function selectRate(node, index) {
     var bar = node.querySelector('._0a3d93b');
     if (!bar) return;
+    if (bar.getAttribute('data-rated') === '1') return;
     var buttons = bar.querySelectorAll('.ds-button');
     Array.prototype.forEach.call(buttons, function (b, i) {
       b.classList.toggle('is-rated', i === index);
     });
-    if (bar.getAttribute('data-rated') === '1') return;
     if (state.phase !== 'answered') return;
     var card = review.ready ? review.card : null;
     if (!card) {
@@ -333,7 +334,7 @@
         append(aiNode(q.html, true));
       } else {
         apiGet('/api/review/card-answer?qid=' + encodeURIComponent(card.qid)).then(function (data) {
-          append(aiNode(data.answerHtml, true));
+          append(aiNode(data.answerHtml, true, card.labels));
           syncSend();
           apiPost('/api/review/touch', { cardId: card.cardId }).catch(function () {});
         }).catch(function () {
