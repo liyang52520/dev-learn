@@ -189,6 +189,8 @@
   function userNode(text) {
     var node = userTpl.cloneNode(true);
     node.removeAttribute('data-virtual-list-item-key');
+    node.classList.add('disguise-user-msg');
+    node.setAttribute('data-nav-title', text);
     node.querySelector('.ds-collapsible-text span').textContent = text;
     var actions = node.querySelector('._11d6b3a');
     if (actions) {
@@ -285,13 +287,96 @@
     });
   }
 
+  var nav = document.createElement('div');
+  nav.className = 'disguise-nav';
+  nav.style.display = 'none';
+  nav.innerHTML = '<div class="disguise-nav-bg"></div>' +
+    '<div class="disguise-nav-panel"><div class="disguise-nav-list"></div></div>';
+  var navList = nav.querySelector('.disguise-nav-list');
+  document.body.appendChild(nav);
+
+  function navMessages() {
+    return Array.prototype.slice.call(visible.querySelectorAll('.disguise-user-msg'));
+  }
+
+  function setNavActive(index) {
+    Array.prototype.forEach.call(navList.children, function (item, i) {
+      item.classList.toggle('is-active', i === index);
+    });
+  }
+
+  var navLockUntil = 0;
+
+  function updateNavActive() {
+    if (nav.style.display === 'none') return;
+    if (Date.now() < navLockUntil) return;
+    var msgs = navMessages();
+    if (!msgs.length) return;
+    // 以视口中线为判定线：滚动经过下一条提问时才切换高亮
+    var line = scroller.getBoundingClientRect().top + scroller.clientHeight * 0.5;
+    var index = 0;
+    msgs.forEach(function (msg, i) {
+      if (msg.getBoundingClientRect().top <= line) index = i;
+    });
+    setNavActive(index);
+  }
+
+  // 和官方一致：右侧快速跳转只列用户提问，两条以上才出现
+  function syncNav() {
+    var msgs = navMessages();
+    nav.style.display = msgs.length >= 2 ? 'flex' : 'none';
+    navList.innerHTML = '';
+    if (msgs.length < 2) return;
+    msgs.forEach(function (msg, i) {
+      var item = document.createElement('div');
+      item.className = 'disguise-nav-item';
+      item.setAttribute('role', 'button');
+      item.setAttribute('aria-label', msg.getAttribute('data-nav-title') || '');
+      var title = document.createElement('div');
+      title.className = 'disguise-nav-title';
+      title.textContent = msg.getAttribute('data-nav-title') || '';
+      var dash = document.createElement('div');
+      dash.className = 'disguise-nav-dash';
+      dash.innerHTML = '<i></i>';
+      item.appendChild(title);
+      item.appendChild(dash);
+      item.addEventListener('click', function () {
+        // 点击后先锁住滚动判定，避免平滑滚动过程把高亮改回上一项
+        navLockUntil = Date.now() + 1000;
+        setNavActive(i);
+        msg.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
+      navList.appendChild(item);
+    });
+    if (Date.now() < navLockUntil) {
+      setNavActive(msgs.length - 1);
+    } else {
+      updateNavActive();
+    }
+  }
+
+  nav.addEventListener('mouseenter', function () { nav.classList.add('is-open'); });
+  nav.addEventListener('mouseleave', function () { nav.classList.remove('is-open'); });
+
+  var navTick = false;
+  scroller.addEventListener('scroll', function () {
+    if (navTick) return;
+    navTick = true;
+    requestAnimationFrame(function () {
+      navTick = false;
+      updateNavActive();
+    });
+  }, { passive: true });
+
   function append(node) {
     visible.appendChild(node);
+    syncNav();
     requestAnimationFrame(function () {
       if (scroller) {
         scroller.scrollTop = scroller.scrollHeight;
         scroller.scrollLeft = 0;
       }
+      updateNavActive();
     });
   }
 
@@ -504,7 +589,24 @@
     '.ds-assistant-message-main-content .pyg .gh,.ds-assistant-message-main-content .pyg .gu,.ds-assistant-message-main-content .pyg .gs{color:#e45649;font-weight:600}' +
     '.ds-assistant-message-main-content .pyg .err{color:#e45649}' +
     '.disguise-tip{position:fixed;z-index:2000;padding:6px 10px;border-radius:8px;background:rgba(28,30,35,.92);color:#fff;font-size:12px;line-height:1.4;white-space:nowrap;pointer-events:none;opacity:0;transform:translate(-50%,-100%);transition:opacity .12s}' +
-    '.disguise-tip.show{opacity:1}';
+    '.disguise-tip.show{opacity:1}' +
+    // 右侧快速跳转：收起时只露小横线，悬浮展开成 240px 面板（结构取自 DeepSeek 官方样式）
+    '.disguise-nav{position:fixed;top:50%;right:16px;transform:translateY(-50%);width:34px;height:300px;display:none;align-items:center;z-index:1000;user-select:none;transition:all .2s}' +
+    '.disguise-nav-bg{position:absolute;top:50%;right:0;transform:translateY(-50%);z-index:-1;width:34px;height:calc(100% - 8px);max-height:calc(100% - 8px);border-radius:16px;background:rgba(255,255,255,.8);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}' +
+    '.disguise-nav-panel{position:absolute;top:50%;right:0;transform:translateY(-50%);display:flex;flex-direction:column;width:240px;max-height:100%;border:1px solid transparent;border-radius:16px;overflow:hidden;pointer-events:none;transition:background .2s,box-shadow .2s}' +
+    '.disguise-nav.is-open .disguise-nav-panel{pointer-events:auto;background:var(--dsw-alias-bg-layer-1,#fff);box-shadow:var(--dsw-shadow-lv3,0 4px 16px rgba(0,0,0,.08));border-color:var(--dsw-alias-border-inverted,rgba(0,0,0,.06))}' +
+    '.disguise-nav-list{max-height:300px;overflow-y:auto;padding:15px 0 15px 24px;scrollbar-width:none}' +
+    '.disguise-nav-list::-webkit-scrollbar{display:none}' +
+    '.disguise-nav-item{display:flex;align-items:center;justify-content:flex-end;width:calc(100% - 6px);height:30px;margin-right:8px;line-height:20px;color:var(--dsw-alias-label-tertiary,#8b8b8b);cursor:pointer}' +
+    '.disguise-nav-item:hover{color:var(--dsw-alias-label-primary,#1f2329)}' +
+    '.disguise-nav-title{margin-right:12px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .1s,color .2s}' +
+    '.disguise-nav.is-open .disguise-nav-title{opacity:1}' +
+    '.disguise-nav-item.is-active .disguise-nav-title{color:var(--dsw-alias-brand-text,#4d6bfe);font-weight:500}' +
+    '.disguise-nav-dash{display:flex;flex-shrink:0;align-items:center;justify-content:center;width:16px;height:20px}' +
+    '.disguise-nav-dash i{display:block;width:8px;height:2px;border-radius:4px;background:var(--dsw-alias-border-l4,#d9d9d9);transition:background-color .2s}' +
+    '.disguise-nav-item:hover .disguise-nav-dash i{background:var(--dsw-alias-label-primary,#1f2329)}' +
+    '.disguise-nav-item.is-active .disguise-nav-dash i{background:var(--dsw-alias-brand-text,#4d6bfe);transform:scale(1.5)}' +
+    '@media not all and (min-width:768px){.disguise-nav{display:none!important}}';
   document.head.appendChild(styleFix);
 
   var tip = document.createElement('div');
