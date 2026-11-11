@@ -4,6 +4,7 @@ import { errorMessage } from '@/shared/api/client'
 import type { AdminQuestion, BankTopicOption, QuestionWrite } from '@/types/models'
 
 import { createQuestion, deleteQuestion, updateQuestion } from '../api'
+import { AdminToast } from '../AdminToast'
 import type { DraftGroup } from './bank-types'
 import { EvidenceEditor } from './EvidenceEditor'
 import { QuestionFields, type QuestionForm } from './QuestionFields'
@@ -149,7 +150,6 @@ export function QuestionEditor({
         编辑只更新题面、答案与证据，不重置卡片的学习进度和到期时间；删除题目会同时删除对应卡片。
         保存后复习页立即使用新内容。
       </p>
-      {error ? <p className="bank-error">{error}</p> : null}
 
       <QuestionFields form={form} onChange={patch} />
       <EvidenceEditor topicId={topicId} no={no} groups={groups} onChange={setGroups} />
@@ -178,6 +178,11 @@ export function QuestionEditor({
           {saving ? '保存中…' : mode === 'new' ? '新增题目' : '保存修改'}
         </button>
       </div>
+
+      <AdminToast
+        notice={error ? { tone: 'error', text: error } : null}
+        onClose={() => setError('')}
+      />
     </div>
   )
 }

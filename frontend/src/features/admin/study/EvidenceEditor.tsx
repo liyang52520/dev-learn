@@ -4,6 +4,7 @@ import { errorMessage } from '@/shared/api/client'
 import type { AdminEvidenceFile } from '@/types/models'
 
 import { uploadEvidence } from '../api'
+import { AdminToast } from '../AdminToast'
 import type { DraftGroup } from './bank-types'
 
 type Props = {
@@ -76,7 +77,6 @@ export function EvidenceEditor({ topicId, no, groups, onChange }: Props) {
         证据截图可以先不传，之后再补。截图按「q题号_出处序号_页码」命名，保存在当前专题的
         assets/ev 目录；删除题目时会一并清理。
       </p>
-      {error ? <p className="bank-error">{error}</p> : null}
 
       {groups.map((group, index) => (
         <div className="bank-evidence-group" key={index}>
@@ -168,6 +168,11 @@ export function EvidenceEditor({ topicId, no, groups, onChange }: Props) {
           </div>
         </div>
       ))}
+
+      <AdminToast
+        notice={error ? { tone: 'error', text: error } : null}
+        onClose={() => setError('')}
+      />
     </section>
   )
 }

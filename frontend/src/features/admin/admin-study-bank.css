@@ -188,27 +188,6 @@
   line-height: 1.7;
 }
 
-.bank-notice,
-.bank-error {
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 12.5px;
-  line-height: 1.6;
-}
-
-.bank-notice {
-  border: 1px solid color-mix(in srgb, #1a7f4b 24%, var(--line));
-  background: color-mix(in srgb, #1a7f4b 7%, transparent);
-  color: #1a7f4b;
-}
-
-.bank-error {
-  border: 1px solid color-mix(in srgb, #c2413a 26%, var(--line));
-  background: color-mix(in srgb, #c2413a 7%, transparent);
-  color: #c2413a;
-}
-
 @media (max-width: 1180px) {
   .bank-layout {
     grid-template-columns: minmax(0, 1fr);

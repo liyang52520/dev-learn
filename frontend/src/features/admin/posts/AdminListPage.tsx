@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { AdminTopbar } from '../AdminTopbar'
+import { AdminToast, type AdminNotice } from '../AdminToast'
 import { createPost, deletePost, listAdminPosts } from '../api'
 import { errorMessage } from '@/shared/api/client'
 import { AdminPostTable, type AdminRow } from './AdminPostTable'
@@ -25,7 +26,7 @@ export default function AdminListPage() {
   const [newOpen, setNewOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [busy, setBusy] = useState('')
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState<AdminNotice | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'posts', keyword],
@@ -54,7 +55,7 @@ export default function AdminListPage() {
       await refresh()
       navigate(`/admin/edit/drafts/${encodeURIComponent(post.meta.slug)}`)
     } catch (error) {
-      setNotice(errorMessage(error))
+      setNotice({ tone: 'error', text: errorMessage(error) })
     } finally {
       setBusy('')
     }
@@ -65,10 +66,10 @@ export default function AdminListPage() {
     setBusy(slug)
     try {
       await deletePost(kind, slug)
-      setNotice('已移入 .trash/')
+      setNotice({ tone: 'success', text: '已移入 .trash/' })
       await refresh()
     } catch (error) {
-      setNotice(errorMessage(error))
+      setNotice({ tone: 'error', text: errorMessage(error) })
     } finally {
       setBusy('')
     }
@@ -99,8 +100,6 @@ export default function AdminListPage() {
           drafts={data?.drafts.length}
           categories={categories.size}
         />
-
-        {notice && <div className="admin-notice">{notice}</div>}
 
         <div className="admin-toolbar">
           <div className="admin-tabs">
@@ -142,6 +141,8 @@ export default function AdminListPage() {
           onCreate={() => void create()}
         />
       )}
+
+      <AdminToast notice={notice} onClose={() => setNotice(null)} />
     </div>
   )
 }

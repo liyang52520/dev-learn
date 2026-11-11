@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { errorMessage } from '@/shared/api/client'
 import type { AdminQuestion, BankListResponse } from '@/types/models'
 
+import { AdminToast, type AdminNotice } from '../AdminToast'
 import { fetchAdminQuestion, fetchQuestionBank } from '../api'
 import { QuestionEditor } from './QuestionEditor'
 import { QuestionList } from './QuestionList'
@@ -13,8 +14,7 @@ export function StudyBankTab() {
   const [search, setSearch] = useState('')
   const [keyword, setKeyword] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [feedback, setFeedback] = useState<AdminNotice | null>(null)
   const [activeKey, setActiveKey] = useState('')
   const [detail, setDetail] = useState<AdminQuestion | null>(null)
   const [creating, setCreating] = useState(false)
@@ -30,9 +30,8 @@ export function StudyBankTab() {
     setLoading(true)
     try {
       setBank(await fetchQuestionBank(topic, keyword))
-      setError('')
     } catch (err) {
-      setError(errorMessage(err))
+      setFeedback({ tone: 'error', text: errorMessage(err) })
     } finally {
       setLoading(false)
     }
@@ -44,29 +43,27 @@ export function StudyBankTab() {
 
   const openQuestion = async (topicId: string, qid: string) => {
     setCreating(false)
-    setNotice('')
-    setError('')
+    setFeedback(null)
     try {
       const question = await fetchAdminQuestion(topicId, qid)
       setDetail(question)
       setActiveKey(question.key)
     } catch (err) {
-      setError(errorMessage(err))
+      setFeedback({ tone: 'error', text: errorMessage(err) })
     }
   }
 
   const startNew = () => {
     const fallback = topic || bank?.topics[0]?.id || ''
     if (!fallback) {
-      setError('题库里还没有专题，无法新增题目。')
+      setFeedback({ tone: 'error', text: '题库里还没有专题，无法新增题目。' })
       return
     }
     setNewTopic(fallback)
     setCreating(true)
     setDetail(null)
     setActiveKey('')
-    setNotice('')
-    setError('')
+    setFeedback(null)
     setNewSeq((value) => value + 1)
   }
 
@@ -74,7 +71,7 @@ export function StudyBankTab() {
     setCreating(false)
     setDetail(question)
     setActiveKey(question.key)
-    setNotice(message)
+    setFeedback({ tone: 'success', text: message })
     void loadList()
   }
 
@@ -82,7 +79,7 @@ export function StudyBankTab() {
     setCreating(false)
     setDetail(null)
     setActiveKey('')
-    setNotice(message)
+    setFeedback({ tone: 'success', text: message })
     void loadList()
   }
 
@@ -111,8 +108,6 @@ export function StudyBankTab() {
       />
 
       <div className="bank-main">
-        {notice ? <p className="bank-notice">{notice}</p> : null}
-        {error ? <p className="bank-error">{error}</p> : null}
         {creating ? (
           <QuestionEditor
             key={`new-${newSeq}`}
@@ -145,6 +140,8 @@ export function StudyBankTab() {
           </div>
         )}
       </div>
+
+      <AdminToast notice={feedback} onClose={() => setFeedback(null)} />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { errorMessage } from '@/shared/api/client'
 import type { ReviewConfig, ReviewStats } from '@/types/models'
 
+import { AdminToast, type AdminNotice } from '../AdminToast'
 import { saveStudyConfig } from '../api'
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 export function LimitsForm({ config, stats, onSaved }: Props) {
   const [newPerDay, setNewPerDay] = useState(String(config.newPerDay))
   const [revPerDay, setRevPerDay] = useState(String(config.revPerDay))
-  const [notice, setNotice] = useState('')
+  const [feedback, setFeedback] = useState<AdminNotice | null>(null)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -43,11 +44,11 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
 
   const save = async () => {
     if (!previewReady) {
-      setNotice('两个上限都要填 0–9999 的整数，不能留空')
+      setFeedback({ tone: 'error', text: '两个上限都要填 0–9999 的整数，不能留空' })
       return
     }
     if (!newChanged && !revChanged) {
-      setNotice('额度没有变化，无需保存')
+      setFeedback({ tone: 'info', text: '额度没有变化，无需保存' })
       return
     }
     const warnings: string[] = []
@@ -63,13 +64,16 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
     if (warnings.length > 0 && !window.confirm(`${warnings.join('；')}。确定要保存吗？`)) return
 
     setBusy(true)
-    setNotice('')
+    setFeedback(null)
     try {
       await saveStudyConfig({ newPerDay: previewNew, revPerDay: previewRev })
-      setNotice('已保存，下一次取卡立即生效（改小立刻生效，改大当天也会补回）')
+      setFeedback({
+        tone: 'success',
+        text: '已保存，下一次取卡立即生效（改小立刻生效，改大当天也会补回）',
+      })
       onSaved()
     } catch (error) {
-      setNotice(errorMessage(error))
+      setFeedback({ tone: 'error', text: errorMessage(error) })
     } finally {
       setBusy(false)
     }
@@ -144,7 +148,8 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
       <button type="button" className="admin-button primary" disabled={busy} onClick={() => void save()}>
         保存
       </button>
-      {notice && <p className="study-admin-notice">{notice}</p>}
+
+      <AdminToast notice={feedback} onClose={() => setFeedback(null)} />
     </div>
   )
 }

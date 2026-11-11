@@ -1,0 +1,89 @@
+/* ---------------- Toast ---------------- */
+
+.admin-toast {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(460px, calc(100vw - 32px));
+  padding: 9px 15px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  line-height: 1.5;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transform: translateX(-50%);
+  animation: admin-toast-in 0.18s ease-out;
+}
+
+.admin-toast-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.admin-toast-text {
+  overflow-wrap: anywhere;
+}
+
+.admin-toast.is-success {
+  border-color: color-mix(in srgb, #1a7f4b 32%, var(--line));
+  background: color-mix(in srgb, #1a7f4b 7%, var(--surface));
+  color: #1a7f4b;
+}
+
+.admin-toast.is-success .admin-toast-icon {
+  background: #1a7f4b;
+}
+
+.admin-toast.is-error {
+  border-color: color-mix(in srgb, #c2413a 32%, var(--line));
+  background: color-mix(in srgb, #c2413a 7%, var(--surface));
+  color: #c2413a;
+}
+
+.admin-toast.is-error .admin-toast-icon {
+  background: #c2413a;
+}
+
+html.dark .admin-toast.is-success {
+  border-color: color-mix(in srgb, #3ecf8e 38%, var(--line));
+  color: #7ddca6;
+}
+
+html.dark .admin-toast.is-success .admin-toast-icon {
+  background: #2f9e6a;
+}
+
+html.dark .admin-toast.is-error {
+  border-color: color-mix(in srgb, #e57368 40%, var(--line));
+  color: #ff9b93;
+}
+
+html.dark .admin-toast.is-error .admin-toast-icon {
+  background: #c2413a;
+}
+
+@keyframes admin-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

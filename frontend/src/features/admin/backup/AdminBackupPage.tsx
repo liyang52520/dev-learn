@@ -5,6 +5,7 @@ import { errorMessage } from '@/shared/api/client'
 import type { BackupRef, BackupResult } from '@/types/models'
 
 import { AdminTopbar } from '../AdminTopbar'
+import { AdminToast, type AdminNotice } from '../AdminToast'
 import {
   abortBackup,
   fetchBackupRemote,
@@ -21,12 +22,10 @@ import { MergeConflictPanel } from './MergeConflictPanel'
 import { RemoteBranchList } from './RemoteBranchList'
 import { SafetyRefs } from './SafetyRefs'
 
-type Notice = { ok: boolean; text: string } | null
-
 export default function AdminBackupPage() {
   const client = useQueryClient()
   const [busy, setBusy] = useState('')
-  const [notice, setNotice] = useState<Notice>(null)
+  const [notice, setNotice] = useState<AdminNotice | null>(null)
   const { data, error, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['admin', 'backup'],
     queryFn: fetchBackupStatus,
@@ -39,9 +38,9 @@ export default function AdminBackupPage() {
     setNotice(null)
     try {
       const result = await action()
-      setNotice({ ok: result.ok, text: result.message })
+      setNotice({ tone: result.ok ? 'success' : 'error', text: result.message })
     } catch (reason) {
-      setNotice({ ok: false, text: errorMessage(reason) })
+      setNotice({ tone: 'error', text: errorMessage(reason) })
     } finally {
       setBusy('')
       await client.invalidateQueries({ queryKey: ['admin', 'backup'] })
@@ -93,10 +92,6 @@ export default function AdminBackupPage() {
           </div>
         </div>
 
-        {notice && (
-          <div className={`backup-notice${notice.ok ? '' : ' is-error'}`}>{notice.text}</div>
-        )}
-
         {isLoading && !data && <p className="muted">正在读取仓库状态…</p>}
         {!isLoading && !data && (
           <div className="backup-card">
@@ -142,6 +137,7 @@ export default function AdminBackupPage() {
           </>
         )}
       </main>
+      <AdminToast notice={notice} onClose={() => setNotice(null)} />
     </>
   )
 }

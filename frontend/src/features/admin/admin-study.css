@@ -114,16 +114,6 @@
   line-height: 1.8;
 }
 
-.study-admin-notice {
-  margin: 12px 0 0;
-  font-size: 13px;
-  color: var(--accent);
-}
-
-.study-admin-notice.is-warn {
-  color: #c2413a;
-}
-
 .study-admin-heatmap {
   margin: 0;
   padding: 18px 24px 16px;
