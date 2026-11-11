@@ -233,7 +233,7 @@
     }
     bar.setAttribute('data-rated', '0');
     var buttons = bar.querySelectorAll('.ds-button');
-    Array.prototype.slice.call(buttons, 4).forEach(function (b) { b.remove(); });
+    // 评分只绑定前四个按钮，后两个（朗读/分享）保留正常交互，但不产生效果
     var rateTips = ['忘记', '模糊', '记得', '简单'];
     [].slice.call(buttons, 0, 4).forEach(function (b, i) {
       var tip = rateTips[i] + (labels && labels[i] ? ' · 下次 ' + labels[i] : '');
@@ -314,8 +314,8 @@
 
   function syncSend() {
     var hasText = !!input.value.trim();
-    var canSend = hasText && (state.session !== 0 || state.phase === 'filled');
-    if (canSend) sendBtn.classList.remove('ds-button--disabled');
+    // 和官方一致：输入框有内容就点亮发送按钮
+    if (hasText) sendBtn.classList.remove('ds-button--disabled');
     else sendBtn.classList.add('ds-button--disabled');
   }
 
@@ -474,8 +474,30 @@
     '.ds-assistant-message-main-content .pdf-img figcaption{color:var(--dsw-alias-label-tertiary,#8b8b8b);font-size:12px;text-align:center;margin-top:6px}' +
     '.ds-assistant-message-main-content .pdf-list{padding-left:22px;list-style:disc}' +
     '.ds-assistant-message-main-content .pdf-list li{margin:6px 0;line-height:1.8}' +
-    '.ds-assistant-message-main-content .code-block{margin:14px 0}' +
-    '.ds-assistant-message-main-content .code-block pre{overflow:auto}' +
+    '.ds-assistant-message-main-content .code-block{margin:16px 0;background:var(--dsw-alias-markdown-code-block,#fafafa);border-radius:12px;overflow:hidden}' +
+    '.ds-assistant-message-main-content .code-bar{display:flex;align-items:center;height:34px;padding:0 14px;background:var(--dsw-alias-markdown-code-block-banner,#f3f4f6)}' +
+    '.ds-assistant-message-main-content .code-dots{display:none}' +
+    '.ds-assistant-message-main-content .code-lang{font-family:var(--ds-font-family-code);font-size:12px;line-height:18px;color:var(--dsw-alias-label-primary,#383a42);text-transform:lowercase;letter-spacing:0}' +
+    '.ds-assistant-message-main-content .code-copy{margin-left:auto;border:0;background:transparent;color:var(--dsw-alias-label-secondary,#8b8b8b);font-size:12px;padding:4px 8px;border-radius:6px;cursor:pointer}' +
+    '.ds-assistant-message-main-content .code-copy:hover{background:rgba(0,0,0,.05);color:var(--dsw-alias-label-primary,#383a42)}' +
+    '.ds-assistant-message-main-content .code-block pre{margin:0;padding:16px;overflow-x:auto;background:transparent;font-family:var(--ds-font-family-code);font-size:13px;line-height:1.6}' +
+    // 答案 HTML 里的 <pre class="pyg"><code> 会被 DeepSeek 的 .ds-markdown code{display:inline-flex} 吃掉换行，必须还原成块级 pre
+    '.ds-assistant-message-main-content .code-block pre code{display:block;white-space:pre-wrap;word-break:break-all;background:none;padding:0;border-radius:0;font-family:var(--ds-font-family-code);font-size:13px!important;line-height:1.6}' +
+    '.ds-assistant-message-main-content .pyg .c,.ds-assistant-message-main-content .pyg .ch,.ds-assistant-message-main-content .pyg .cm,.ds-assistant-message-main-content .pyg .c1,.ds-assistant-message-main-content .pyg .cs,.ds-assistant-message-main-content .pyg .cp,.ds-assistant-message-main-content .pyg .cpf,.ds-assistant-message-main-content .pyg .cn{color:#a0a1a7;font-style:italic}' +
+    '.ds-assistant-message-main-content .pyg .k,.ds-assistant-message-main-content .pyg .kc,.ds-assistant-message-main-content .pyg .kd,.ds-assistant-message-main-content .pyg .kn,.ds-assistant-message-main-content .pyg .kp,.ds-assistant-message-main-content .pyg .kr{color:#a626a4}' +
+    '.ds-assistant-message-main-content .pyg .kt,.ds-assistant-message-main-content .pyg .nc,.ds-assistant-message-main-content .pyg .nn,.ds-assistant-message-main-content .pyg .ne{color:#b76b01}' +
+    '.ds-assistant-message-main-content .pyg .s,.ds-assistant-message-main-content .pyg .s1,.ds-assistant-message-main-content .pyg .s2,.ds-assistant-message-main-content .pyg .sa,.ds-assistant-message-main-content .pyg .sb,.ds-assistant-message-main-content .pyg .sc,.ds-assistant-message-main-content .pyg .dl,.ds-assistant-message-main-content .pyg .sd,.ds-assistant-message-main-content .pyg .sh,.ds-assistant-message-main-content .pyg .si,.ds-assistant-message-main-content .pyg .sx,.ds-assistant-message-main-content .pyg .sr,.ds-assistant-message-main-content .pyg .ss{color:#50a14f}' +
+    '.ds-assistant-message-main-content .pyg .se{color:#b76b01}' +
+    '.ds-assistant-message-main-content .pyg .m,.ds-assistant-message-main-content .pyg .mb,.ds-assistant-message-main-content .pyg .mf,.ds-assistant-message-main-content .pyg .mh,.ds-assistant-message-main-content .pyg .mi,.ds-assistant-message-main-content .pyg .mo,.ds-assistant-message-main-content .pyg .no{color:#b76b01}' +
+    '.ds-assistant-message-main-content .pyg .nf,.ds-assistant-message-main-content .pyg .fm,.ds-assistant-message-main-content .pyg .nb,.ds-assistant-message-main-content .pyg .bp,.ds-assistant-message-main-content .pyg .nd{color:#4078f2}' +
+    '.ds-assistant-message-main-content .pyg .nv,.ds-assistant-message-main-content .pyg .vc,.ds-assistant-message-main-content .pyg .vg,.ds-assistant-message-main-content .pyg .vi,.ds-assistant-message-main-content .pyg .nl{color:#4078f2}' +
+    '.ds-assistant-message-main-content .pyg .na,.ds-assistant-message-main-content .pyg .nt{color:#b76b01}' +
+    '.ds-assistant-message-main-content .pyg .o,.ds-assistant-message-main-content .pyg .ow{color:#4078f2}' +
+    '.ds-assistant-message-main-content .pyg .p{color:#383a42}' +
+    '.ds-assistant-message-main-content .pyg .gi{color:#50a14f}' +
+    '.ds-assistant-message-main-content .pyg .gd{color:#e45649}' +
+    '.ds-assistant-message-main-content .pyg .gh,.ds-assistant-message-main-content .pyg .gu,.ds-assistant-message-main-content .pyg .gs{color:#e45649;font-weight:600}' +
+    '.ds-assistant-message-main-content .pyg .err{color:#e45649}' +
     '.disguise-tip{position:fixed;z-index:2000;padding:6px 10px;border-radius:8px;background:rgba(28,30,35,.92);color:#fff;font-size:12px;line-height:1.4;white-space:nowrap;pointer-events:none;opacity:0;transform:translate(-50%,-100%);transition:opacity .12s}' +
     '.disguise-tip.show{opacity:1}';
   document.head.appendChild(styleFix);
@@ -507,6 +529,15 @@
     if (el) hideTip();
   });
   document.addEventListener('click', hideTip, true);
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest('[data-code-copy]') : null;
+    if (!btn) return;
+    e.preventDefault();
+    var block = btn.closest('.code-block');
+    var pre = block ? block.querySelector('pre') : null;
+    if (pre && navigator.clipboard) navigator.clipboard.writeText(pre.textContent).catch(function () {});
+  });
   window.addEventListener('scroll', hideTip, true);
 
   items.style.minHeight = '0';
