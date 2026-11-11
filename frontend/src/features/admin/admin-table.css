@@ -62,7 +62,7 @@
 .admin-table-head,
 .admin-row {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr) 106px 150px 176px;
+  grid-template-columns: 88px minmax(0, 1fr) 106px 150px 216px;
   gap: 16px;
   align-items: center;
 }
@@ -198,4 +198,53 @@ html.dark .admin-badge.posts {
   text-align: center;
   font-size: 12.5px;
   color: var(--faint);
+}
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.admin-pagination-info {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--faint);
+}
+
+.admin-pagination-pages {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.admin-pagination-pages button {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.admin-pagination-pages button:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.admin-pagination-pages button.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.admin-pagination-pages button:disabled {
+  opacity: 0.45;
 }

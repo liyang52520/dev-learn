@@ -1,16 +1,20 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { AdminTopbar } from '../AdminTopbar'
 import { AdminToast, type AdminNotice } from '../AdminToast'
-import { createPost, deletePost, listAdminPosts } from '../api'
+import { createPost, listAdminPosts } from '../api'
 import { errorMessage } from '@/shared/api/client'
+import { AdminPager } from './AdminPager'
 import { AdminPostTable, type AdminRow } from './AdminPostTable'
 import { AdminStatsRow } from './AdminStatsRow'
 import { NewPostModal } from './NewPostModal'
+import { usePostListActions } from './usePostListActions'
 
 type Tab = 'all' | 'posts' | 'drafts'
+
+const PAGE_SIZE = 10
 
 const TABS = [
   ['all', '全部'],
@@ -19,14 +23,14 @@ const TABS = [
 ] as const
 
 export default function AdminListPage() {
-  const client = useQueryClient()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('all')
   const [keyword, setKeyword] = useState('')
+  const [page, setPage] = useState(1)
   const [newOpen, setNewOpen] = useState(false)
   const [title, setTitle] = useState('')
-  const [busy, setBusy] = useState('')
   const [notice, setNotice] = useState<AdminNotice | null>(null)
+  const { busy, setBusy, refresh, togglePublish, remove } = usePostListActions(setNotice)
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'posts', keyword],
@@ -40,12 +44,15 @@ export default function AdminListPage() {
     .filter((row) => tab === 'all' || row.kind === tab)
     .sort((a, b) => b.dateIso.localeCompare(a.dateIso))
 
-  const categories = new Set(rows.flatMap((row) => row.categories))
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const pagedRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
-  const refresh = async () => {
-    await client.invalidateQueries({ queryKey: ['admin', 'posts'] })
-    await client.invalidateQueries({ queryKey: ['posts'] })
-  }
+  useEffect(() => {
+    setPage(1)
+  }, [tab, keyword])
+
+  const categories = new Set(rows.flatMap((row) => row.categories))
 
   const create = async () => {
     if (!title.trim()) return
@@ -54,20 +61,6 @@ export default function AdminListPage() {
       const post = await createPost(title.trim())
       await refresh()
       navigate(`/admin/edit/drafts/${encodeURIComponent(post.meta.slug)}`)
-    } catch (error) {
-      setNotice({ tone: 'error', text: errorMessage(error) })
-    } finally {
-      setBusy('')
-    }
-  }
-
-  const remove = async (kind: AdminRow['kind'], slug: string) => {
-    if (!window.confirm(`删除「${slug}」？文件会移入 .trash/。`)) return
-    setBusy(slug)
-    try {
-      await deletePost(kind, slug)
-      setNotice({ tone: 'success', text: '已移入 .trash/' })
-      await refresh()
     } catch (error) {
       setNotice({ tone: 'error', text: errorMessage(error) })
     } finally {
@@ -125,10 +118,18 @@ export default function AdminListPage() {
         </div>
 
         <AdminPostTable
-          rows={rows}
+          rows={pagedRows}
           loading={isLoading}
           busy={busy}
+          onTogglePublish={(kind, slug) => void togglePublish(kind, slug)}
           onRemove={(kind, slug) => void remove(kind, slug)}
+        />
+
+        <AdminPager
+          page={currentPage}
+          pageCount={pageCount}
+          total={rows.length}
+          onChange={setPage}
         />
       </div>
 

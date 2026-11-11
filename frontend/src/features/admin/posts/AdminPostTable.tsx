@@ -8,10 +8,11 @@ type Props = {
   rows: AdminRow[]
   loading: boolean
   busy: string
+  onTogglePublish: (kind: AdminRow['kind'], slug: string) => void
   onRemove: (kind: AdminRow['kind'], slug: string) => void
 }
 
-export function AdminPostTable({ rows, loading, busy, onRemove }: Props) {
+export function AdminPostTable({ rows, loading, busy, onTogglePublish, onRemove }: Props) {
   return (
     <div className="admin-table">
       <div className="admin-table-head">
@@ -50,6 +51,13 @@ export function AdminPostTable({ rows, loading, busy, onRemove }: Props) {
           <span className="admin-row-actions">
             <Link to={`/admin/edit/${row.kind}/${encodeURIComponent(row.slug)}`}>编辑</Link>
             <Link to={`/admin/preview/${row.kind}/${encodeURIComponent(row.slug)}`}>预览</Link>
+            <button
+              type="button"
+              onClick={() => onTogglePublish(row.kind, row.slug)}
+              disabled={busy === row.slug}
+            >
+              {row.kind === 'drafts' ? '发布' : '撤销'}
+            </button>
             <button
               type="button"
               className="danger"
