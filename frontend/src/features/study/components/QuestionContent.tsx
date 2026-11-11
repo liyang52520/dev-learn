@@ -15,9 +15,20 @@ export function QuestionContent({ question }: { question: QuestionDetail }) {
           <Link to={`/study/${encodeURIComponent(topic.id)}`}>{topic.label}</Link>
           <ChevronRightIcon className="icon" />
           <span>{topic.no}</span>
-          <Link to="/review" className="study-crumb-review">
-            复习模式 ↗
-          </Link>
+          <span className="study-crumb-actions">
+            <Link
+              to={`/admin/study?tab=bank&topic=${encodeURIComponent(topic.id)}&qid=${encodeURIComponent(question.id)}`}
+              className="quick-edit"
+              target="_blank"
+              rel="noreferrer"
+              title="在新标签页打开题库后台编辑这道题"
+            >
+              编辑
+            </Link>
+            <Link to="/review" className="study-crumb-review">
+              复习模式 ↗
+            </Link>
+          </span>
         </div>
         <div className="study-question-kicker">
           <span style={{ background: topic.accent }} />

@@ -10,10 +10,21 @@ export function ArticleView({ post }: { post: PostDetail }) {
   return (
     <article className="article">
       <header className="article-header">
-        <p className="eyebrow">
-          <span className="eyebrow-dot" />
-          BLOG NOTES
-        </p>
+        <div className="article-head-row">
+          <p className="eyebrow">
+            <span className="eyebrow-dot" />
+            BLOG NOTES
+          </p>
+          <Link
+            className="quick-edit"
+            to={`/admin/edit/${meta.type}/${encodeURIComponent(meta.slug)}`}
+            target="_blank"
+            rel="noreferrer"
+            title="在新标签页打开后台编辑器"
+          >
+            编辑
+          </Link>
+        </div>
         <h1>{meta.title}</h1>
         <div className="article-meta">
           <span className="article-date">{meta.displayDateTime}</span>

@@ -12,10 +12,17 @@
   padding: 72px 0 46px;
 }
 
-.article-header > .eyebrow,
+.article-header > .article-head-row,
 .article-header > h1,
 .article-header > .article-meta {
   grid-column: 1;
+}
+
+.article-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .article-header h1 {

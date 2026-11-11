@@ -124,6 +124,26 @@
   gap: 22px;
 }
 
+.quick-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  white-space: nowrap;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.quick-edit:hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+}
+
 .empty-state {
   border: 1px dashed var(--line-2);
   border-radius: var(--radius);

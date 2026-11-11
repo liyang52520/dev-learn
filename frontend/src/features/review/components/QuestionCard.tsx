@@ -19,17 +19,22 @@ type Props = {
   onRate: (rating: number) => void
 }
 
-function originHref(card: ReviewCard): string | null {
+function questionLinks(card: ReviewCard): { origin: string; edit: string } | null {
   const topicId = card.question?.topicId
   if (!topicId) return null
   const questionId = card.qid.split('/').slice(1).join('/')
   if (!questionId) return null
-  return `/study/${encodeURIComponent(topicId)}/${encodeURIComponent(questionId)}`
+  const encodedTopic = encodeURIComponent(topicId)
+  const encodedQuestion = encodeURIComponent(questionId)
+  return {
+    origin: `/study/${encodedTopic}/${encodedQuestion}`,
+    edit: `/admin/study?tab=bank&topic=${encodedTopic}&qid=${encodedQuestion}`,
+  }
 }
 
 export function QuestionCard(props: Props) {
   const { card, phase, answerHtml, revealing, canUndo, busy } = props
-  const origin = originHref(card)
+  const links = questionLinks(card)
   const waiting = phase === 'loading' || !card
 
   return (
@@ -37,10 +42,21 @@ export function QuestionCard(props: Props) {
       <div className="review-meta">
         <span>{card.question?.topic || card.qid}</span>
         {card.question?.pages && <span>{card.question.pages}</span>}
-        {origin && (
-          <Link className="review-origin" to={origin} target="_blank" rel="noreferrer">
-            查看原文 ↗
-          </Link>
+        {links && (
+          <>
+            <Link className="review-origin" to={links.origin} target="_blank" rel="noreferrer">
+              查看原文 ↗
+            </Link>
+            <Link
+              className="quick-edit"
+              to={links.edit}
+              target="_blank"
+              rel="noreferrer"
+              title="在新标签页打开题库后台编辑这道题"
+            >
+              编辑
+            </Link>
+          </>
         )}
         <span className="review-state">{STATE_LABELS[card.state] || card.state}</span>
       </div>
