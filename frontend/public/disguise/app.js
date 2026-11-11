@@ -314,9 +314,14 @@
 
   function syncSend() {
     var hasText = !!input.value.trim();
-    // 和官方一致：输入框有内容就点亮发送按钮
-    if (hasText) sendBtn.classList.remove('ds-button--disabled');
-    else sendBtn.classList.add('ds-button--disabled');
+    // 和官方一致：输入框有内容就点亮发送按钮（bd74640a 是页面自带的半透明空态样式）
+    if (hasText) {
+      sendBtn.classList.remove('ds-button--disabled');
+      sendBtn.classList.remove('bd74640a');
+    } else {
+      sendBtn.classList.add('ds-button--disabled');
+      sendBtn.classList.add('bd74640a');
+    }
   }
 
   function submit() {
