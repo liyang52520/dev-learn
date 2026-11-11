@@ -45,7 +45,7 @@ export function QuestionCard(props: Props) {
         {links && (
           <>
             <Link className="review-origin" to={links.origin} target="_blank" rel="noreferrer">
-              查看原文 ↗
+              查看原文
             </Link>
             <Link
               className="quick-edit"
