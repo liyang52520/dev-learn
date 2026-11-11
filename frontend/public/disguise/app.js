@@ -74,22 +74,30 @@
     return BASE + url.replace(/^\//, '');
   }
 
-  function apiGet(url) {
-    return fetch(apiUrl(url), { credentials: 'same-origin' }).then(function (r) {
-      if (!r.ok) throw new Error('http ' + r.status);
-      return r.json();
+  // 失败时带上 status 与后端错误码，评分 409（卡片排队过期）需要单独处理
+  function apiRequest(url, options) {
+    return fetch(apiUrl(url), options).then(function (r) {
+      if (r.ok) return r.json();
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        var info = (data && data.error) || {};
+        var err = new Error(info.message || 'http ' + r.status);
+        err.status = r.status;
+        err.code = info.code || '';
+        throw err;
+      });
     });
   }
 
+  function apiGet(url) {
+    return apiRequest(url, { credentials: 'same-origin' });
+  }
+
   function apiPost(url, body) {
-    return fetch(apiUrl(url), {
+    return apiRequest(url, {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    }).then(function (r) {
-      if (!r.ok) throw new Error('http ' + r.status);
-      return r.json();
     });
   }
 
@@ -106,6 +114,23 @@
       review.loading = false;
     });
     return review.pending;
+  }
+
+  // 服务端只给卡片 30 分钟排队时间，超时评分会返回 409。
+  // 重新取一次队列即可那张卡续期；找到就返回，没找到说明已被别处处理或已过期。
+  function reloadCard(cardId) {
+    return apiGet('/api/review/queue?limit=20').then(function (data) {
+      review.ready = true;
+      review.cards = data.cards || [];
+      var found = null;
+      review.cards.forEach(function (item) {
+        if (item.cardId === cardId) found = item;
+      });
+      if (found) review.card = found;
+      return found;
+    }).catch(function () {
+      return null;
+    });
   }
 
   function cardTitle(card) {
@@ -209,7 +234,7 @@
     return node;
   }
 
-  function aiNode(html, rate, labels) {
+  function aiNode(html, rate, labels, card) {
     var node = aiTpl.cloneNode(true);
     node.removeAttribute('data-virtual-list-item-key');
     var root = node.querySelector('._74c0879');
@@ -235,7 +260,7 @@
     }
     bar.setAttribute('data-rated', '0');
     var buttons = bar.querySelectorAll('.ds-button');
-    // 评分只绑定前四个按钮，后两个（朗读/分享）保留正常交互，但不产生效果
+    // 评分只绑定前四个按钮；后两个（朗读/分享）保留正常交互，其中最后一个可跳到题目编辑页
     var rateTips = ['忘记', '模糊', '记得', '简单'];
     [].slice.call(buttons, 0, 4).forEach(function (b, i) {
       var tip = rateTips[i] + (labels && labels[i] ? ' · 下次 ' + labels[i] : '');
@@ -248,7 +273,26 @@
         selectRate(node, i);
       });
     });
+    if (buttons[5] && card && card.qid) {
+      var editTip = '编辑这道题';
+      buttons[5].setAttribute('data-tip', editTip);
+      buttons[5].setAttribute('aria-label', editTip);
+      buttons[5].style.cursor = 'pointer';
+      buttons[5].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = editUrl(card.qid);
+      });
+    }
     return node;
+  }
+
+  // QID 形如 <topicId>/<题号>，题库后台按 /admin/study?tab=bank&topic=&qid= 直接打开编辑器
+  function editUrl(qid) {
+    var parts = String(qid).split('/');
+    var topicId = parts.shift() || '';
+    return BASE + 'admin/study?tab=bank&topic=' + encodeURIComponent(topicId) +
+      '&qid=' + encodeURIComponent(parts.join('/'));
   }
 
   function selectRate(node, index) {
@@ -269,20 +313,44 @@
       return;
     }
     bar.setAttribute('data-rated', '1');
+    submitRating(bar, card, index + 1);
+  }
+
+  function resetRateBar(bar) {
+    bar.setAttribute('data-rated', '0');
+    Array.prototype.forEach.call(bar.querySelectorAll('.ds-button'), function (b) {
+      b.classList.remove('is-rated');
+    });
+  }
+
+  function submitRating(bar, card, rating, retried) {
     apiPost('/api/review/answer', {
       cardId: card.cardId,
-      rating: index + 1,
+      rating: rating,
       clientId: review.clientId
     }).then(function (data) {
       review.card = data.next || null;
       state.phase = 'idle';
       syncSend();
       if (!review.card) notifyEmpty();
-    }).catch(function () {
-      bar.setAttribute('data-rated', '0');
-      Array.prototype.forEach.call(bar.querySelectorAll('.ds-button'), function (b) {
-        b.classList.remove('is-rated');
-      });
+    }).catch(function (err) {
+      // 卡片排队超时（409）时重新取卡续期并自动补一次提交，用户不需要重复点击
+      if (err && err.status === 409 && !retried) {
+        reloadCard(card.cardId).then(function (found) {
+          if (found) {
+            submitRating(bar, found, rating, true);
+            return;
+          }
+          resetRateBar(bar);
+          review.card = review.cards[0] || null;
+          state.phase = 'idle';
+          syncSend();
+          if (review.card) notice('这张卡已过期，请重新点附件抽题。');
+          else notifyEmpty();
+        });
+        return;
+      }
+      resetRateBar(bar);
       notice('抱歉，这次评分没有提交成功，请再点一次。');
     });
   }
@@ -424,8 +492,9 @@
         append(aiNode(q.html, true));
       } else {
         apiGet('/api/review/card-answer?qid=' + encodeURIComponent(card.qid)).then(function (data) {
-          append(aiNode(data.answerHtml, true, card.labels));
+          append(aiNode(data.answerHtml, true, card.labels, card));
           syncSend();
+          // 这里失败（卡片排队过期）不额外处理：评分时会重新取卡续期再提交
           apiPost('/api/review/touch', { cardId: card.cardId }).catch(function () {});
         }).catch(function () {
           state.phase = 'idle';

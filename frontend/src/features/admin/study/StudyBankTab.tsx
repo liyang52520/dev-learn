@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { errorMessage } from '@/shared/api/client'
 import type { AdminQuestion, BankListResponse } from '@/types/models'
@@ -9,8 +10,10 @@ import { QuestionEditor } from './QuestionEditor'
 import { QuestionList } from './QuestionList'
 
 export function StudyBankTab() {
+  // 支持 /admin/study?tab=bank&topic=<topicId>&qid=<题号> 直接打开某道题（复习页跳编辑用）
+  const [params] = useSearchParams()
   const [bank, setBank] = useState<BankListResponse | null>(null)
-  const [topic, setTopic] = useState('')
+  const [topic, setTopic] = useState(() => params.get('topic') || '')
   const [search, setSearch] = useState('')
   const [keyword, setKeyword] = useState('')
   const [loading, setLoading] = useState(true)
@@ -41,7 +44,7 @@ export function StudyBankTab() {
     void loadList()
   }, [loadList])
 
-  const openQuestion = async (topicId: string, qid: string) => {
+  const openQuestion = useCallback(async (topicId: string, qid: string) => {
     setCreating(false)
     setFeedback(null)
     try {
@@ -51,7 +54,13 @@ export function StudyBankTab() {
     } catch (err) {
       setFeedback({ tone: 'error', text: errorMessage(err) })
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const topicId = params.get('topic')
+    const qid = params.get('qid')
+    if (topicId && qid) void openQuestion(topicId, qid)
+  }, [params, openQuestion])
 
   const startNew = () => {
     const fallback = topic || bank?.topics[0]?.id || ''
