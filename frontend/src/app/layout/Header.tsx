@@ -87,88 +87,96 @@ export function Header() {
   }
 
   return (
-    <header className={headerClass}>
-      <div className="header-inner">
-        <Link to="/" className="brand" aria-label="返回首页">
-          <span className="brand-mark">{SITE.shortName}</span>
-          <span className="brand-text">
-            <strong>{SITE.name}</strong>
-            <small>技术 · 生活 · 长期主义</small>
-          </span>
-        </Link>
-
-        <nav className="main-nav" aria-label="主导航">
-          <Link to="/" className={isBlog ? 'nav-link active' : 'nav-link'}>
-            博客
+    <>
+      <header className={headerClass}>
+        <div className="header-inner">
+          <Link to="/" className="brand" aria-label="返回首页">
+            <span className="brand-mark">{SITE.shortName}</span>
+            <span className="brand-text">
+              <strong>{SITE.name}</strong>
+              <small>技术 · 生活 · 长期主义</small>
+            </span>
           </Link>
-          <Link to="/study" className={isStudy ? 'nav-link active' : 'nav-link'}>
-            学习
-          </Link>
-        </nav>
 
-        <div className="header-actions">
-          <button className="search-trigger" type="button" onClick={() => setSearchOpen(true)} aria-label="搜索">
-            <SearchIcon className="icon" />
-            <span>搜索</span>
-            <kbd>/</kbd>
-          </button>
-          <button
-            className="icon-button"
-            type="button"
-            onClick={toggle}
-            aria-label={dark ? '切换到浅色模式' : '切换到深色模式'}
-          >
-            {dark ? <SunIcon className="icon" /> : <MoonIcon className="icon" />}
-          </button>
+          <nav className="main-nav" aria-label="主导航">
+            <Link to="/" className={isBlog ? 'nav-link active' : 'nav-link'}>
+              博客
+            </Link>
+            <Link to="/study" className={isStudy ? 'nav-link active' : 'nav-link'}>
+              学习
+            </Link>
+          </nav>
 
-          <div className="account-menu-wrap" ref={menuRef}>
+          <div className="header-actions">
             <button
-              className={menuOpen ? 'icon-button is-open' : 'icon-button'}
+              className="search-trigger"
               type="button"
-              onClick={() => setMenuOpen((value) => !value)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              aria-label="设置与账户"
+              onClick={() => setSearchOpen(true)}
+              aria-label="搜索"
             >
-              <SettingsIcon className="icon" />
+              <SearchIcon className="icon" />
+              <span>搜索</span>
+              <kbd>/</kbd>
             </button>
-            {menuOpen && (
-              <div className="account-menu" role="menu">
-                <p className="account-menu-label">站点管理</p>
-                <Link role="menuitem" to="/admin" onClick={() => setMenuOpen(false)}>
-                  内容后台
-                </Link>
-                <Link role="menuitem" to="/admin/study" onClick={() => setMenuOpen(false)}>
-                  学习设置
-                </Link>
-                <Link role="menuitem" to="/admin/backup" onClick={() => setMenuOpen(false)}>
-                  数据备份
-                </Link>
-                <a role="menuitem" href={DISGUISE_HREF} onClick={() => setMenuOpen(false)}>
-                  伪装学习页
-                </a>
-                <div className="account-menu-sep" />
-                <button
-                  role="menuitem"
-                  type="button"
-                  className="account-menu-danger"
-                  onClick={() => void signOut()}
-                  disabled={loggingOut}
-                >
-                  <LogoutIcon className="icon" />
-                  {loggingOut ? '退出中…' : '退出登录'}
-                </button>
-              </div>
-            )}
+            <button
+              className="icon-button"
+              type="button"
+              onClick={toggle}
+              aria-label={dark ? '切换到浅色模式' : '切换到深色模式'}
+            >
+              {dark ? <SunIcon className="icon" /> : <MoonIcon className="icon" />}
+            </button>
+
+            <div className="account-menu-wrap" ref={menuRef}>
+              <button
+                className={menuOpen ? 'icon-button is-open' : 'icon-button'}
+                type="button"
+                onClick={() => setMenuOpen((value) => !value)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="设置与账户"
+              >
+                <SettingsIcon className="icon" />
+              </button>
+              {menuOpen && (
+                <div className="account-menu" role="menu">
+                  <p className="account-menu-label">站点管理</p>
+                  <Link role="menuitem" to="/admin" onClick={() => setMenuOpen(false)}>
+                    内容后台
+                  </Link>
+                  <Link role="menuitem" to="/admin/study" onClick={() => setMenuOpen(false)}>
+                    学习设置
+                  </Link>
+                  <Link role="menuitem" to="/admin/backup" onClick={() => setMenuOpen(false)}>
+                    数据备份
+                  </Link>
+                  <a role="menuitem" href={DISGUISE_HREF} onClick={() => setMenuOpen(false)}>
+                    伪装学习页
+                  </a>
+                  <div className="account-menu-sep" />
+                  <button
+                    role="menuitem"
+                    type="button"
+                    className="account-menu-danger"
+                    onClick={() => void signOut()}
+                    disabled={loggingOut}
+                  >
+                    <LogoutIcon className="icon" />
+                    {loggingOut ? '退出中…' : '退出登录'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </header>
+      {/* 弹层放在 header 外：header 的 backdrop-filter 会把 fixed 子元素限制在头部高度内 */}
       {searchOpen && (
         <Suspense fallback={null}>
           <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
         </Suspense>
       )}
-    </header>
+    </>
   )
 }
 
