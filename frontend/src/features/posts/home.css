@@ -259,9 +259,9 @@
 
 /* ---------------- Entrance ---------------- */
 
-/* 标题、摘要、统计依次落位；只错开 40ms，不让人等 */
+/* 标题、摘要、统计依次淡入；只错开 40ms，不让人等 */
 .home-hero > * {
-  animation: rise-soft 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade 0.24s ease both;
 }
 
 .home-hero > *:nth-child(2) {
@@ -276,9 +276,9 @@
   animation-delay: 0.12s;
 }
 
-/* 列表逐行出现：前 5 行轻微错峰，再往下不叠加延迟，避免翻页越深越慢 */
+/* 列表逐行淡入：前 5 行轻微错峰，再往下不叠加延迟，避免翻页越深越慢 */
 .post-row {
-  animation: rise-soft 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade 0.24s ease both;
 }
 
 .post-row:nth-child(2) {

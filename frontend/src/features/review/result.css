@@ -29,14 +29,14 @@
 
 .review-done h1 {
   margin: 10px 0 8px;
-  animation: review-done-rise 0.5s ease 0.08s both;
+  animation: fade 0.28s ease 0.08s both;
 }
 
 .review-done-sub {
   margin: 0 0 24px;
   color: var(--muted);
   font-size: 14px;
-  animation: review-done-rise 0.5s ease 0.12s both;
+  animation: fade 0.28s ease 0.12s both;
 }
 
 .review-done-count {
@@ -45,7 +45,7 @@
   align-items: center;
   gap: 2px;
   margin: 0 0 22px;
-  animation: review-done-rise 0.5s ease 0.16s both;
+  animation: fade 0.28s ease 0.16s both;
 }
 
 .review-done-count-label {
@@ -76,14 +76,14 @@
 }
 
 .review-done-stats {
-  animation: review-done-rise 0.5s ease 0.2s both;
+  animation: fade 0.28s ease 0.2s both;
 }
 
 .review-done-topics {
   margin: 0 0 10px;
   font-size: 13px;
   color: var(--muted);
-  animation: review-done-rise 0.5s ease 0.24s both;
+  animation: fade 0.28s ease 0.24s both;
 }
 
 .review-done-next {
@@ -98,7 +98,7 @@
   background: var(--bg-elev);
   color: var(--ink-2);
   font-size: 13px;
-  animation: review-done-rise 0.5s ease 0.28s both;
+  animation: fade 0.28s ease 0.28s both;
 }
 
 .review-done-next-dot {
@@ -109,7 +109,7 @@
 }
 
 .review-done-actions {
-  animation: review-done-rise 0.5s ease 0.32s both;
+  animation: fade 0.28s ease 0.32s both;
 }
 
 .review-done-heatmap {
@@ -162,17 +162,6 @@
   }
   to {
     transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes review-done-rise {
-  from {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
     opacity: 1;
   }
 }

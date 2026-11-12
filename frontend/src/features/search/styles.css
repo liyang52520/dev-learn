@@ -20,7 +20,7 @@
   border-radius: 18px;
   box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.55);
   overflow: hidden;
-  animation: rise 0.22s ease both;
+  animation: fade 0.18s ease both;
 }
 
 .search-input-row {

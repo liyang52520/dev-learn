@@ -209,11 +209,11 @@
   animation: fade 0.2s ease both;
 }
 
-/* 答案、原文与评分条在揭示时依次落位，避免整块内容突然撑开 */
+/* 答案、原文与评分条在揭示时依次淡入，避免整块内容突然撑开 */
 .review-points,
 .review-answer,
 .review-bottom {
-  animation: rise-soft 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade 0.24s ease both;
 }
 
 .review-answer {
@@ -224,18 +224,7 @@
   animation-delay: 0.08s;
 }
 
-/* 提示从下方浮起，方向与吸底评分条一致 */
+/* 提示原地淡入，不做位移，避免与吸底评分条抢注意力 */
 .review-toast {
-  animation: review-toast-in 0.2s ease both;
-}
-
-@keyframes review-toast-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 8px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+  animation: fade 0.2s ease both;
 }

@@ -123,9 +123,9 @@
   transform: translateX(2px);
 }
 
-/* 专题卡片按顺序轻量出现；用 backwards 结束即交还样式，保证 hover 上浮不被动画锁死 */
+/* 专题卡片按顺序淡入；不移动位置，避免悬停上浮与入场动画打架 */
 .study-grid > * {
-  animation: rise-soft 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: fade 0.24s ease backwards;
 }
 
 .study-grid > *:nth-child(2) {

@@ -134,9 +134,9 @@
   color: var(--muted);
 }
 
-/* 标题先落位，正文稍后淡入；长文只过渡透明度，避免整块位移分散注意力 */
+/* 标题先淡入，正文稍后淡入；长文只过渡透明度，避免整块位移分散注意力 */
 .article-header {
-  animation: rise-soft 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade 0.24s ease both;
 }
 
 .article-shell {
