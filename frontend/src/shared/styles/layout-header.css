@@ -16,6 +16,11 @@
   transform: translateY(-100%);
 }
 
+/* 路由切换时立即复位顶栏，跳过滑入动画 */
+.site-header.is-snap {
+  transition: none;
+}
+
 .header-inner {
   width: min(1280px, 100% - 48px);
   height: 68px;

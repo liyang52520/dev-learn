@@ -7,6 +7,8 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 96px;
+  /* 始终给滚动条留位：页面从短变长时居中内容不会左右横跳 */
+  scrollbar-gutter: stable;
   /* 关掉 iOS Safari 的字号自动放大：代码块（min-width: max-content）比视口宽，
      会被 WebKit 按块宽放大字号，导致手机上代码显示异常 */
   -webkit-text-size-adjust: 100%;

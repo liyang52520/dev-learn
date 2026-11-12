@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
+import { QuestionDetailSkeleton, StudySkeleton } from '@/shared/components/PageSkeleton'
 import { EvidencePanel } from '../components/EvidencePanel'
 import { QuestionContent } from '../components/QuestionContent'
 import { QuestionSidebar } from '../components/QuestionSidebar'
@@ -25,19 +26,21 @@ export default function QuestionPage() {
       </div>
     )
   }
-  if (!topicQuery.data || !questionQuery.data) {
-    return (
-      <div className="page-shell">
-        <p className="muted">正在加载题目…</p>
-      </div>
-    )
+  if (!topicQuery.data) {
+    return <StudySkeleton />
   }
 
   return (
     <div className="study-page">
       <QuestionSidebar topic={topicQuery.data} currentQid={qid} />
-      <QuestionContent question={questionQuery.data} />
-      <EvidencePanel groups={questionQuery.data.evidence} />
+      {questionQuery.data ? (
+        <>
+          <QuestionContent question={questionQuery.data} />
+          <EvidencePanel groups={questionQuery.data.evidence} />
+        </>
+      ) : (
+        <QuestionDetailSkeleton />
+      )}
     </div>
   )
 }

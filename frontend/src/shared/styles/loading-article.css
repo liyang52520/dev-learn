@@ -1,5 +1,16 @@
 /* 文章页 */
 
+.sk-article-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.sk-article-kicker {
+  width: 96px;
+}
+
 .sk-hero-stack {
   grid-column: 1;
   min-width: 0;

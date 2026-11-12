@@ -1,7 +1,7 @@
 /* ---------------- Home hero ---------------- */
 
 .home-page {
-  width: min(1200px, 100% - 48px);
+  width: min(1180px, 100% - 48px);
 }
 
 .home-page .home-hero h1 {

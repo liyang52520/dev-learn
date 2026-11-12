@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { ChevronDownIcon, SearchIcon } from '@/shared/components/Icons'
@@ -12,11 +12,21 @@ type Props = {
 export function QuestionSidebar({ topic, currentQid }: Props) {
   const [keyword, setKeyword] = useState('')
   const [open, setOpen] = useState(false)
+  const listRef = useRef<HTMLDivElement>(null)
   const activeRef = useRef<HTMLAnchorElement>(null)
 
-  useEffect(() => {
-    if (activeRef.current) activeRef.current.scrollIntoView({ block: 'nearest' })
-  }, [currentQid])
+  // 只滚动左侧列表自身，且仅在当前题不在可视范围时才居中对齐。
+  // 用 scrollIntoView 会连带滚动整个页面，也会把目标题压到列表最底部。
+  useLayoutEffect(() => {
+    const list = listRef.current
+    const active = activeRef.current
+    if (!list || !active) return
+    const listRect = list.getBoundingClientRect()
+    const itemRect = active.getBoundingClientRect()
+    if (itemRect.top >= listRect.top && itemRect.bottom <= listRect.bottom) return
+    const centered = list.scrollTop + itemRect.top - listRect.top - (list.clientHeight - itemRect.height) / 2
+    list.scrollTop = Math.max(0, centered)
+  }, [currentQid, keyword])
 
   const needle = keyword.trim().toLowerCase()
   const questions = needle
@@ -57,7 +67,7 @@ export function QuestionSidebar({ topic, currentQid }: Props) {
         </button>
       </div>
 
-      <div className="question-list">
+      <div className="question-list" ref={listRef}>
         {questions.length === 0 ? (
           <p className="question-empty">没有匹配的题目。</p>
         ) : (

@@ -10,7 +10,7 @@ import {
   SettingsIcon,
   SunIcon,
 } from '@/shared/components/Icons'
-import { useTheme } from '@/shared/hooks'
+import { useHeaderVisibility, useTheme } from '@/shared/hooks'
 
 const SearchDialog = lazy(() => import('@/features/search/components/SearchDialog'))
 
@@ -30,21 +30,10 @@ export function Header() {
   const navigate = useNavigate()
   const client = useQueryClient()
   const [searchOpen, setSearchOpen] = useState(false)
-  const [hidden, setHidden] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    let lastY = window.scrollY
-    const onScroll = () => {
-      const y = window.scrollY
-      setHidden(y > 180 && y > lastY + 4)
-      lastY = y
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  const { hidden, snapping } = useHeaderVisibility(pathname)
 
   useEffect(() => {
     setMenuOpen(false)
@@ -84,6 +73,7 @@ export function Header() {
   const isBlog = pathname === '/' || pathname.startsWith('/posts') || pathname.startsWith('/blog')
   const isStudy = pathname.startsWith('/study')
   const dark = theme === 'dark'
+  const headerClass = `site-header${hidden ? ' is-hidden' : ''}${snapping ? ' is-snap' : ''}`
 
   const signOut = async () => {
     setLoggingOut(true)
@@ -97,7 +87,7 @@ export function Header() {
   }
 
   return (
-    <header className={hidden ? 'site-header is-hidden' : 'site-header'}>
+    <header className={headerClass}>
       <div className="header-inner">
         <Link to="/" className="brand" aria-label="返回首页">
           <span className="brand-mark">{SITE.shortName}</span>

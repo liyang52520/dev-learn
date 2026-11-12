@@ -6,6 +6,8 @@
 
 .site-main {
   flex: 1;
+  /* 内容区至少占满一屏：加载态再短也不会把页脚顶进视口，数据回来时页脚不会突然被推走 */
+  min-height: calc(100vh - 68px);
 }
 
 .page-shell {

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { ArticleView } from '../components/ArticleView'
 import { ReadingProgress } from '../components/ReadingProgress'
 import { usePost } from '../hooks'
+import { ArticleSkeleton } from '@/shared/components/PageSkeleton'
 import { NotFoundPage } from '@/app/NotFoundPage'
 import { ApiError } from '@/shared/api/client'
 
@@ -11,13 +12,7 @@ export default function PostPage() {
   const { data, error, isPending } = usePost(slug)
 
   if (error instanceof ApiError && error.status === 404) return <NotFoundPage />
-  if (isPending) {
-    return (
-      <div className="page-shell">
-        <p className="muted">正在加载文章…</p>
-      </div>
-    )
-  }
+  if (isPending) return <ArticleSkeleton />
   if (!data) {
     return (
       <div className="page-shell">

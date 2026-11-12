@@ -3,7 +3,7 @@
 /* 复习入口样式在 features/review/launcher*.css，随全局样式一起加载，这里不再重复覆盖。 */
 
 .study-home {
-  width: min(1200px, 100% - 48px);
+  width: min(1180px, 100% - 48px);
 }
 
 .study-hero h1 {
