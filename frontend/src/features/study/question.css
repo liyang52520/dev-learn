@@ -226,3 +226,24 @@
   padding-top: 26px;
   border-top: 1px solid var(--line);
 }
+
+/* 标题、要点、答案、翻页依次落位；切题后能感知到内容确实换了一题 */
+.study-main > * {
+  animation: rise-soft 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.study-main > *:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.study-main > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.study-main > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+
+.study-main > *:nth-child(5) {
+  animation-delay: 0.2s;
+}

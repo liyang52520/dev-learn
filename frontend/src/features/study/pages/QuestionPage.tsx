@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Fragment, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { QuestionDetailSkeleton, StudySkeleton } from '@/shared/components/PageSkeleton'
@@ -34,10 +34,11 @@ export default function QuestionPage() {
     <div className="study-page">
       <QuestionSidebar topic={topicQuery.data} currentQid={qid} />
       {questionQuery.data ? (
-        <>
+        // 按题目 id 重新挂载正文与证据，切题时触发进入动效；左侧列表保持挂载，滚动位置不丢
+        <Fragment key={questionQuery.data.id}>
           <QuestionContent question={questionQuery.data} />
           <EvidencePanel groups={questionQuery.data.evidence} />
-        </>
+        </Fragment>
       ) : (
         <QuestionDetailSkeleton />
       )}

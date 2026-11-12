@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import { QuestionCard } from '../components/QuestionCard'
@@ -8,6 +9,12 @@ import { useReviewSession } from '../useReviewSession'
 export default function ReviewPage() {
   const session = useReviewSession()
   const { phase, card, stats } = session
+  const cardId = card?.cardId
+
+  // 换卡时先回到顶部，避免新题停留在上一张答案的滚动位置；在绘制前执行，不会看到跳动
+  useLayoutEffect(() => {
+    if (cardId) window.scrollTo(0, 0)
+  }, [cardId])
 
   if (phase === 'error') {
     const syncing = session.errorCode === 'sync_in_progress'
@@ -86,6 +93,7 @@ export default function ReviewPage() {
         </div>
       ) : (
         <QuestionCard
+          key={card.cardId}
           card={card}
           phase={phase}
           answerHtml={session.answerHtml}

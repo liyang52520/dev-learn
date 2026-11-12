@@ -120,4 +120,26 @@
 .study-card:hover .study-card-arrow {
   color: var(--card-accent);
   border-color: var(--card-accent);
+  transform: translateX(2px);
+}
+
+/* 专题卡片按顺序轻量出现；用 backwards 结束即交还样式，保证 hover 上浮不被动画锁死 */
+.study-grid > * {
+  animation: rise-soft 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.study-grid > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.study-grid > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.study-grid > *:nth-child(4) {
+  animation-delay: 0.12s;
+}
+
+.study-grid > *:nth-child(5) {
+  animation-delay: 0.16s;
 }

@@ -193,12 +193,16 @@
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
-  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease, transform 0.12s ease;
 }
 
 .pagination-link:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.pagination-link:active {
+  transform: scale(0.95);
 }
 
 .pagination-link.active {
@@ -251,4 +255,44 @@
   font-size: 13px;
   line-height: 1.8;
   color: var(--muted);
+}
+
+/* ---------------- Entrance ---------------- */
+
+/* 标题、摘要、统计依次落位；只错开 40ms，不让人等 */
+.home-hero > * {
+  animation: rise-soft 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-hero > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.home-hero > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.home-hero > *:nth-child(4) {
+  animation-delay: 0.12s;
+}
+
+/* 列表逐行出现：前 5 行轻微错峰，再往下不叠加延迟，避免翻页越深越慢 */
+.post-row {
+  animation: rise-soft 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.post-row:nth-child(2) {
+  animation-delay: 0.035s;
+}
+
+.post-row:nth-child(3) {
+  animation-delay: 0.07s;
+}
+
+.post-row:nth-child(4) {
+  animation-delay: 0.105s;
+}
+
+.post-row:nth-child(5) {
+  animation-delay: 0.14s;
 }

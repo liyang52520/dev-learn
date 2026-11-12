@@ -50,14 +50,18 @@ export function HtmlContent({ html, className }: Props) {
       if (!button) return
       const block = button.closest('.code-block')
       const code = block?.querySelector('pre')?.textContent ?? ''
+      button.classList.remove('is-copied', 'is-copy-failed')
       try {
         await navigator.clipboard.writeText(code)
         button.textContent = '已复制'
+        button.classList.add('is-copied')
       } catch {
         button.textContent = '复制失败'
+        button.classList.add('is-copy-failed')
       }
       window.setTimeout(() => {
         button.textContent = '复制'
+        button.classList.remove('is-copied', 'is-copy-failed')
       }, 1600)
     }
     root.addEventListener('click', onClick)

@@ -133,3 +133,12 @@
   line-height: 1.7;
   color: var(--muted);
 }
+
+/* 标题先落位，正文稍后淡入；长文只过渡透明度，避免整块位移分散注意力 */
+.article-header {
+  animation: rise-soft 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.article-shell {
+  animation: fade 0.32s ease 0.08s both;
+}

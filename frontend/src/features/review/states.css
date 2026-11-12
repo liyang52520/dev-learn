@@ -69,6 +69,10 @@
   transform: translateY(-1px);
 }
 
+.review-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
 .review-btn.ghost {
   background: transparent;
   border-color: var(--line-2);

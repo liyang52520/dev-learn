@@ -66,6 +66,12 @@
   transform: translateY(-1px);
 }
 
+/* 按下时回到原位并轻微收缩，给鼠标和触控一个明确反馈 */
+.button.primary:active,
+.button.ghost:active {
+  transform: translateY(0) scale(0.98);
+}
+
 .section {
   padding: 66px 0 0;
 }

@@ -38,7 +38,7 @@ export function QuestionCard(props: Props) {
   const waiting = phase === 'loading' || !card
 
   return (
-    <div className={`review-panel${phase === 'question' ? ' is-question' : ''}`} aria-busy={busy}>
+    <div className={`review-panel review-card${phase === 'question' ? ' is-question' : ''}`} aria-busy={busy}>
       <div className="review-meta">
         <span>{card.question?.topic || card.qid}</span>
         {card.question?.pages && <span>{card.question.pages}</span>}

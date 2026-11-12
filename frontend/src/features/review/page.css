@@ -216,6 +216,10 @@
   background: var(--bg-elev);
 }
 
+.review-rate:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
 .review-rate:disabled {
   opacity: 0.55;
   cursor: default;

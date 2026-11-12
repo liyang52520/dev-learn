@@ -63,6 +63,34 @@
   background: var(--code-hover-bg);
 }
 
+/* 复制结果用颜色和小幅弹入确认，避免只靠文字变化被忽略 */
+.code-copy.is-copied {
+  color: #13784f;
+  animation: code-copy-pop 0.18s ease-out;
+}
+
+.code-copy.is-copy-failed {
+  color: #b8382b;
+  animation: code-copy-pop 0.18s ease-out;
+}
+
+html.dark .code-copy.is-copied {
+  color: #9ccc7c;
+}
+
+html.dark .code-copy.is-copy-failed {
+  color: #ff9b93;
+}
+
+@keyframes code-copy-pop {
+  from {
+    transform: scale(0.92);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
 .code-block pre {
   margin: 0 !important;
   padding: 18px 20px !important;

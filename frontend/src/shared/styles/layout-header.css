@@ -124,6 +124,10 @@
   transform: translateY(-1px);
 }
 
+.search-trigger:active {
+  transform: translateY(0) scale(0.97);
+}
+
 .search-trigger kbd {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -149,6 +153,10 @@
   color: var(--ink);
   border-color: var(--line-2);
   transform: translateY(-1px);
+}
+
+.icon-button:active {
+  transform: translateY(0) scale(0.94);
 }
 
 .account-menu-wrap {

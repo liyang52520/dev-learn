@@ -203,3 +203,39 @@
   background: var(--accent);
   transition: width 0.4s ease;
 }
+
+/* 换卡时整张卡片轻落位；只做入场，不做退场，避免拖慢连续评分节奏 */
+.review-card {
+  animation: rise-soft 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 答案、原文与评分条在揭示时依次落位，避免整块内容突然撑开 */
+.review-points,
+.review-answer,
+.review-bottom {
+  animation: rise-soft 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.review-answer {
+  animation-delay: 0.04s;
+}
+
+.review-bottom {
+  animation-delay: 0.08s;
+}
+
+/* 提示从下方浮起，方向与吸底评分条一致 */
+.review-toast {
+  animation: review-toast-in 0.2s ease both;
+}
+
+@keyframes review-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
