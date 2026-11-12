@@ -204,9 +204,9 @@
   transition: width 0.4s ease;
 }
 
-/* 换卡时整张卡片轻落位；只做入场，不做退场，避免拖慢连续评分节奏 */
-.review-card {
-  animation: rise-soft 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+/* 换卡时只让面板内的内容原地淡入，外框保持不动；仅题面阶段触发，不影响答案揭示 */
+.review-card.is-question > * {
+  animation: fade 0.2s ease both;
 }
 
 /* 答案、原文与评分条在揭示时依次落位，避免整块内容突然撑开 */
