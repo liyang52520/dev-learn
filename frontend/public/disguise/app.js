@@ -738,12 +738,16 @@
         titleNodes.forEach(function (n) { n.textContent = TITLES[idx]; });
         document.title = TITLES[idx] + ' - DeepSeek';
         render(idx);
+        if (isMobile()) setCollapsed(true, false);
       });
       links.push(a);
     });
   });
 
   var collapseKey = 'disguise-sidebar-collapsed';
+  var sidebarOverlay = document.querySelector('._4cbcd96');
+  var mobileMenuBtn = document.querySelector('._1aa2651 .ds-button');
+  var mobileQuery = window.matchMedia('(max-width: 767px)');
   var expandBtn = document.createElement('div');
   expandBtn.setAttribute('role', 'button');
   expandBtn.setAttribute('aria-label', '展开侧栏');
@@ -751,10 +755,15 @@
   expandBtn.innerHTML = collapseBtn ? collapseBtn.querySelector('svg').outerHTML : '';
   document.body.appendChild(expandBtn);
 
+  function isMobile() { return mobileQuery.matches; }
+
+  // 移动端侧栏是浮层抽屉：展开时才有遮罩，收起时遮罩必须隐藏，否则它常驻整页并吞掉所有点击
   function setCollapsed(collapsed, persist) {
     sider.classList.toggle('a02af2e6', collapsed);
-    expandBtn.style.display = collapsed ? 'flex' : 'none';
-    if (persist) {
+    document.body.classList.toggle('disguise-sider-open', !collapsed && isMobile());
+    expandBtn.style.display = collapsed && !isMobile() ? 'flex' : 'none';
+    // 移动端是临时抽屉，不写入桌面端的收起偏好
+    if (persist && !isMobile()) {
       try { localStorage.setItem(collapseKey, collapsed ? '1' : '0'); } catch (err) { /* 忽略隐私模式限制 */ }
     }
   }
@@ -768,6 +777,17 @@
     });
   }
   expandBtn.addEventListener('click', function () { setCollapsed(false, true); });
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', function () { setCollapsed(true, false); });
+  }
+  if (mobileMenuBtn) {
+    mobileMenuBtn.style.cursor = 'pointer';
+    mobileMenuBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setCollapsed(false, false);
+    });
+  }
   if (shareBtn) {
     shareBtn.style.cursor = 'pointer';
     shareBtn.addEventListener('click', function (e) {
@@ -850,7 +870,12 @@
     '.disguise-nav-dash i{display:block;width:8px;height:2px;border-radius:4px;background:var(--dsw-alias-border-l4,#d9d9d9);transition:background-color .2s}' +
     '.disguise-nav-item:hover .disguise-nav-dash i{background:var(--dsw-alias-label-primary,#1f2329)}' +
     '.disguise-nav-item.is-active .disguise-nav-dash i{background:var(--dsw-alias-brand-text,#4d6bfe);transform:scale(1.5)}' +
-    '@media not all and (min-width:768px){.disguise-nav{display:none!important}}';
+    '@media not all and (min-width:768px){.disguise-nav{display:none!important}' +
+    // 移动端：自带展开按钮在顶栏，隐藏桌面用的悬浮按钮；遮罩只在抽屉展开时出现
+    '.disguise-expand{display:none!important}' +
+    '._4cbcd96{opacity:0!important;pointer-events:none!important}' +
+    'body.disguise-sider-open ._4cbcd96{opacity:1!important;pointer-events:auto!important}' +
+    '._1aa2651 .ds-button{cursor:pointer}}';
   document.head.appendChild(styleFix);
 
   var tip = document.createElement('div');
@@ -915,9 +940,20 @@
     titleNodes.forEach(function (n) { n.textContent = TITLES[0]; });
     document.title = TITLES[0] + ' - DeepSeek';
   }
-  try {
-    if (localStorage.getItem(collapseKey) === '1') setCollapsed(true, false);
-  } catch (err) { /* 忽略隐私模式限制 */ }
+  // 移动端默认收起抽屉；桌面端沿用上次的收起偏好
+  function applySidebarDefault() {
+    if (isMobile()) {
+      setCollapsed(true, false);
+      return;
+    }
+    try {
+      setCollapsed(localStorage.getItem(collapseKey) === '1', false);
+    } catch (err) { /* 忽略隐私模式限制 */ }
+  }
+  applySidebarDefault();
+  var onViewportChange = function () { applySidebarDefault(); };
+  if (mobileQuery.addEventListener) mobileQuery.addEventListener('change', onViewportChange);
+  else if (mobileQuery.addListener) mobileQuery.addListener(onViewportChange);
   render(0);
   if (!SELFTEST) loadQueue();
 
