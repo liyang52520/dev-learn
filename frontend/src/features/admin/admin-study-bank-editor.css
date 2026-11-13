@@ -149,6 +149,20 @@
   background: var(--bg-elev);
 }
 
+.bank-evidence-file .bank-evidence-zoom {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.bank-evidence-zoom:hover img {
+  opacity: 0.86;
+}
+
 .bank-evidence-file figcaption {
   margin-top: 4px;
   color: var(--faint);

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { errorMessage } from '@/shared/api/client'
+import { ImageLightbox } from '@/shared/components/ImageLightbox'
 import type { AdminEvidenceFile } from '@/types/models'
 
 import { uploadEvidence } from '../api'
@@ -18,6 +19,7 @@ export function EvidenceEditor({ topicId, no, groups, onChange }: Props) {
   const [pages, setPages] = useState<Record<number, number>>({})
   const [uploading, setUploading] = useState('')
   const [error, setError] = useState('')
+  const [zoom, setZoom] = useState<AdminEvidenceFile | null>(null)
 
   const update = (index: number, patch: Partial<DraftGroup>) => {
     onChange(groups.map((group, position) => (position === index ? { ...group, ...patch } : group)))
@@ -120,13 +122,20 @@ export function EvidenceEditor({ topicId, no, groups, onChange }: Props) {
           <div className="bank-evidence-files">
             {group.files.map((file) => (
               <figure className="bank-evidence-file" key={file.file}>
-                <img
-                  src={file.file}
-                  alt={`第 ${file.page} 页证据截图`}
-                  width={file.width ?? undefined}
-                  height={file.height ?? undefined}
-                  loading="lazy"
-                />
+                <button
+                  type="button"
+                  className="bank-evidence-zoom"
+                  aria-label={`放大查看第 ${file.page} 页证据截图`}
+                  onClick={() => setZoom(file)}
+                >
+                  <img
+                    src={file.file}
+                    alt={`第 ${file.page} 页证据截图`}
+                    width={file.width ?? undefined}
+                    height={file.height ?? undefined}
+                    loading="lazy"
+                  />
+                </button>
                 <figcaption>p{file.page}</figcaption>
                 <button type="button" onClick={() => removeFile(index, file)}>
                   移除
@@ -173,6 +182,15 @@ export function EvidenceEditor({ topicId, no, groups, onChange }: Props) {
         notice={error ? { tone: 'error', text: error } : null}
         onClose={() => setError('')}
       />
+
+      {zoom && (
+        <ImageLightbox
+          src={zoom.file}
+          alt={`第 ${zoom.page} 页证据截图`}
+          caption={`PDF 原文 · p${zoom.page}`}
+          onClose={() => setZoom(null)}
+        />
+      )}
     </section>
   )
 }
