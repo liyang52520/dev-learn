@@ -813,8 +813,10 @@
     '.ds-virtual-list{overflow-x:hidden!important}' +
     '.dc04ec1d.a02af2e6{overflow:hidden}' +
     '.dc04ec1d.a02af2e6 > *{display:none!important}' +
+    // 收起时给桌面悬浮展开按钮让位；移动端用顶栏汉堡，绝不能套用这条，否则顶栏左侧会空一块
+    '@media (min-width:768px){' +
     '.dc04ec1d.a02af2e6 ~ ._7780f2e ._1aa2651{padding-left:44px}' +
-    '.dc04ec1d.a02af2e6 ~ ._7780f2e .f8d1e4c0{padding-left:40px}' +
+    '.dc04ec1d.a02af2e6 ~ ._7780f2e .f8d1e4c0{padding-left:40px}}' +
     '.disguise-expand{position:fixed;left:2px;top:16px;width:26px;height:26px;display:none;align-items:center;justify-content:center;border-radius:6px;color:var(--dsw-alias-label-tertiary);cursor:pointer;z-index:1200}' +
     '.disguise-expand:hover{background:rgba(0,0,0,.05)}' +
     '.ds-virtual-list-visible-items ._0a3d93b .ds-button.is-rated' +
@@ -875,7 +877,14 @@
     '.disguise-expand{display:none!important}' +
     '._4cbcd96{opacity:0!important;pointer-events:none!important}' +
     'body.disguise-sider-open ._4cbcd96{opacity:1!important;pointer-events:auto!important}' +
-    '._1aa2651 .ds-button{cursor:pointer}}';
+    // 顶栏重排：汉堡贴左、标题吃掉剩余宽度、右侧两个按钮统一 44px 且垂直居中
+    '._1aa2651{width:auto!important;flex:1 1 auto!important;padding:8px 6px!important}' +
+    '._2be88ba{align-items:center!important}' +
+    '._9986c0c{flex:1 1 auto;min-width:0;max-width:none!important;margin:0 8px!important}' +
+    '._19943ce,._348bebe{display:none!important}' +
+    '._1aa2651>.ds-button{width:44px!important;height:44px!important;flex:0 0 44px}' +
+    '._57370c5{align-self:center;width:44px!important;height:44px!important;min-width:44px;margin:0 6px 0 2px!important;display:flex;align-items:center;justify-content:center}' +
+    '._1aa2651 .ds-button,._57370c5{cursor:pointer}}';
   document.head.appendChild(styleFix);
 
   var tip = document.createElement('div');
