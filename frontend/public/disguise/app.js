@@ -310,8 +310,9 @@
       });
     });
     if (buttons[4]) {
-      // 伪装：图标与悬停提示都保持原来的「朗读」，点击实际是撤销评分
-      buttons[4].setAttribute('data-tip', '朗读');
+      // 图标沿用原来的「朗读」，悬停提示改成「撤销」，点击实际是撤销评分
+      buttons[4].setAttribute('data-tip', '撤销');
+      buttons[4].setAttribute('aria-label', '撤销');
       buttons[4].style.cursor = 'pointer';
       buttons[4].addEventListener('click', function (e) {
         e.preventDefault();
