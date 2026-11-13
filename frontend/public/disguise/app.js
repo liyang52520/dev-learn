@@ -272,6 +272,11 @@
     return p;
   }
 
+  // 原「朗读」按钮改成的撤销图标（逆时针回退箭头）
+  var UNDO_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<path d="M3.2 8a4.8 4.8 0 1 1 1.41 3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' +
+    '<path d="M3.2 4.7V8h3.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
   function aiNode(html, rate, labels, card, streaming) {
     var node = aiTpl.cloneNode(true);
     node.removeAttribute('data-virtual-list-item-key');
@@ -296,7 +301,7 @@
     }
     bar.setAttribute('data-rated', '0');
     var buttons = bar.querySelectorAll('.ds-button');
-    // 评分只绑定前四个按钮；后两个（朗读/分享）保留正常交互，其中最后一个可跳到题目编辑页
+    // 评分只绑定前四个按钮；第五个改成撤销，最后一个可跳到题目编辑页
     var rateTips = ['忘记', '模糊', '记得', '简单'];
     [].slice.call(buttons, 0, 4).forEach(function (b, i) {
       var tip = rateTips[i] + (labels && labels[i] ? ' · 下次 ' + labels[i] : '');
@@ -309,6 +314,19 @@
         selectRate(node, i);
       });
     });
+    if (buttons[4]) {
+      var undoTip = '撤销评分';
+      buttons[4].setAttribute('data-tip', undoTip);
+      buttons[4].setAttribute('aria-label', undoTip);
+      buttons[4].style.cursor = 'pointer';
+      var icon = buttons[4].querySelector('.ds-icon');
+      if (icon) icon.innerHTML = UNDO_ICON;
+      buttons[4].addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        undoRate(node);
+      });
+    }
     if (buttons[5] && card && card.qid) {
       var editTip = '编辑这道题';
       buttons[5].setAttribute('data-tip', editTip);
@@ -343,27 +361,94 @@
     if (!bar) return;
     if (bar.getAttribute('data-rated') === '1') return;
     var buttons = bar.querySelectorAll('.ds-button');
+    var card = review.ready ? review.card : null;
+    // 撤销后重新评分时，当前卡必须还是这条回答对应的那张卡，
+    // 否则评分会被写到别的题上：直接拒绝。
+    var barCard = Number(bar.getAttribute('data-card-id') || 0);
+    if (barCard && (!card || card.cardId !== barCard)) {
+      resetRateBar(bar);
+      notice('这张卡已经重新排队，请点输入框左边的附件重新抽题。');
+      return;
+    }
+    // 撤销后 phase 已回到 idle，但队列里仍是同一张卡时允许直接重评
+    if (state.phase !== 'answered' && !(barCard && card && card.cardId === barCard)) return;
     Array.prototype.forEach.call(buttons, function (b, i) {
       b.classList.toggle('is-rated', i === index);
     });
-    if (state.phase !== 'answered') return;
-    var card = review.ready ? review.card : null;
     if (!card) {
       bar.setAttribute('data-rated', '1');
+      bar.setAttribute('data-rating', 'local');
       state.phase = 'idle';
       state.qIndex = (state.qIndex + 1) % QS.length;
       syncSend();
       return;
     }
     bar.setAttribute('data-rated', '1');
+    bar.setAttribute('data-rating', 'pending');
     submitRating(bar, card, index + 1);
   }
 
   function resetRateBar(bar) {
     bar.setAttribute('data-rated', '0');
+    bar.removeAttribute('data-rating');
+    bar.removeAttribute('data-undo-token');
+    bar.removeAttribute('data-undoing');
     Array.prototype.forEach.call(bar.querySelectorAll('.ds-button'), function (b) {
       b.classList.remove('is-rated');
     });
+  }
+
+  // 撤销只对「服务端已确认」的最近一次评分生效：
+  // 没评分、评分请求还在路上、或者已经抽了下一题，点击一律不做任何事，避免重复写学习记录。
+  function undoRate(node) {
+    var bar = node.querySelector('._0a3d93b');
+    if (!bar) return;
+    if (bar.getAttribute('data-undoing') === '1') return;
+    // 本地示例题（接口不可用时）没有写任何数据，撤销只复位选中状态
+    if (bar.getAttribute('data-rating') === 'local') {
+      resetRateBar(bar);
+      return;
+    }
+    if (bar.getAttribute('data-rating') !== 'done') return;
+    if (state.phase !== 'idle') return;
+    var token = bar.getAttribute('data-undo-token');
+    var cardId = Number(bar.getAttribute('data-card-id') || 0);
+    if (!token) return;
+    bar.setAttribute('data-undoing', '1');
+    apiPost('/api/review/undo', { token: token, clientId: review.clientId })
+      .then(function () {
+        // token 一次性，先失效再改界面，防止连点重复提交
+        bar.removeAttribute('data-undo-token');
+        bar.removeAttribute('data-undoing');
+        resetRateBar(bar);
+        review.emptyNotified = false;
+        // 撤销后这张卡会被重新排期（可能立刻到期，也可能几分钟后），
+        // 与复习页一致：重新取一次队列；队列里还有这张卡就继续用它，否则用第一张。
+        return loadQueue().then(function () {
+          var found = null;
+          if (review.ready) {
+            review.cards.forEach(function (item) {
+              if (cardId && item.cardId === cardId) found = item;
+            });
+            review.card = found || review.cards[0] || null;
+          } else {
+            review.card = null;
+          }
+          // 撤销后当前卡可能还是同一张：此时允许直接重评，也允许继续抽新题
+          state.phase = 'idle';
+          if (!review.card) notifyEmpty();
+        });
+      })
+      .catch(function (err) {
+        bar.removeAttribute('data-undoing');
+        if (err && err.status === 409) {
+          // 超过 10 分钟或已被后续评分覆盖：原评分仍然有效，保持选中，不再提供撤销
+          bar.removeAttribute('data-undo-token');
+          notice('这次评分已经不能撤销了，原评分保持不变。');
+          return;
+        }
+        notice('撤销没有成功，请稍后再试。');
+      });
   }
 
   function submitRating(bar, card, rating, retried) {
@@ -372,6 +457,9 @@
       rating: rating,
       clientId: review.clientId
     }).then(function (data) {
+      bar.setAttribute('data-card-id', String(card.cardId));
+      bar.setAttribute('data-rating', 'done');
+      if (data.undoToken) bar.setAttribute('data-undo-token', data.undoToken);
       review.card = data.next || null;
       state.phase = 'idle';
       syncSend();
@@ -506,15 +594,21 @@
   // 普通段落按时间逐字显示；代码块、图片、表格等整块直接出现，不做逐字动画。
   var streamSeq = 0;
   var stick = { on: true };
+  var BOTTOM_GAP = 80;
+  var lastTop = 0;
   if (scroller) {
-    // 用户主动往上翻时停止自动跟随，滚回底部再恢复
+    // 跟随规则：往上翻就停止跟随，滚回底部再继续；只按「滚动方向 + 离底距离」判断。
+    // 不监听 wheel 方向，否则小幅上滑会被 scroll 事件立刻判回「在底部」而拉回原位；
+    // 也不会因为指针停在代码块等内部滚动区域上而误停跟随。内容变高本身不触发 scroll，不会打断用户阅读。
     scroller.addEventListener('scroll', function () {
-      stick.on = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80;
+      var top = scroller.scrollTop;
+      if (top < lastTop - 1) {
+        stick.on = false;
+      } else if (scroller.scrollHeight - top - scroller.clientHeight <= BOTTOM_GAP) {
+        stick.on = true;
+      }
+      lastTop = top;
     }, { passive: true });
-    scroller.addEventListener('wheel', function (e) {
-      if (e.deltaY < 0) stick.on = false;
-    }, { passive: true });
-    scroller.addEventListener('touchmove', function () { stick.on = false; }, { passive: true });
   }
 
   function followScroll(force) {
