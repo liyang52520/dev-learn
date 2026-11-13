@@ -936,6 +936,17 @@
     '.ds-assistant-message-main-content .pdf-img figcaption{color:var(--dsw-alias-label-tertiary,#8b8b8b);font-size:12px;text-align:center;margin-top:6px}' +
     '.ds-assistant-message-main-content .pdf-list{padding-left:22px;list-style:disc}' +
     '.ds-assistant-message-main-content .pdf-list li{margin:6px 0;line-height:1.8}' +
+    // 表格可能比正文宽：交给 .table-wrap 横向滚动，底部露出细滚动条（对齐官方表格容器 width:max-content + overflow-x:auto）
+    '.ds-assistant-message-main-content .table-wrap{margin:16px 0;overflow-x:auto;overflow-y:hidden}' +
+    // Chrome 一旦写了 scrollbar-width 就会忽略 ::-webkit-scrollbar 并退回悬浮滚动条，标准属性只留给 Firefox
+    '@supports (-moz-appearance:none){.ds-assistant-message-main-content .table-wrap{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent}body[data-ds-dark-theme] .ds-assistant-message-main-content .table-wrap{scrollbar-color:rgba(255,255,255,.22) transparent}}' +
+    '.ds-assistant-message-main-content .table-wrap::-webkit-scrollbar{height:6px}' +
+    '.ds-assistant-message-main-content .table-wrap::-webkit-scrollbar-track{background:transparent}' +
+    '.ds-assistant-message-main-content .table-wrap::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:3px}' +
+    '.ds-assistant-message-main-content .table-wrap::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.32)}' +
+    'body[data-ds-dark-theme] .ds-assistant-message-main-content .table-wrap{scrollbar-color:rgba(255,255,255,.22) transparent}' +
+    'body[data-ds-dark-theme] .ds-assistant-message-main-content .table-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22)}' +
+    '.ds-assistant-message-main-content .table-wrap:not(:has(th:nth-child(4),td:nth-child(4))) table{width:100%;max-width:unset}' +
     '.ds-assistant-message-main-content .code-block{margin:16px 0;background:var(--dsw-alias-markdown-code-block,#fafafa);border-radius:12px;overflow:hidden}' +
     '.ds-assistant-message-main-content .code-bar{display:flex;align-items:center;height:34px;padding:0 14px;background:var(--dsw-alias-markdown-code-block-banner,#f3f4f6)}' +
     '.ds-assistant-message-main-content .code-dots{display:none}' +
