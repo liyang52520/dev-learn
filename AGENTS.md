@@ -319,8 +319,9 @@ git pull --ff-only
 git log --oneline -2        # HEAD 应与本地一致
 
 # 3. 重建前端：先备份旧产物，再构建；依赖没变就不要重装
+#    生产挂在子路径 /dev-learn/，构建必须带 VITE_BASE_PATH，否则产物引用 /assets/… 会白屏
 cp -a frontend/dist /tmp/dist-backup-$(date +%Y%m%d-%H%M%S)
-cd frontend && npm run build
+cd frontend && VITE_BASE_PATH=/dev-learn/ npm run build
 
 # 4. 后端有改动才重启（纯静态资源更新不需要）
 systemctl restart dev-learn
@@ -341,6 +342,8 @@ systemctl restart dev-learn
 curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/api/health   # 200
 curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1/dev-learn/       # 200
 systemctl is-active dev-learn                                              # active
+# 产物里的资源必须带子路径前缀（不带就是漏了 VITE_BASE_PATH，线上会白屏）
+grep -o '/dev-learn/assets/[^"]*\.js' frontend/dist/index.html | head -1
 ```
 
 再打开首页、文章页、`/admin/login` 确认能正常加载；前端有改动时看 `frontend/dist/assets` 的文件哈希是否已更新。构建通过 ≠ 页面正确，关键改动仍要人工点一遍。
@@ -354,6 +357,8 @@ systemctl is-active dev-learn                                              # act
 
 - 不把服务器地址、账号、密码、私钥写进仓库或本文件。
 - 不在服务器上手工改 `frontend/dist`，不手工编辑 `backend/data`。
+- 构建前端不得省略 `VITE_BASE_PATH=/dev-learn/`：漏掉时 `index.html` 引用根路径 `/assets/…`，
+  nginx 会把它们转发给同机的 Harness 而不是本站，表现为白屏、控制台资源 404。
 - `git pull` 只走 `--ff-only`；出现分叉先查原因，不要强拉覆盖。
 - 不删除 `backend/data`、`.env*` 与 `/tmp/dist-backup-*`（回滚要靠它）。
 
