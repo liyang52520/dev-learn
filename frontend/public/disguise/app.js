@@ -264,7 +264,14 @@
     return node;
   }
 
-  function aiNode(html, rate, labels, card) {
+  function disclaimerNode() {
+    var p = document.createElement('p');
+    p.className = 'disguise-disclaimer';
+    p.textContent = '本回答由 AI 生成，内容仅供参考，请仔细甄别';
+    return p;
+  }
+
+  function aiNode(html, rate, labels, card, streaming) {
     var node = aiTpl.cloneNode(true);
     node.removeAttribute('data-virtual-list-item-key');
     var root = node.querySelector('._74c0879');
@@ -276,12 +283,10 @@
     var sources = node.querySelector('.f93f59e4');
     if (sources) sources.remove();
     content.innerHTML = html;
-    var disclaimer = document.createElement('p');
-    disclaimer.className = 'disguise-disclaimer';
-    disclaimer.textContent = '本回答由 AI 生成，内容仅供参考，请仔细甄别';
-    content.appendChild(disclaimer);
+    // 流式输出时免责声明与底部操作栏等整段说完再出现
+    if (!streaming) content.appendChild(disclaimerNode());
     if (!bar) return node;
-    bar.style.display = 'flex';
+    bar.style.display = streaming ? 'none' : 'flex';
     var group = bar.querySelector('._965abe9');
     if (group) group.style.opacity = '1';
     if (!rate) {
@@ -315,6 +320,13 @@
       });
     }
     return node;
+  }
+
+  function finishStream(node) {
+    var content = node.querySelector('.ds-assistant-message-main-content');
+    if (content && !content.querySelector('.disguise-disclaimer')) content.appendChild(disclaimerNode());
+    var bar = node.querySelector('._0a3d93b');
+    if (bar) bar.style.display = 'flex';
   }
 
   // QID 形如 <topicId>/<题号>，题库后台按 /admin/study?tab=bank&topic=&qid= 直接打开编辑器
@@ -489,7 +501,129 @@
     });
   }
 
+  // ---- 流式输出 ----
+  // 普通段落按时间逐字显示；代码块、图片、表格等整块直接出现，不做逐字动画。
+  var streamSeq = 0;
+  var stick = { on: true };
+  if (scroller) {
+    // 用户主动往上翻时停止自动跟随，滚回底部再恢复
+    scroller.addEventListener('scroll', function () {
+      stick.on = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 80;
+    }, { passive: true });
+    scroller.addEventListener('wheel', function (e) {
+      if (e.deltaY < 0) stick.on = false;
+    }, { passive: true });
+    scroller.addEventListener('touchmove', function () { stick.on = false; }, { passive: true });
+  }
+
+  function followScroll(force) {
+    if (!scroller) return;
+    if (force) stick.on = true;
+    if (stick.on) scroller.scrollTop = scroller.scrollHeight;
+  }
+
+  function blockNodes(html) {
+    var holder = document.createElement('div');
+    holder.innerHTML = html;
+    var out = [];
+    Array.prototype.forEach.call(holder.childNodes, function (node) {
+      if (node.nodeType === 1) { out.push(node); return; }
+      if (node.nodeType === 3 && node.nodeValue.trim()) {
+        var p = document.createElement('p');
+        p.className = 'ds-markdown-paragraph';
+        p.textContent = node.nodeValue;
+        out.push(p);
+      }
+    });
+    return out;
+  }
+
+  var WHOLE_SELECTOR = 'img,pre,table,svg,video,.code-block,.md-code-block,.table-wrap,.math-block';
+
+  function isWholeBlock(node) {
+    if (!node || node.nodeType !== 1) return false;
+    if (node.matches && node.matches(WHOLE_SELECTOR)) return true;
+    return !!(node.querySelector && node.querySelector(WHOLE_SELECTOR));
+  }
+
+  function collectTextNodes(root) {
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var list = [];
+    var total = 0;
+    var node;
+    while ((node = walker.nextNode())) {
+      var full = node.nodeValue;
+      list.push({ node: node, full: full, start: total });
+      total += full.length;
+      node.nodeValue = '';
+    }
+    return { list: list, total: total };
+  }
+
+  function revealText(list, shown) {
+    list.forEach(function (item) {
+      var len = shown - item.start;
+      var value = len <= 0 ? '' : (len >= item.full.length ? item.full : item.full.slice(0, len));
+      if (item.node.nodeValue !== value) item.node.nodeValue = value;
+    });
+  }
+
+  function typeBlock(content, block, cps, token, done) {
+    content.appendChild(block);
+    var gather = collectTextNodes(block);
+    if (!gather.total) { done(); return; }
+    var t0 = 0;
+    var shown = 0;
+    function frame(now) {
+      if (token !== streamSeq) return;
+      if (!t0) t0 = now;
+      var target = Math.min(gather.total, Math.floor((now - t0) * cps / 1000));
+      if (target !== shown) {
+        revealText(gather.list, target);
+        shown = target;
+        followScroll();
+      }
+      if (target < gather.total) requestAnimationFrame(frame);
+      else done();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function streamAppend(html, rate, labels, card) {
+    var token = ++streamSeq;
+    var node = aiNode('', rate, labels, card, true);
+    var content = node.querySelector('.ds-assistant-message-main-content');
+    var blocks = blockNodes(html);
+    var total = 0;
+    blocks.forEach(function (b) {
+      if (!isWholeBlock(b)) total += (b.textContent || '').length;
+    });
+    // 速度按整段文字量自适应：整体控制在 2.5~9 秒，短回答不拖沓，长回答不磨人
+    var cps = Math.max(220, Math.min(700, total / 9));
+    var index = 0;
+    stick.on = true;
+    append(node);
+    function step() {
+      if (token !== streamSeq) return;
+      if (index >= blocks.length) {
+        finishStream(node);
+        followScroll();
+        return;
+      }
+      var block = blocks[index++];
+      if (isWholeBlock(block)) {
+        content.appendChild(block);
+        followScroll();
+        window.setTimeout(step, 140);
+        return;
+      }
+      typeBlock(content, block, cps, token, step);
+    }
+    step();
+  }
+
   function render(session) {
+    streamSeq++;
     state.session = session;
     state.phase = 'idle';
     visible.innerHTML = '';
@@ -530,10 +664,10 @@
       state.phase = 'answered';
       if (!card) {
         var q = QS[state.qIndex];
-        append(aiNode(q.html, true));
+        streamAppend(q.html, true);
       } else {
         apiGet('/api/review/card-answer?qid=' + encodeURIComponent(card.qid)).then(function (data) {
-          append(aiNode(data.answerHtml, true, card.labels, card));
+          streamAppend(data.answerHtml, true, card.labels, card);
           syncSend();
           // 这里失败（卡片排队过期）不额外处理：评分时会重新取卡续期再提交
           apiPost('/api/review/touch', { cardId: card.cardId }).catch(function () {});
