@@ -299,6 +299,64 @@ npm run typecheck && npm run lint && npm run test && npm run build
    不碰调度状态与卡片本体；删题删除对应 note（卡片随之消失），并把后续题的 QID 逐个前移以保住它们已有的学习进度；
    新增题建新 note。卡片同步失败时不回滚题库文件，只返回「题库已保存，但卡片同步失败」提示。
 
+### 1.11 部署到服务器
+
+> 服务器地址、账号、密码、私钥只放在本机 SSH 配置或凭据管理器里，**不写进本文件、不写进仓库**。
+
+生产是一台 Linux 主机：代码目录 `/var/www/dev-learn`，分支跟踪 `origin/main`；`dev-learn.service` 用 uvicorn 监听 `127.0.0.1:8000`；nginx 把站点挂在子路径 `/dev-learn/`（访问根路径会 302 过去）。部署 = 推送代码 → 服务器拉取 → 重建前端（后端有改动才重启），不涉及数据库，也不动 `backend/data`（独立仓库）。
+
+```bash
+# 1. 本地：检查全绿后提交并推送（只 add 本次改动的文件，别带临时产物）
+python backend/scripts/check_structure.py
+cd frontend && npm run typecheck && npm run lint && npm run test && cd ..
+git add <本次改动的文件>
+git commit -m "…" && git push origin main
+
+# 2. 服务器：拉取最新代码（工作区必须干净，只允许快进）
+cd /var/www/dev-learn
+git status --short          # 必须为空
+git pull --ff-only
+git log --oneline -2        # HEAD 应与本地一致
+
+# 3. 重建前端：先备份旧产物，再构建；依赖没变就不要重装
+cp -a frontend/dist /tmp/dist-backup-$(date +%Y%m%d-%H%M%S)
+cd frontend && npm run build
+
+# 4. 后端有改动才重启（纯静态资源更新不需要）
+systemctl restart dev-learn
+```
+
+**按改动范围决定做什么**
+
+| 改动 | 要做的事 |
+| --- | --- |
+| 只有 `frontend/**` | 第 3 步 |
+| `backend/**`、`pyproject.toml` | 第 3 步 + 重启服务；新增依赖先进 `.venv` 安装 |
+| `frontend/package.json` / lock 文件 | 先 `npm ci` 再构建 |
+| 只有 `backend/data/**` | 不用构建，重启后即读取（独立仓库，同步见 1.10） |
+
+**部署后验证**
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/api/health   # 200
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1/dev-learn/       # 200
+systemctl is-active dev-learn                                              # active
+```
+
+再打开首页、文章页、`/admin/login` 确认能正常加载；前端有改动时看 `frontend/dist/assets` 的文件哈希是否已更新。构建通过 ≠ 页面正确，关键改动仍要人工点一遍。
+
+**回滚**
+
+- 前端：`rm -rf frontend/dist && cp -a /tmp/dist-backup-<时间戳> frontend/dist`
+- 代码：工作区干净后 `git reset --hard <上一个 commit>`，再重建前端并按需重启
+
+**红线**
+
+- 不把服务器地址、账号、密码、私钥写进仓库或本文件。
+- 不在服务器上手工改 `frontend/dist`，不手工编辑 `backend/data`。
+- `git pull` 只走 `--ff-only`；出现分叉先查原因，不要强拉覆盖。
+- 不删除 `backend/data`、`.env*` 与 `/tmp/dist-backup-*`（回滚要靠它）。
+
 ---
 
 ## 二、如何写博客
@@ -392,6 +450,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 | 改复习页 / 学习设置 / 调度 | 1.10、`backend/data/README.md` |
 | 多机同步 / 推送 / 合并 / 覆盖 | 1.10、`backend/data/README.md` |
 | 新增页面 / 组件 / 接口、改主题与响应式 | 1.3、1.8、4.2 |
+| 部署到服务器 / 回滚线上版本 | 1.11 |
 | 排查「接口 500 / 图片 404 / 内容不更新」 | `skills/blog-writing` 2.11、`skills/study-bank` 3.9 |
 
 ### 4.5 本文件的维护
