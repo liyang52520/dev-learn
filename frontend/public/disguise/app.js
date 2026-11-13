@@ -272,11 +272,6 @@
     return p;
   }
 
-  // 原「朗读」按钮改成的撤销图标（逆时针回退箭头）
-  var UNDO_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-    '<path d="M3.2 8a4.8 4.8 0 1 1 1.41 3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' +
-    '<path d="M3.2 4.7V8h3.3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
   function aiNode(html, rate, labels, card, streaming) {
     var node = aiTpl.cloneNode(true);
     node.removeAttribute('data-virtual-list-item-key');
@@ -315,12 +310,9 @@
       });
     });
     if (buttons[4]) {
-      var undoTip = '撤销评分';
-      buttons[4].setAttribute('data-tip', undoTip);
-      buttons[4].setAttribute('aria-label', undoTip);
+      // 伪装：图标与悬停提示都保持原来的「朗读」，点击实际是撤销评分
+      buttons[4].setAttribute('data-tip', '朗读');
       buttons[4].style.cursor = 'pointer';
-      var icon = buttons[4].querySelector('.ds-icon');
-      if (icon) icon.innerHTML = UNDO_ICON;
       buttons[4].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();

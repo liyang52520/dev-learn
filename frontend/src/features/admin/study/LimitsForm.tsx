@@ -37,10 +37,6 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
 
   const newChanged = previewReady && previewNew !== config.newPerDay
   const revChanged = previewReady && previewRev !== config.revPerDay
-  // 新卡首次作答默认占用复习额度，能留给复习卡的额度要先把新卡扣掉。
-  const reviewCapacity = stats?.newIgnoreReviewLimit
-    ? previewRev
-    : Math.max(0, previewRev - previewNew)
 
   const save = async () => {
     if (!previewReady) {
@@ -131,18 +127,18 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
           保存后：每天最多学 {previewNew} 张新卡
           {previewNew > 0
             ? stats.newRemaining > 0
-              ? `（剩余 ${stats.newRemaining} 张按这个速度需要 ${formatDays(Math.ceil(stats.newRemaining / previewNew))}）`
+              ? `（还剩 ${stats.newRemaining} 张没学）`
               : '（新卡已经全部学完）'
             : '（新卡暂停发放）'}
           ；
           {stats.newIgnoreReviewLimit
-            ? `复习额度 ${previewRev} 张。`
+            ? `复习额度 ${previewRev} 张，新卡不占这份额度。`
             : `新卡首次作答与复习卡共享 ${previewRev} 份复习额度。`}
-          {previewRev > 0 && stats.dueTotal > 0
-            ? reviewCapacity > 0
-              ? ` ${stats.dueTotal} 张到期卡按每天约 ${reviewCapacity} 张的复习余量，约需 ${formatDays(Math.ceil(stats.dueTotal / reviewCapacity))} 清完。`
-              : ' 新卡额度已占满复习额度，复习卡暂时排不进来。'
-            : ''}
+          {previewRev > 0
+            ? `今天复习额度已用 ${stats.reviewQuotaUsed} / ${previewRev} 份，到期复习卡会先占额度，用满后新卡也一起停发。`
+            : stats.newIgnoreReviewLimit
+              ? '复习额度设为 0，复习卡暂停发放，新卡不受影响。'
+              : '复习额度设为 0，复习卡与新卡都会停发。'}
         </p>
       )}
       <button type="button" className="admin-button primary" disabled={busy} onClick={() => void save()}>
@@ -152,11 +148,4 @@ export function LimitsForm({ config, stats, onSaved }: Props) {
       <AdminToast notice={feedback} onClose={() => setFeedback(null)} />
     </div>
   )
-}
-
-function formatDays(days: number): string {
-  if (days <= 1) return '1 天'
-  if (days <= 60) return `${days} 天`
-  if (days <= 365) return `约 ${Math.round(days / 30)} 个月`
-  return `约 ${(days / 365).toFixed(1)} 年`
 }

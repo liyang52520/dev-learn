@@ -15,7 +15,7 @@ export function StudySettings() {
   const load = useCallback(async () => {
     setLoading(true)
     setError('')
-    // 统计只用于「保存后多久学完」的估算，取不到也不影响修改上限。
+    // 统计用于展示今日额度占用与剩余新卡量，取不到也不影响修改上限。
     const [configResult, statsResult] = await Promise.allSettled([
       fetchStudyConfig(),
       fetchStudyStats(),
