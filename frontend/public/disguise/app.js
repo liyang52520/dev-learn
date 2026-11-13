@@ -163,6 +163,32 @@
     return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
   }
 
+  // 复制到剪贴板：非安全上下文（http + 局域网 IP）没有 navigator.clipboard，退回 execCommand。
+  function copyText(text, done) {
+    function finish(ok) { if (done) done(ok); }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function () { finish(true); }, function () { finish(legacyCopy(text)); });
+      return;
+    }
+    finish(legacyCopy(text));
+  }
+
+  function legacyCopy(text) {
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.top = '-1000px';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    area.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    document.body.removeChild(area);
+    return ok;
+  }
+
   function codeBlock(text, lang) {
     if (!codeTpl) return '<pre><code>' + esc(text) + '</code></pre>';
     var node = codeTpl.cloneNode(true);
@@ -170,6 +196,10 @@
     if (pre) pre.innerHTML = text.split('\n').map(function (l) { return '<span>' + esc(l) + '</span>'; }).join('\n');
     var label = node.querySelector('.d813de27');
     if (label) label.textContent = lang || 'text';
+    // 模板里的复制按钮是 DeepSeek 自己的 div.ds-button，没有点击逻辑，补上标记交给事件委托
+    var copyLabel = node.querySelector('.code-info-button-text');
+    var copyBtn = copyLabel && copyLabel.closest ? copyLabel.closest('.ds-button') : null;
+    if (copyBtn) copyBtn.setAttribute('data-code-copy', '');
     return node.outerHTML;
   }
 
@@ -226,7 +256,7 @@
         buttons[0].addEventListener('click', function (e) {
           e.preventDefault();
           e.stopPropagation();
-          if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function () {});
+          copyText(text);
         });
       }
       if (buttons[1]) buttons[1].style.cursor = 'pointer';
@@ -371,6 +401,17 @@
     Array.prototype.forEach.call(navList.children, function (item, i) {
       item.classList.toggle('is-active', i === index);
     });
+    revealNavItem(index);
+  }
+
+  // 高亮项如果跑出列表可视区（新提问不断追加时），把列表滚到能看见它的位置
+  function revealNavItem(index) {
+    var item = navList.children[index];
+    if (!item) return;
+    var listRect = navList.getBoundingClientRect();
+    var rect = item.getBoundingClientRect();
+    if (rect.top < listRect.top) navList.scrollTop -= listRect.top - rect.top;
+    else if (rect.bottom > listRect.bottom) navList.scrollTop += rect.bottom - listRect.bottom;
   }
 
   var navLockUntil = 0;
@@ -710,10 +751,23 @@
     var btn = e.target && e.target.closest ? e.target.closest('[data-code-copy]') : null;
     if (!btn) return;
     e.preventDefault();
-    var block = btn.closest('.code-block');
+    var block = btn.closest('.code-block, .md-code-block');
     var pre = block ? block.querySelector('pre') : null;
-    if (pre && navigator.clipboard) navigator.clipboard.writeText(pre.textContent).catch(function () {});
+    if (!pre) return;
+    copyText(pre.textContent, function (ok) { flashCopyLabel(btn, ok); });
   });
+
+  function flashCopyLabel(btn, ok) {
+    var target = btn.querySelector('.code-info-button-text') || btn;
+    if (target.dataset.copying === '1') return;
+    target.dataset.copying = '1';
+    var original = target.textContent;
+    target.textContent = ok ? '已复制' : '复制失败';
+    window.setTimeout(function () {
+      target.textContent = original;
+      delete target.dataset.copying;
+    }, 1600);
+  }
   window.addEventListener('scroll', hideTip, true);
 
   items.style.minHeight = '0';
