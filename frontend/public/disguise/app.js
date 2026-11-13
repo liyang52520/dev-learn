@@ -46,6 +46,7 @@
   var aiTpl = document.querySelector('[data-virtual-list-item-key="2"]').cloneNode(true);
   var codeTpl = aiTpl.querySelector('.md-code-block');
   var input = document.querySelector('textarea._27c9245');
+  var inputMirror = document.querySelector('.b13855df');
   var sendBtn = document.querySelector('._52c986b');
   var attachBtn = document.querySelector('.f02f0e25');
   var sider = document.querySelector('.dc04ec1d');
@@ -640,6 +641,22 @@
     syncSend();
   }
 
+  var INPUT_MIN_HEIGHT = 60;
+  var INPUT_MAX_HEIGHT = inputMirror ? parseFloat(getComputedStyle(inputMirror).maxHeight) || 336 : 336;
+
+  // 和官方一致：输入框随内容增高，超过镜像的 max-height 后转为内部滚动
+  function autoGrow() {
+    var next = INPUT_MIN_HEIGHT;
+    if (inputMirror) {
+      // 末尾补零宽空格：否则以换行结尾时，镜像不会为最后那个空行生成行盒，输入框会少算一行
+      inputMirror.textContent = input.value + '\u200b';
+      next = inputMirror.scrollHeight;
+    }
+    next = Math.max(INPUT_MIN_HEIGHT, Math.min(next, INPUT_MAX_HEIGHT));
+    input.style.height = next + 'px';
+    input.style.setProperty('--container-height', next + 'px');
+  }
+
   function syncSend() {
     var hasText = !!input.value.trim();
     // 和官方一致：输入框有内容就点亮发送按钮（bd74640a 是页面自带的半透明空态样式）
@@ -650,6 +667,7 @@
       sendBtn.classList.add('ds-button--disabled');
       sendBtn.classList.add('bd74640a');
     }
+    autoGrow();
   }
 
   function submit() {
@@ -806,6 +824,8 @@
   });
   sendBtn.addEventListener('click', function (e) { e.preventDefault(); submit(); });
   attachBtn.addEventListener('click', onAttach, true);
+  window.addEventListener('resize', autoGrow);
+  autoGrow();
 
   var styleFix = document.createElement('style');
   styleFix.textContent =
