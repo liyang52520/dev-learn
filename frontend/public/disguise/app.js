@@ -415,6 +415,8 @@
     searchOwner = owner || null;
     if (searchOpen) return;
     searchOpen = true;
+    // 侧栏打开后聊天列被挤窄，右侧快速跳转会压到侧栏上，先收起
+    document.body.classList.add('disguise-search-open');
     searchPanel.style.display = 'flex';
     searchPanel.setAttribute('aria-hidden', 'false');
     searchMask.classList.add('is-open');
@@ -431,6 +433,7 @@
     if (!searchOpen) return;
     searchOpen = false;
     searchOwner = null;
+    document.body.classList.remove('disguise-search-open');
     searchMask.classList.remove('is-open');
     searchPanel.setAttribute('aria-hidden', 'true');
     searchPanel.classList.remove('_4771b62');
@@ -485,14 +488,45 @@
   searchMask.addEventListener('click', function () {
     closeSearch();
   });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeSearch();
+
+  // 桌面端点笔记截图放大查看；移动端保留系统手势缩放，不额外拦截
+  var zoom = document.createElement('div');
+  zoom.className = 'disguise-zoom';
+  zoom.setAttribute('role', 'dialog');
+  zoom.setAttribute('aria-modal', 'true');
+  zoom.setAttribute('aria-hidden', 'true');
+  zoom.innerHTML =
+    '<img class="disguise-zoom-img" alt="">' +
+    '<div role="button" tabindex="0" aria-label="关闭大图" class="disguise-zoom-close">' + CLOSE_ICON + '</div>';
+  document.body.appendChild(zoom);
+
+  function openZoom(src, alt) {
+    if (!src) return;
+    var img = zoom.querySelector('.disguise-zoom-img');
+    img.src = src;
+    img.alt = alt || '笔记截图';
+    zoom.classList.add('is-open');
+    zoom.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeZoom() {
+    if (!zoom.classList.contains('is-open')) return false;
+    zoom.classList.remove('is-open');
+    zoom.setAttribute('aria-hidden', 'true');
+    return true;
+  }
+
+  zoom.addEventListener('click', closeZoom);
+  searchPanel.addEventListener('click', function (e) {
+    var shot = e.target && e.target.closest ? e.target.closest('.disguise-search-shot') : null;
+    if (!shot) return;
+    if (!window.matchMedia('(min-width:1024px)').matches) return;
+    openZoom(shot.currentSrc || shot.src, shot.alt);
   });
-  // 点击侧栏外任意位置收起；点击入口胶囊交给它自己切换，避免刚打开就被关掉
-  document.addEventListener('click', function (e) {
-    if (!searchOpen) return;
-    if (searchPanel.contains(e.target)) return;
-    if (e.target && e.target.closest && e.target.closest('.disguise-sources')) return;
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (closeZoom()) return;
     closeSearch();
   });
 
@@ -1171,6 +1205,13 @@
     '.disguise-search-md{display:block;overflow:visible;-webkit-line-clamp:unset;line-clamp:unset;white-space:normal;color:var(--dsw-alias-label-primary,#1f2329)}' +
     '.disguise-search-md img{max-width:100%;height:auto}' +
     '.disguise-search-shot{display:block;width:100%;height:auto;margin-top:10px;border-radius:8px;border:1px solid var(--dsw-alias-border-inverted,rgba(0,0,0,.06))}' +
+    '@media (min-width:1024px){.disguise-search-shot{cursor:zoom-in}}' +
+    // 截图放大：点击任意位置或关闭按钮收起，Esc 也可收起
+    '.disguise-zoom{position:fixed;inset:0;z-index:1600;display:flex;align-items:center;justify-content:center;padding:4vh 4vw;background:rgba(8,10,14,.78);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .18s}' +
+    '.disguise-zoom.is-open{opacity:1;pointer-events:auto}' +
+    '.disguise-zoom-img{max-width:100%;max-height:100%;border-radius:8px;background:#fff;box-shadow:0 18px 60px rgba(0,0,0,.45);cursor:zoom-out}' +
+    '.disguise-zoom-close{position:absolute;top:18px;right:18px;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#fff;background:rgba(255,255,255,.14);cursor:pointer;transition:background .15s}' +
+    '.disguise-zoom-close:hover{background:rgba(255,255,255,.26)}' +
     '.disguise-search-mask{display:none}' +
     '@media (max-width:1023px){' +
     '.disguise-search._233f913{position:absolute;top:20px;right:0;bottom:0;left:0;width:100vw;max-width:none;margin:0;border:0;border-radius:24px 24px 0 0;background:var(--dsw-alias-bg-base,#fff);overflow:hidden;flex:none;z-index:1300;transform:translateY(100%);transition:transform .26s cubic-bezier(.22,.61,.36,1)}' +
@@ -1240,6 +1281,9 @@
     '.disguise-nav-dash i{display:block;width:8px;height:2px;border-radius:4px;background:var(--dsw-alias-border-l4,#d9d9d9);transition:background-color .2s}' +
     '.disguise-nav-item:hover .disguise-nav-dash i{background:var(--dsw-alias-label-primary,#1f2329)}' +
     '.disguise-nav-item.is-active .disguise-nav-dash i{background:var(--dsw-alias-brand-text,#4d6bfe);transform:scale(1.5)}' +
+    // 搜索结果侧栏打开时收起快速跳转，避免它压到侧栏上
+    'body.disguise-search-open .disguise-nav{opacity:0!important;pointer-events:none!important}' +
+    'body.disguise-search-open .disguise-nav.is-open{opacity:0!important}' +
     '@media not all and (min-width:768px){.disguise-nav{display:none!important}' +
     // 移动端：自带展开按钮在顶栏，隐藏桌面用的悬浮按钮；遮罩只在抽屉展开时出现
     '.disguise-expand{display:none!important}' +
