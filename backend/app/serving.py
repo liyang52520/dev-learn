@@ -45,6 +45,18 @@ def mount_site(app: FastAPI) -> None:
 def _mount_spa(app: FastAPI) -> None:
     index_file = settings.dist_dir / "index.html"
 
+    @app.get("/favicon.svg", include_in_schema=False, response_model=None)
+    def favicon() -> FileResponse | JSONResponse:
+        """站点图标在 dist 根目录，必须单独返回，否则会被 SPA 回退成 HTML。"""
+        icon = settings.dist_dir / "favicon.svg"
+        if icon.is_file():
+            return FileResponse(
+                icon,
+                media_type="image/svg+xml",
+                headers={"cache-control": "public, max-age=86400"},
+            )
+        return _spa_response(index_file)
+
     @app.get("/study/{path:path}", include_in_schema=False, response_model=None)
     def study_asset(path: str) -> FileResponse | JSONResponse:
         """`/study/**` 既放笔记截图，也放前端路由，只能按文件是否存在分流。"""
