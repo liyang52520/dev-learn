@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { HtmlContent } from '@/shared/components/HtmlContent'
+import { CloseIcon } from '@/shared/components/Icons'
 import { ImageLightbox } from '@/shared/components/ImageLightbox'
 import type { StudyNote } from '@/types/models'
 
@@ -12,7 +13,7 @@ function headSide(notes: StudyNote[], onClose?: () => void) {
       <span>{notes.length} 条</span>
       {onClose && (
         <button type="button" className="note-close" aria-label="关闭笔记" onClick={onClose}>
-          ×
+          <CloseIcon className="icon" />
         </button>
       )}
     </div>
