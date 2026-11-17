@@ -1,6 +1,11 @@
 /* 复习页笔记：按钮展开。
    宽屏在题面右侧紧贴显示，窄屏与移动端改为底部弹层。 */
 
+/* 这是 <button>，浏览器默认会画上灰色底；清掉才能和旁边两个链接样式的胶囊一致 */
+.review-notes-toggle {
+  background: transparent;
+}
+
 .review-notes-toggle.is-open {
   color: var(--accent);
   border-color: var(--accent);
