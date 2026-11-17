@@ -43,13 +43,7 @@
   width: 46px;
   height: 46px;
   border-radius: 13px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, #6f8bff, #a78bfa);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  display: block;
 }
 
 .login-kicker {

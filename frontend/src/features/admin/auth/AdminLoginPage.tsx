@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { fetchMe, login, setupPassword } from '../../admin/api'
 import { errorMessage } from '@/shared/api/client'
+import { BrandMark } from '@/shared/components/BrandMark'
 import { PageSkeleton } from '@/shared/components/PageSkeleton'
 
 type LoginState = { from?: string }
@@ -59,7 +60,7 @@ export default function AdminLoginPage() {
     <div className="login-page">
       <div className="login-poster">
         <div className="login-poster-inner">
-          <span className="login-mark">YG</span>
+          <BrandMark className="login-mark" />
           <p className="login-kicker">PRIVATE SPACE</p>
           <h1>
             回到

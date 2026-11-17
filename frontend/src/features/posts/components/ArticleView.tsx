@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import { ArrowRightIcon } from '@/shared/components/Icons'
+import { BrandMark } from '@/shared/components/BrandMark'
 import { HtmlContent } from '@/shared/components/HtmlContent'
 import type { PostDetail } from '@/types/models'
 import { MobileToc, Toc } from './Toc'
@@ -67,7 +68,7 @@ export function ArticleView({ post }: { post: PostDetail }) {
             <Toc items={post.toc} />
           ) : (
             <div className="aside-author">
-              <span className="aside-mark">YG</span>
+              <BrandMark className="aside-mark" />
               <p>记录技术，也记录日子。</p>
             </div>
           )}

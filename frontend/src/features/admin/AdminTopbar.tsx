@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { logout } from './api'
+import { BrandMark } from '@/shared/components/BrandMark'
 import { LogoutIcon, MoonIcon, SettingsIcon, SunIcon } from '@/shared/components/Icons'
 import { useTheme } from '@/shared/hooks'
 
@@ -51,7 +52,7 @@ export function AdminTopbar() {
   return (
     <header className="admin-topbar">
       <Link to="/admin" className="admin-brand">
-        <span>YG</span>
+        <BrandMark className="admin-mark" />
         <strong>Studio</strong>
         <em>内容管理</em>
       </Link>

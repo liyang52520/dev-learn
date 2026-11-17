@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { logout } from '@/features/admin/api'
+import { BrandMark } from '@/shared/components/BrandMark'
 import {
   LogoutIcon,
   MoonIcon,
@@ -19,7 +20,6 @@ const DISGUISE_HREF = `${import.meta.env.BASE_URL}disguise/`
 
 const SITE = {
   name: "YG's Blog",
-  shortName: 'YG',
   email: '378776683@qq.com',
   github: 'https://github.com/liyang52520',
 }
@@ -91,7 +91,7 @@ export function Header() {
       <header className={headerClass}>
         <div className="header-inner">
           <Link to="/" className="brand" aria-label="返回首页">
-            <span className="brand-mark">{SITE.shortName}</span>
+            <BrandMark className="brand-mark" />
             <span className="brand-text">
               <strong>{SITE.name}</strong>
               <small>技术 · 生活 · 长期主义</small>

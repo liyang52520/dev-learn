@@ -1,10 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="YG">
+  <title>YG</title>
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7c6cf4" />
-      <stop offset="1" stop-color="#4b3fd6" />
+    <linearGradient id="yg-bg" x1="8" y1="4" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3659e3" />
+      <stop offset="1" stop-color="#7c5cff" />
+    </linearGradient>
+    <linearGradient id="yg-sheen" x1="32" y1="0" x2="32" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#g)" />
-  <text x="32" y="42" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="27" font-weight="700" fill="#fff">YG</text>
+  <rect width="64" height="64" rx="15" fill="url(#yg-bg)" />
+  <rect width="64" height="64" rx="15" fill="url(#yg-sheen)" />
+  <g fill="#ffffff">
+    <g transform="translate(11.074 42.100) scale(0.02966 -0.02966)"><path d="M481 0H243V290L-24 708H263L375 500L482 708H762L481 290Z"/></g>
+    <g transform="translate(32.608 42.100) scale(0.02966 -0.02966)"><path d="M426 -18Q342 -18 270.5 8.0Q199 34 146.5 82.5Q94 131 64.0 200.0Q34 269 34 354Q34 439 64.0 508.0Q94 577 146.0 626.0Q198 675 268.0 701.5Q338 728 418 728Q501 728 575.5 701.0Q650 674 697 627L558 460Q536 486 506.0 501.5Q476 517 432 517Q403 517 375.5 505.5Q348 494 327.0 472.5Q306 451 293.0 421.0Q280 391 280 354Q280 280 318.5 233.5Q357 187 442 187Q457 187 473.0 189.5Q489 192 498 197V251H384V438H709V51Q684 36 651.5 23.5Q619 11 582.5 2.0Q546 -7 506.0 -12.5Q466 -18 426 -18Z"/></g>
+  </g>
 </svg>

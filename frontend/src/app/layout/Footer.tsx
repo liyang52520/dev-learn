@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 
+import { BrandMark } from '@/shared/components/BrandMark'
 import { SITE } from './Header'
 
 export function Footer() {
@@ -7,7 +8,7 @@ export function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="footer-brand">
-          <span className="footer-mark">YG</span>
+          <BrandMark className="footer-mark" />
           <div>
             <strong>{SITE.name}</strong>
             <p>记录技术，也记录日子。</p>

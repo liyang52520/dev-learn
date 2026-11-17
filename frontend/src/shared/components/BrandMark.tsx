@@ -1,0 +1,33 @@
+type BrandMarkProps = {
+  className?: string
+}
+
+// 站点标记：与 public/favicon.svg 同一套字形轮廓，避免各系统字体差异
+export function BrandMark({ className }: BrandMarkProps) {
+  return (
+    <svg className={className} viewBox="0 0 64 64" role="img" aria-label="YG" focusable="false">
+      <defs>
+        <linearGradient id="yg-mark-bg" x1="8" y1="4" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#3659e3" />
+          <stop offset="1" stopColor="#7c5cff" />
+        </linearGradient>
+        <linearGradient id="yg-mark-sheen" x1="32" y1="0" x2="32" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.16" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="15" fill="url(#yg-mark-bg)" />
+      <rect width="64" height="64" rx="15" fill="url(#yg-mark-sheen)" />
+      <g fill="#ffffff">
+        <path
+          transform="translate(11.074 42.1) scale(0.02966 -0.02966)"
+          d="M481 0H243V290L-24 708H263L375 500L482 708H762L481 290Z"
+        />
+        <path
+          transform="translate(32.608 42.1) scale(0.02966 -0.02966)"
+          d="M426 -18Q342 -18 270.5 8.0Q199 34 146.5 82.5Q94 131 64.0 200.0Q34 269 34 354Q34 439 64.0 508.0Q94 577 146.0 626.0Q198 675 268.0 701.5Q338 728 418 728Q501 728 575.5 701.0Q650 674 697 627L558 460Q536 486 506.0 501.5Q476 517 432 517Q403 517 375.5 505.5Q348 494 327.0 472.5Q306 451 293.0 421.0Q280 391 280 354Q280 280 318.5 233.5Q357 187 442 187Q457 187 473.0 189.5Q489 192 498 197V251H384V438H709V51Q684 36 651.5 23.5Q619 11 582.5 2.0Q546 -7 506.0 -12.5Q466 -18 426 -18Z"
+        />
+      </g>
+    </svg>
+  )
+}
