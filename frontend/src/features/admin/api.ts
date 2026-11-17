@@ -26,6 +26,10 @@ export function login(password: string): Promise<AuthState> {
   return apiSend<AuthState>('POST', '/api/admin/auth/login', { password })
 }
 
+export function setupPassword(password: string): Promise<AuthState> {
+  return apiSend<AuthState>('POST', '/api/admin/auth/setup', { password })
+}
+
 export function logout(): Promise<AuthState> {
   return apiSend<AuthState>('POST', '/api/admin/auth/logout')
 }

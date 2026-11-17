@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hmac
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,10 +29,6 @@ def verify_token(token: str | None) -> bool:
     except BadSignature:
         return False
     return True
-
-
-def password_matches(password: str) -> bool:
-    return hmac.compare_digest(password, settings.admin_password)
 
 
 def require_admin(request: Request) -> None:
@@ -96,6 +91,7 @@ login_limiter = LoginLimiter()
 _PUBLIC_API = {
     "/api/health",
     "/api/admin/auth/login",
+    "/api/admin/auth/setup",
     "/api/admin/auth/logout",
     "/api/admin/auth/me",
 }

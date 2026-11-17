@@ -188,7 +188,9 @@ cd backend && .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --po
 
 - 本机 Node 在 `C:\Users\Admin\.local\node`，未加入全局 PATH；PowerShell 里先
   `$env:PATH="C:\Users\Admin\.local\node;$env:PATH"`。
-- 全站登录：密码取 `ADMIN_PASSWORD`，未设置时默认 `yg-admin`；登录态保留 7 天，未登录时只有 `/admin/login` 可访问。
+- 全站登录：`ADMIN_PASSWORD` 环境变量未设置且本地未设置过密码时，`/admin/login` 会变成「设置访问密码」页，
+  首次设置后密码以 PBKDF2 哈希存 `backend/data/auth/admin.json`（不入库）；设置 `ADMIN_PASSWORD` 时以环境变量为准，
+  页面不再允许设置。登录态保留 7 天，未登录时只有 `/admin/login` 可访问。
 - 生产只有一个地址：`http://127.0.0.1:8000`（Vite 的 5173 只在开发时存在）。
 
 提交前必跑：
@@ -212,7 +214,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 ### 1.7 内容管理后台
 
 1. `/admin/login` 校验密码后写入 httpOnly cookie（7 天），服务端用签名 cookie 保存登录态。
-   站点只有一个人用，`core/security.py` 的全站守卫统一拦截：除登录/登出/登录态与健康检查外，
+   密码来源：`ADMIN_PASSWORD` 环境变量优先；没有环境变量时，首次访问由页面通过 `POST /api/admin/auth/setup`
+   设置（至少 8 位，PBKDF2 哈希写 `backend/data/auth/admin.json`），之后 `POST /api/admin/auth/login` 校验。
+   站点只有一个人用，`core/security.py` 的全站守卫统一拦截：除登录/首次设置/登出/登录态与健康检查外，
    所有 `/api/*`、`/images/*`、`/study/**` 图片都要求登录，SPA 页面由前端 `AdminGuard` 跳登录页。
    顶部栏右侧的设置按钮是常驻入口：内容后台、学习设置、数据备份、退出登录。
 2. `/admin` 支持「全部 / 已发布 / 草稿」筛选与关键词过滤；「新建文章」默认建在 `backend/data/blog/drafts`，文件名由标题 slug 化。

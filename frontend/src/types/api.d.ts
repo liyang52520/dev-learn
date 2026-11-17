@@ -383,6 +383,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/auth/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Setup */
+        post: operations["setup_api_admin_auth_setup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/auth/logout": {
         parameters: {
             query?: never;
@@ -882,6 +899,11 @@ export interface components {
         AuthState: {
             /** Authenticated */
             authenticated: boolean;
+            /**
+             * Needssetup
+             * @default false
+             */
+            needsSetup: boolean;
         };
         /**
          * BackupBranch
@@ -1208,11 +1230,6 @@ export interface components {
             /** Items */
             items: components["schemas"]["Lapse"][];
         };
-        /** LoginRequest */
-        LoginRequest: {
-            /** Password */
-            password: string;
-        };
         /** Note */
         Note: {
             /** Label */
@@ -1286,6 +1303,11 @@ export interface components {
             total: number;
             /** Hasnext */
             hasNext: boolean;
+        };
+        /** PasswordRequest */
+        PasswordRequest: {
+            /** Password */
+            password: string;
         };
         /** PostDetail */
         PostDetail: {
@@ -2647,7 +2669,40 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LoginRequest"];
+                "application/json": components["schemas"]["PasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    setup_api_admin_auth_setup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordRequest"];
             };
         };
         responses: {

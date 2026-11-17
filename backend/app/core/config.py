@@ -20,8 +20,9 @@ def _env_int(name: str, default: int) -> int:
 @dataclass(frozen=True)
 class Settings:
     root: Path = field(default_factory=repo_root)
+    # 空字符串表示没有通过环境变量配置密码，此时由首次访问的页面设置密码。
     admin_password: str = field(
-        default_factory=lambda: os.environ.get("ADMIN_PASSWORD", "yg-admin")
+        default_factory=lambda: os.environ.get("ADMIN_PASSWORD", "").strip()
     )
     cookie_name: str = "yg_admin"
     cookie_max_age: int = 60 * 60 * 24 * 7

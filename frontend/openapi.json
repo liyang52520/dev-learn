@@ -1183,7 +1183,48 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "$ref": "#/components/schemas/PasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthState"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth/setup": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Setup",
+        "operationId": "setup_api_admin_auth_setup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordRequest"
               }
             }
           },
@@ -2271,6 +2312,11 @@
           "authenticated": {
             "type": "boolean",
             "title": "Authenticated"
+          },
+          "needsSetup": {
+            "type": "boolean",
+            "title": "Needssetup",
+            "default": false
           }
         },
         "type": "object",
@@ -3084,21 +3130,6 @@
         ],
         "title": "LapseList"
       },
-      "LoginRequest": {
-        "properties": {
-          "password": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Password"
-          }
-        },
-        "type": "object",
-        "required": [
-          "password"
-        ],
-        "title": "LoginRequest"
-      },
       "Note": {
         "properties": {
           "label": {
@@ -3272,6 +3303,21 @@
           "hasNext"
         ],
         "title": "Page[PostMeta]"
+      },
+      "PasswordRequest": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "PasswordRequest"
       },
       "PostDetail": {
         "properties": {

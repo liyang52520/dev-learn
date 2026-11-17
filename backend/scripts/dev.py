@@ -39,7 +39,6 @@ def main() -> int:
         subprocess.run([npm_command(), "install"], cwd=FRONTEND, check=True)
 
     env = dict(os.environ)
-    env.setdefault("ADMIN_PASSWORD", "yg-admin")
     backend = subprocess.Popen(
         [
             python_command(),
