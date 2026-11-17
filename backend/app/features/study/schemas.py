@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import Field
+from typing import Literal
 
 from app.core.pagination import ApiModel
 
@@ -54,18 +54,17 @@ class TopicDetail(ApiModel):
     questions: list[QuestionNav]
 
 
-class EvidenceFile(ApiModel):
-    page: int
+class NoteFile(ApiModel):
     file: str
     width: int | None = None
     height: int | None = None
 
 
-class EvidenceGroup(ApiModel):
+class Note(ApiModel):
     label: str
-    from_page: int = Field(alias="from")
-    to: int
-    files: list[EvidenceFile]
+    kind: Literal["images", "markdown"]
+    files: list[NoteFile]
+    html: str = ""
 
 
 class QuestionDetail(ApiModel):
@@ -75,10 +74,8 @@ class QuestionDetail(ApiModel):
     aliases: list[str]
     summary: list[str]
     note: str
-    pages: str
-    first_page: int
     answer: str
-    evidence: list[EvidenceGroup]
+    notes: list[Note]
     topic: TopicSummary
     prev: QuestionNav | None = None
     next: QuestionNav | None = None

@@ -32,7 +32,7 @@ export function QuestionContent({ question }: { question: QuestionDetail }) {
         </div>
         <div className="study-question-kicker">
           <span style={{ background: topic.accent }} />
-          第 {question.no} 题 · {question.pages}
+          第 {question.no} 题
         </div>
         <h1>{question.title}</h1>
         {question.aliases.length > 0 && (

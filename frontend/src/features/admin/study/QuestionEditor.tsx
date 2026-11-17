@@ -5,8 +5,8 @@ import type { AdminQuestion, BankTopicOption, QuestionWrite } from '@/types/mode
 
 import { createQuestion, deleteQuestion, updateQuestion } from '../api'
 import { AdminToast } from '../AdminToast'
-import type { DraftGroup } from './bank-types'
-import { EvidenceEditor } from './EvidenceEditor'
+import type { DraftNote } from './bank-types'
+import { NoteEditor } from './NoteEditor'
 import { QuestionFields, type QuestionForm } from './QuestionFields'
 
 type Props = {
@@ -40,10 +40,9 @@ export function QuestionEditor({
     aliases: (question?.aliases ?? []).join('\n'),
     summary: (question?.summary ?? []).join('\n'),
     note: question?.note ?? '',
-    pages: question?.pages ?? '',
     answer: question?.answer ?? '',
   }))
-  const [groups, setGroups] = useState<DraftGroup[]>(question?.evidence ?? [])
+  const [notes, setNotes] = useState<DraftNote[]>(question?.notes ?? [])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -53,10 +52,10 @@ export function QuestionEditor({
   const patch = (value: Partial<QuestionForm>) => setForm((current) => ({ ...current, ...value }))
 
   const switchTopic = (next: string) => {
-    if (groups.some((group) => group.files.length > 0)) {
-      const ok = window.confirm('切换专题会清空已上传的截图（磁盘文件不会删除），确定继续？')
+    if (notes.some((note) => note.files.length > 0 || note.markdown.trim())) {
+      const ok = window.confirm('切换专题会清空已写的笔记（磁盘截图不会删除），确定继续？')
       if (!ok) return
-      setGroups([])
+      setNotes([])
     }
     setTopicId(next)
   }
@@ -66,13 +65,12 @@ export function QuestionEditor({
     aliases: lines(form.aliases),
     summary: lines(form.summary),
     note: form.note,
-    pages: form.pages,
     answer: form.answer,
-    evidence: groups.map((group) => ({
-      label: group.label,
-      from: group.from,
-      to: group.to,
-      files: group.files.map((file) => ({ page: file.page, file: file.file })),
+    notes: notes.map((note) => ({
+      label: note.label,
+      kind: note.kind,
+      files: note.files.map((file) => ({ file: file.file })),
+      markdown: note.markdown,
     })),
   })
 
@@ -147,12 +145,12 @@ export function QuestionEditor({
       </div>
 
       <p className="bank-hint">
-        编辑只更新题面、答案与证据，不重置卡片的学习进度和到期时间；删除题目会同时删除对应卡片。
+        编辑只更新题面、答案与笔记，不重置卡片的学习进度和到期时间；删除题目会同时删除对应卡片。
         保存后复习页立即使用新内容。
       </p>
 
       <QuestionFields form={form} onChange={patch} />
-      <EvidenceEditor topicId={topicId} no={no} groups={groups} onChange={setGroups} />
+      <NoteEditor topicId={topicId} no={no} notes={notes} onChange={setNotes} />
 
       <div className="bank-actions">
         {mode === 'edit' ? (

@@ -1,4 +1,4 @@
-"""后台题库编辑的字段校验：清洗文本、解析证据路径、拦截不安全 HTML。"""
+"""后台题库编辑的字段校验：清洗文本、解析笔记截图路径、拦截不安全 HTML。"""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from urllib.parse import unquote
 from app.core.config import settings
 from app.core.errors import AppError
 from app.core.paths import safe_join
+from app.features.study import notes as note_store
 from app.features.study.admin_schemas import QuestionWrite
 from app.rendering.images import dimensions_of_src
 
@@ -33,7 +34,7 @@ _UNSAFE = re.compile(
     r"<\s*(?:script|iframe|object|embed)\b|\son[a-z]+\s*=|\bjavascript\s*:",
     re.IGNORECASE,
 )
-EVIDENCE_LIMIT = 32
+NOTE_LIMIT = note_store.NOTE_LIMIT
 
 
 def plain_for_search(markup: str) -> str:
@@ -84,13 +85,13 @@ def public_file(topic: dict[str, Any], public: str) -> Path:
     clean = unquote(public.split("?", 1)[0].split("#", 1)[0])
     if not clean.startswith(prefix):
         raise AppError(
-            "证据截图必须位于当前专题的 /study/ 目录下", code="invalid_params", status=400
+            "笔记截图必须位于当前专题的 /study/ 目录下", code="invalid_params", status=400
         )
     relative = clean[len(prefix) :]
     try:
         return safe_join(settings.study_dir, topic["slug"], *relative.split("/"))
     except ValueError as exc:
-        raise AppError("证据截图路径非法", code="invalid_params", status=400) from exc
+        raise AppError("笔记截图路径非法", code="invalid_params", status=400) from exc
 
 
 def clean_text_list(values: list[str]) -> list[str]:
@@ -116,48 +117,44 @@ def validate_question(topic: dict[str, Any], payload: QuestionWrite) -> dict[str
             fields={"answer": "包含不安全 HTML"},
         )
 
-    groups: list[dict[str, Any]] = []
-    for group in payload.evidence[:EVIDENCE_LIMIT]:
-        if not group.files:
+    notes: list[dict[str, Any]] = []
+    for note in payload.notes[:NOTE_LIMIT]:
+        label = note.label.strip() or f"笔记{len(notes) + 1}"
+        if note.kind == "markdown":
+            markdown = note.markdown.strip()
+            if not markdown:
+                continue
+            if _UNSAFE.search(markdown):
+                raise AppError(
+                    "笔记里不能包含脚本、内联事件或 javascript: 链接",
+                    code="invalid_params",
+                    status=400,
+                    fields={"notes": "包含不安全 HTML"},
+                )
+            notes.append({"label": label, "kind": "markdown", "markdown": markdown})
             continue
-        from_page = max(1, int(group.from_page))
-        to_page = max(from_page, int(group.to))
         files: list[dict[str, Any]] = []
-        for file in group.files:
-            page = int(file.page)
-            if page < 1:
-                raise AppError("证据页码必须大于 0", code="invalid_params", status=400)
+        for file in note.files:
             path = public_file(topic, file.file)
             if not path.is_file() or dimensions_of_src(file.file) is None:
                 raise AppError(
-                    f"证据截图不存在：{file.file}",
+                    f"笔记截图不存在：{file.file}",
                     code="invalid_params",
                     status=400,
-                    fields={"evidence": "截图文件缺失"},
+                    fields={"notes": "截图文件缺失"},
                 )
-            files.append({"page": page, "file": file.file})
+            files.append({"file": file.file})
         if not files:
             continue
-        label = group.label.strip() or ("原文出处" if not groups else f"出处 {len(groups) + 1}")
-        groups.append({"label": label, "from": from_page, "to": to_page, "files": files})
+        notes.append({"label": label, "kind": "images", "files": files})
 
-    pages = payload.pages.strip()
-    first_page = payload.first_page
-    if groups:
-        start = min(group["from"] for group in groups)
-        end = max(group["to"] for group in groups)
-        pages = pages or (f"p{start}" if start == end else f"p{start}–{end}")
-        first_page = first_page or groups[0]["from"]
-    first_page = first_page or 1
     question: dict[str, Any] = {
         "title": title,
         "aliases": clean_text_list(payload.aliases),
         "summary": clean_text_list(payload.summary),
         "note": payload.note.strip(),
-        "pages": pages,
-        "firstPage": first_page,
         "answer": answer,
-        "evidence": groups,
+        "notes": notes,
     }
     question["search"] = search_field(question)
     return question

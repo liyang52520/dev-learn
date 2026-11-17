@@ -6,7 +6,7 @@
 
 .sk-study .study-sidebar,
 .sk-study .study-main,
-.sk-study .study-evidence {
+.sk-study .study-notes {
   min-width: 0;
 }
 
@@ -148,7 +148,7 @@
   margin: 24px 0 26px;
 }
 
-.sk-evidence-head {
+.sk-note-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -156,23 +156,23 @@
   margin-bottom: 10px;
 }
 
-.sk-evidence-title {
+.sk-note-title {
   width: 72px;
   height: 13px;
 }
 
-.sk-evidence-count {
+.sk-note-count {
   width: 30px;
   height: 9px;
 }
 
-.sk-evidence-hint {
+.sk-note-hint {
   width: 70%;
   height: 9px;
   margin-bottom: 22px;
 }
 
-.sk-evidence-shot {
+.sk-note-shot {
   width: 100%;
   aspect-ratio: 3 / 4;
   border-radius: 8px;

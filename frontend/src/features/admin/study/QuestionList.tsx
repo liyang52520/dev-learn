@@ -76,7 +76,6 @@ export function QuestionList({
               <span className="bank-row-no">#{row.no}</span>
             </span>
             <span className="bank-row-title">{row.title}</span>
-            <span className="bank-row-meta">{row.pages || '未标注页码'}</span>
           </button>
         ))}
         {!loading && rows.length === 0 ? <p className="bank-empty">没有匹配的题目。</p> : null}

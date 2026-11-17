@@ -7,6 +7,7 @@ from typing import Literal
 from pydantic import Field
 
 from app.core.pagination import ApiModel
+from app.features.study.schemas import Note
 
 
 class ReviewCounts(ApiModel):
@@ -20,7 +21,6 @@ class ReviewQuestion(ApiModel):
     aliases: list[str]
     summary: list[str]
     note: str
-    pages: str
     topic: str
     topic_id: str
     has_answer: bool
@@ -67,6 +67,7 @@ class UndoResult(ApiModel):
 
 class CardAnswer(ApiModel):
     answer_html: str
+    notes: list[Note]
 
 
 class ReviewDay(ApiModel):

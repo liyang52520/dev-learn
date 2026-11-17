@@ -46,7 +46,7 @@ export default function AdminStudyPage() {
               onClick={() => switchTab('bank')}
             >
               题库
-              <span>题目编辑、证据与卡片同步</span>
+              <span>题目编辑、笔记与卡片同步</span>
             </button>
             <button
               type="button"

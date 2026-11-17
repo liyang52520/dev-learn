@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field
 
 from app.core.pagination import ApiModel
@@ -23,7 +25,6 @@ class BankQuestionRow(ApiModel):
     id: str
     no: int
     title: str
-    pages: str
 
 
 class BankListResponse(ApiModel):
@@ -33,18 +34,17 @@ class BankListResponse(ApiModel):
     limited: bool
 
 
-class AdminEvidenceFile(ApiModel):
-    page: int
+class AdminNoteFile(ApiModel):
     file: str
     width: int | None = None
     height: int | None = None
 
 
-class AdminEvidenceGroup(ApiModel):
+class AdminNote(ApiModel):
     label: str
-    from_page: int = Field(alias="from")
-    to: int
-    files: list[AdminEvidenceFile]
+    kind: Literal["images", "markdown"]
+    files: list[AdminNoteFile]
+    markdown: str = ""
 
 
 class AdminQuestion(ApiModel):
@@ -58,22 +58,19 @@ class AdminQuestion(ApiModel):
     aliases: list[str]
     summary: list[str]
     note: str
-    pages: str
-    first_page: int
     answer: str
-    evidence: list[AdminEvidenceGroup]
+    notes: list[AdminNote]
 
 
-class EvidenceFileInput(ApiModel):
-    page: int
+class NoteFileInput(ApiModel):
     file: str
 
 
-class EvidenceGroupInput(ApiModel):
+class NoteInput(ApiModel):
     label: str = ""
-    from_page: int = Field(default=1, alias="from")
-    to: int = 1
-    files: list[EvidenceFileInput] = Field(default_factory=list)
+    kind: Literal["images", "markdown"] = "images"
+    files: list[NoteFileInput] = Field(default_factory=list)
+    markdown: str = ""
 
 
 class QuestionWrite(ApiModel):
@@ -81,10 +78,8 @@ class QuestionWrite(ApiModel):
     aliases: list[str] = Field(default_factory=list)
     summary: list[str] = Field(default_factory=list)
     note: str = ""
-    pages: str = ""
-    first_page: int | None = None
     answer: str = ""
-    evidence: list[EvidenceGroupInput] = Field(default_factory=list)
+    notes: list[NoteInput] = Field(default_factory=list)
 
 
 class CreateQuestionRequest(QuestionWrite):
@@ -103,7 +98,7 @@ class DeleteQuestionResponse(ApiModel):
     reindexed: int
 
 
-class EvidenceUploadResponse(ApiModel):
+class NoteUploadResponse(ApiModel):
     file: str
     width: int
     height: int

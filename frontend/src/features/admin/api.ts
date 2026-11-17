@@ -8,8 +8,8 @@ import type {
   BankListResponse,
   CreateQuestionRequest,
   DeleteQuestionResponse,
-  EvidenceUploadResponse,
   FrontMatter,
+  NoteUploadResponse,
   PreviewResponse,
   PublishResponse,
   QuestionMutationResponse,
@@ -124,12 +124,12 @@ export function deleteQuestion(topicId: string, qid: string): Promise<DeleteQues
   )
 }
 
-export function uploadEvidence(
+export function uploadNote(
   topicId: string,
   file: File,
-  fields: { no: number; group: number; page: number },
-): Promise<EvidenceUploadResponse> {
-  return apiUpload<EvidenceUploadResponse>(
+  fields: { no: number; group: number },
+): Promise<NoteUploadResponse> {
+  return apiUpload<NoteUploadResponse>(
     `/api/admin/study/bank/${encodeURIComponent(topicId)}/upload`,
     file,
     fields,

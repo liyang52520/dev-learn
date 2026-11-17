@@ -12,7 +12,7 @@ from app.features.study.admin_schemas import (
     BankListResponse,
     CreateQuestionRequest,
     DeleteQuestionResponse,
-    EvidenceUploadResponse,
+    NoteUploadResponse,
     QuestionMutationResponse,
     QuestionWrite,
 )
@@ -51,13 +51,12 @@ def delete_question(topic_id: str, qid: str) -> DeleteQuestionResponse:
     return admin_service.delete_question(topic_id, qid)
 
 
-@router.post("/bank/{topic_id}/upload", response_model=EvidenceUploadResponse)
-async def upload_evidence(
+@router.post("/bank/{topic_id}/upload", response_model=NoteUploadResponse)
+async def upload_note(
     topic_id: str,
     no: int = Form(...),
     group: int = Form(...),
-    page: int = Form(...),
     file: UploadFile = File(...),
-) -> EvidenceUploadResponse:
+) -> NoteUploadResponse:
     data = await file.read(settings.max_upload_bytes + 1)
-    return admin_service.upload_evidence(topic_id, no, group, page, file.content_type or "", data)
+    return admin_service.upload_note(topic_id, no, group, file.content_type or "", data)

@@ -341,8 +341,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Upload Evidence */
-        post: operations["upload_evidence_api_admin_study_bank__topic_id__upload_post"];
+        /** Upload Note */
+        post: operations["upload_note_api_admin_study_bank__topic_id__upload_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -796,27 +796,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AdminEvidenceFile */
-        AdminEvidenceFile: {
-            /** Page */
-            page: number;
+        /** AdminNote */
+        AdminNote: {
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "images" | "markdown";
+            /** Files */
+            files: components["schemas"]["AdminNoteFile"][];
+            /**
+             * Markdown
+             * @default
+             */
+            markdown: string;
+        };
+        /** AdminNoteFile */
+        AdminNoteFile: {
             /** File */
             file: string;
             /** Width */
             width?: number | null;
             /** Height */
             height?: number | null;
-        };
-        /** AdminEvidenceGroup */
-        AdminEvidenceGroup: {
-            /** Label */
-            label: string;
-            /** From */
-            from: number;
-            /** To */
-            to: number;
-            /** Files */
-            files: components["schemas"]["AdminEvidenceFile"][];
         };
         /** AdminQuestion */
         AdminQuestion: {
@@ -840,14 +844,10 @@ export interface components {
             summary: string[];
             /** Note */
             note: string;
-            /** Pages */
-            pages: string;
-            /** Firstpage */
-            firstPage: number;
             /** Answer */
             answer: string;
-            /** Evidence */
-            evidence: components["schemas"]["AdminEvidenceGroup"][];
+            /** Notes */
+            notes: components["schemas"]["AdminNote"][];
         };
         /** AnswerPayload */
         AnswerPayload: {
@@ -1045,8 +1045,6 @@ export interface components {
             no: number;
             /** Title */
             title: string;
-            /** Pages */
-            pages: string;
         };
         /** BankTopicOption */
         BankTopicOption: {
@@ -1068,14 +1066,12 @@ export interface components {
             /** File */
             file: string;
         };
-        /** Body_upload_evidence_api_admin_study_bank__topic_id__upload_post */
-        Body_upload_evidence_api_admin_study_bank__topic_id__upload_post: {
+        /** Body_upload_note_api_admin_study_bank__topic_id__upload_post */
+        Body_upload_note_api_admin_study_bank__topic_id__upload_post: {
             /** No */
             no: number;
             /** Group */
             group: number;
-            /** Page */
-            page: number;
             /** File */
             file: string;
         };
@@ -1108,6 +1104,8 @@ export interface components {
         CardAnswer: {
             /** Answerhtml */
             answerHtml: string;
+            /** Notes */
+            notes: components["schemas"]["Note"][];
         };
         /** CreatePostRequest */
         CreatePostRequest: {
@@ -1128,19 +1126,12 @@ export interface components {
              */
             note: string;
             /**
-             * Pages
-             * @default
-             */
-            pages: string;
-            /** Firstpage */
-            firstPage?: number | null;
-            /**
              * Answer
              * @default
              */
             answer: string;
-            /** Evidence */
-            evidence?: components["schemas"]["EvidenceGroupInput"][];
+            /** Notes */
+            notes?: components["schemas"]["NoteInput"][];
             /** Topicid */
             topicId: string;
         };
@@ -1155,64 +1146,6 @@ export interface components {
             cardDeleted: boolean;
             /** Reindexed */
             reindexed: number;
-        };
-        /** EvidenceFile */
-        EvidenceFile: {
-            /** Page */
-            page: number;
-            /** File */
-            file: string;
-            /** Width */
-            width?: number | null;
-            /** Height */
-            height?: number | null;
-        };
-        /** EvidenceFileInput */
-        EvidenceFileInput: {
-            /** Page */
-            page: number;
-            /** File */
-            file: string;
-        };
-        /** EvidenceGroup */
-        EvidenceGroup: {
-            /** Label */
-            label: string;
-            /** From */
-            from: number;
-            /** To */
-            to: number;
-            /** Files */
-            files: components["schemas"]["EvidenceFile"][];
-        };
-        /** EvidenceGroupInput */
-        EvidenceGroupInput: {
-            /**
-             * Label
-             * @default
-             */
-            label: string;
-            /**
-             * From
-             * @default 1
-             */
-            from: number;
-            /**
-             * To
-             * @default 1
-             */
-            to: number;
-            /** Files */
-            files?: components["schemas"]["EvidenceFileInput"][];
-        };
-        /** EvidenceUploadResponse */
-        EvidenceUploadResponse: {
-            /** File */
-            file: string;
-            /** Width */
-            width: number;
-            /** Height */
-            height: number;
         };
         /** FilterResponse */
         FilterResponse: {
@@ -1279,6 +1212,67 @@ export interface components {
         LoginRequest: {
             /** Password */
             password: string;
+        };
+        /** Note */
+        Note: {
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "images" | "markdown";
+            /** Files */
+            files: components["schemas"]["NoteFile"][];
+            /**
+             * Html
+             * @default
+             */
+            html: string;
+        };
+        /** NoteFile */
+        NoteFile: {
+            /** File */
+            file: string;
+            /** Width */
+            width?: number | null;
+            /** Height */
+            height?: number | null;
+        };
+        /** NoteFileInput */
+        NoteFileInput: {
+            /** File */
+            file: string;
+        };
+        /** NoteInput */
+        NoteInput: {
+            /**
+             * Label
+             * @default
+             */
+            label: string;
+            /**
+             * Kind
+             * @default images
+             * @enum {string}
+             */
+            kind: "images" | "markdown";
+            /** Files */
+            files?: components["schemas"]["NoteFileInput"][];
+            /**
+             * Markdown
+             * @default
+             */
+            markdown: string;
+        };
+        /** NoteUploadResponse */
+        NoteUploadResponse: {
+            /** File */
+            file: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
         };
         /** Page[PostMeta] */
         Page_PostMeta_: {
@@ -1391,14 +1385,10 @@ export interface components {
             summary: string[];
             /** Note */
             note: string;
-            /** Pages */
-            pages: string;
-            /** Firstpage */
-            firstPage: number;
             /** Answer */
             answer: string;
-            /** Evidence */
-            evidence: components["schemas"]["EvidenceGroup"][];
+            /** Notes */
+            notes: components["schemas"]["Note"][];
             topic: components["schemas"]["TopicSummary"];
             prev?: components["schemas"]["QuestionNav"] | null;
             next?: components["schemas"]["QuestionNav"] | null;
@@ -1439,19 +1429,12 @@ export interface components {
              */
             note: string;
             /**
-             * Pages
-             * @default
-             */
-            pages: string;
-            /** Firstpage */
-            firstPage?: number | null;
-            /**
              * Answer
              * @default
              */
             answer: string;
-            /** Evidence */
-            evidence?: components["schemas"]["EvidenceGroupInput"][];
+            /** Notes */
+            notes?: components["schemas"]["NoteInput"][];
         };
         /** RawPost */
         RawPost: {
@@ -1562,8 +1545,6 @@ export interface components {
             summary: string[];
             /** Note */
             note: string;
-            /** Pages */
-            pages: string;
             /** Topic */
             topic: string;
             /** Topicid */
@@ -2591,7 +2572,7 @@ export interface operations {
             };
         };
     };
-    upload_evidence_api_admin_study_bank__topic_id__upload_post: {
+    upload_note_api_admin_study_bank__topic_id__upload_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2602,7 +2583,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_upload_evidence_api_admin_study_bank__topic_id__upload_post"];
+                "multipart/form-data": components["schemas"]["Body_upload_note_api_admin_study_bank__topic_id__upload_post"];
             };
         };
         responses: {
@@ -2612,7 +2593,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EvidenceUploadResponse"];
+                    "application/json": components["schemas"]["NoteUploadResponse"];
                 };
             };
             /** @description Validation Error */

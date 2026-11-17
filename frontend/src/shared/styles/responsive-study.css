@@ -1,6 +1,6 @@
 @media (min-width: 1025px) {
   body.header-hidden .study-sidebar,
-  body.header-hidden .study-evidence {
+  body.header-hidden .study-notes {
     top: 0;
     height: 100vh;
   }

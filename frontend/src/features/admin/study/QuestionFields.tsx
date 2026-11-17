@@ -3,7 +3,6 @@ export type QuestionForm = {
   aliases: string
   summary: string
   note: string
-  pages: string
   answer: string
 }
 
@@ -53,15 +52,6 @@ export function QuestionFields({ form, onChange }: Props) {
           onChange={(event) => onChange({ note: event.target.value })}
         />
       </label>
-      <label className="bank-field">
-        <span className="bank-label">页码</span>
-        <input
-          className="bank-input"
-          value={form.pages}
-          placeholder="如 p3–5，留空则按截图页码生成"
-          onChange={(event) => onChange({ pages: event.target.value })}
-        />
-      </label>
       <label className="bank-field wide">
         <span className="bank-label">答案（Markdown）</span>
         <textarea
@@ -75,7 +65,7 @@ export function QuestionFields({ form, onChange }: Props) {
         <span className="bank-hint">
           用 Markdown 写：段落直接写，列表用 <code>- </code>，小标题用 <code>###</code>，代码用
           <code>```语言</code> 围栏，表格用 <code>| 表头 |</code>，插图用
-          <code>![原文配图 · p3](/study/… "图注")</code>；需要原样显示 <code>* _ $ &lt; |</code>{' '}
+          <code>![原文配图](/study/… "图注")</code>；需要原样显示 <code>* _ $ &lt; |</code>{' '}
           时加反斜杠转义。
         </span>
       </label>

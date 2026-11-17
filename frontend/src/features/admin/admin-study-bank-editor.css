@@ -1,4 +1,4 @@
-/* —— 学习后台：题目编辑器与证据截图 —— */
+/* —— 学习后台：题目编辑器与笔记 —— */
 
 .bank-editor {
   padding: 22px;
@@ -82,7 +82,7 @@
   line-height: 1.65;
 }
 
-.bank-evidence-head {
+.bank-note-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -90,7 +90,7 @@
   margin-bottom: 6px;
 }
 
-.bank-evidence-group {
+.bank-note {
   margin-top: 10px;
   padding: 12px;
   border: 1px solid var(--line);
@@ -98,31 +98,42 @@
   background: var(--bg-elev);
 }
 
-.bank-evidence-group-head {
+.bank-note-head {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
-.bank-evidence-group-head .bank-input {
-  flex: 1;
+.bank-note-head .bank-input {
+  flex: 1 1 180px;
 }
 
-.bank-page-input {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.bank-note-kind {
+  display: inline-flex;
   flex: none;
-  color: var(--faint);
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.bank-note-kind button {
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
   font-size: 11px;
-  white-space: nowrap;
+  cursor: pointer;
 }
 
-.bank-page-input .bank-input {
-  width: 64px;
+.bank-note-kind button.is-active {
+  background: var(--ink);
+  color: var(--bg);
 }
 
-.bank-evidence-files {
+.bank-note-files {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -130,7 +141,7 @@
   margin-top: 12px;
 }
 
-.bank-evidence-file {
+.bank-note-file {
   position: relative;
   width: 104px;
   margin: 0;
@@ -140,7 +151,7 @@
   background: var(--surface);
 }
 
-.bank-evidence-file img {
+.bank-note-file img {
   display: block;
   width: 100%;
   height: 66px;
@@ -149,7 +160,7 @@
   background: var(--bg-elev);
 }
 
-.bank-evidence-file .bank-evidence-zoom {
+.bank-note-file .bank-note-zoom {
   display: block;
   width: 100%;
   margin: 0;
@@ -159,18 +170,11 @@
   cursor: zoom-in;
 }
 
-.bank-evidence-zoom:hover img {
+.bank-note-zoom:hover img {
   opacity: 0.86;
 }
 
-.bank-evidence-file figcaption {
-  margin-top: 4px;
-  color: var(--faint);
-  font-family: var(--font-mono);
-  font-size: 10px;
-}
-
-.bank-evidence-file button {
+.bank-note-file button {
   margin-top: 4px;
   padding: 0;
   border: 0;
@@ -180,7 +184,13 @@
   cursor: pointer;
 }
 
-.bank-evidence-upload {
+.bank-note-markdown {
+  margin-top: 12px;
+  min-height: 140px;
+  line-height: 1.65;
+}
+
+.bank-note-upload {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -224,12 +234,12 @@
     width: 100%;
   }
 
-  .bank-evidence-group-head {
+  .bank-note-head {
     flex-wrap: wrap;
   }
 
-  /* 窄屏把出处标签单独占一行，避免被页码与按钮挤成一条线 */
-  .bank-evidence-group-head > .bank-input {
+  /* 窄屏让笔记标题单独占一行，避免被类型开关与按钮挤成一条线 */
+  .bank-note-head > .bank-input {
     flex: 1 1 100%;
   }
 }

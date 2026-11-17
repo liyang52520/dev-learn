@@ -7,10 +7,11 @@ from typing import Any
 from urllib.parse import unquote
 
 from app.core.errors import AppError
+from app.features.study import notes as note_store
 from app.features.study import repository
 from app.features.study.schemas import (
-    EvidenceFile,
-    EvidenceGroup,
+    Note,
+    NoteFile,
     QuestionDetail,
     QuestionNav,
     StudyIndexResponse,
@@ -49,7 +50,7 @@ def list_topics() -> StudyIndexResponse:
 
 
 def index_document() -> dict[str, Any]:
-    """检索使用的轻量索引（题目不含答案与证据）。"""
+    """检索使用的轻量索引（题目不含答案与笔记）。"""
     return repository.load_index()
 
 
@@ -112,31 +113,31 @@ def _inject_sizes(body: str) -> str:
     return _IMG.sub(fix, body)
 
 
-def _evidence(question: dict[str, Any]) -> list[EvidenceGroup]:
-    groups: list[EvidenceGroup] = []
-    for group in question.get("evidence", []):
+def _notes(question: dict[str, Any]) -> list[Note]:
+    notes: list[Note] = []
+    for entry in note_store.note_entries(question):
+        if entry["kind"] == "markdown":
+            notes.append(
+                Note(
+                    label=entry["label"],
+                    kind="markdown",
+                    files=[],
+                    html=_inject_sizes(render_answer(entry["markdown"])),
+                )
+            )
+            continue
         files = []
-        for file in group.get("files", []):
+        for file in entry["files"]:
             dims = dimensions_of_src(unquote(file["file"]))
             files.append(
-                EvidenceFile(
-                    page=file["page"],
+                NoteFile(
                     file=file["file"],
                     width=dims[0] if dims else file.get("width"),
                     height=dims[1] if dims else file.get("height"),
                 )
             )
-        groups.append(
-            EvidenceGroup.model_validate(
-                {
-                    "label": group["label"],
-                    "from": group["from"],
-                    "to": group["to"],
-                    "files": files,
-                }
-            )
-        )
-    return groups
+        notes.append(Note(label=entry["label"], kind="images", files=files))
+    return notes
 
 
 def get_question(topic_id: str, qid: str) -> QuestionDetail:
@@ -169,10 +170,8 @@ def get_question(topic_id: str, qid: str) -> QuestionDetail:
         aliases=question.get("aliases", []),
         summary=question.get("summary", []),
         note=question.get("note", ""),
-        pages=question.get("pages", ""),
-        first_page=question.get("firstPage", 1),
         answer=answer,
-        evidence=_evidence(question),
+        notes=_notes(question),
         topic=_summary(topic),
         prev=nav_of(-1),
         next=nav_of(1),

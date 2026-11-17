@@ -1,4 +1,4 @@
-.study-evidence {
+.study-notes {
   position: sticky;
   top: 68px;
   height: calc(100vh - 68px);
@@ -9,35 +9,57 @@
   scrollbar-width: thin;
 }
 
-.evidence-head {
+.note-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.evidence-head h2 {
+.note-head h2 {
   font-size: 14px;
   font-weight: 650;
   letter-spacing: -0.01em;
 }
 
-.evidence-head span {
+.note-head span {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--faint);
 }
 
-.evidence-hint {
-  margin-top: 5px;
-  font-size: 10.5px;
-  color: var(--faint);
+.note-head-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.evidence-group {
+.note-close {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.note-close:hover {
+  color: var(--ink);
+  border-color: var(--line-2);
+  background: var(--surface);
+}
+
+.note-group {
   margin-top: 22px;
 }
 
-.evidence-group header {
+.note-group header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -46,19 +68,21 @@
   border-bottom: 1px solid var(--line);
 }
 
-.evidence-group header strong {
+.note-group header strong {
   font-size: 11.5px;
   font-weight: 600;
   color: var(--ink-2);
+  overflow-wrap: anywhere;
 }
 
-.evidence-group header span {
+.note-group header span {
+  flex: none;
   font-family: var(--font-mono);
   font-size: 9.5px;
   color: var(--faint);
 }
 
-.evidence-shot {
+.note-shot {
   position: relative;
   display: block;
   width: 100%;
@@ -71,33 +95,50 @@
   transition: border-color 0.18s ease, transform 0.18s ease;
 }
 
-.evidence-shot:hover {
+.note-shot:hover {
   border-color: var(--accent);
   transform: translateY(-1px);
 }
 
-.evidence-shot img {
+.note-shot img {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.evidence-shot span {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(10, 12, 16, 0.78);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 9px;
-}
-
-.evidence-empty {
+.note-empty {
   margin-top: 18px;
   font-size: 12px;
   color: var(--faint);
+}
+
+/* Markdown 笔记在窄栏里阅读：缩小标题与代码块，避免撑破侧栏 */
+.note-markdown {
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.note-markdown > :first-child {
+  margin-top: 0;
+}
+
+.note-markdown h1,
+.note-markdown h2,
+.note-markdown h3,
+.note-markdown h4 {
+  margin: 14px 0 6px;
+  font-size: 13px;
+}
+
+.note-markdown p,
+.note-markdown ul,
+.note-markdown ol,
+.note-markdown blockquote {
+  margin: 8px 0;
+}
+
+.note-markdown table {
+  font-size: 11.5px;
 }
 
 .lightbox {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ApiError, errorMessage } from '@/shared/api/client'
-import type { ReviewCard } from '@/types/models'
+import type { ReviewCard, StudyNote } from '@/types/models'
 
 import * as reviewApi from './api'
 import type { Phase } from './types'
@@ -12,13 +12,14 @@ type Options = {
   mounted: { current: boolean }
   loadNext: (retried?: boolean) => Promise<void>
   setAnswerHtml: (html: string) => void
+  setNotes: (notes: StudyNote[]) => void
   setPhase: (phase: Phase) => void
   setToast: (text: string) => void
 }
 
 /** 显示答案：先给卡片续期，长思考也不会在评分前被判过期。 */
 export function useRevealAnswer(options: Options) {
-  const { card, phase, mounted, loadNext, setAnswerHtml, setPhase, setToast } = options
+  const { card, phase, mounted, loadNext, setAnswerHtml, setNotes, setPhase, setToast } = options
   const [revealing, setRevealing] = useState(false)
   // 每次换卡或发起新请求都自增；旧请求回来时直接丢弃，避免把上一张的答案贴到下一张。
   const requestId = useRef(0)
@@ -31,6 +32,7 @@ export function useRevealAnswer(options: Options) {
   const reveal = useCallback(async () => {
     if (phase !== 'question' || revealing || !card) return
     if (!card.question?.hasAnswer) {
+      setNotes([])
       setPhase('answer')
       return
     }
@@ -51,13 +53,14 @@ export function useRevealAnswer(options: Options) {
       const data = await reviewApi.fetchCardAnswer(card.qid)
       if (stale()) return
       setAnswerHtml(data.answerHtml)
+      setNotes(data.notes ?? [])
       setPhase('answer')
     } catch (err) {
       if (!stale()) setToast(errorMessage(err))
     } finally {
       if (!stale()) setRevealing(false)
     }
-  }, [card, phase, revealing, mounted, loadNext, setAnswerHtml, setPhase, setToast])
+  }, [card, phase, revealing, mounted, loadNext, setAnswerHtml, setNotes, setPhase, setToast])
 
   return { reveal, revealing }
 }

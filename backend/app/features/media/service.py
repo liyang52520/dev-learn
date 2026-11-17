@@ -49,7 +49,7 @@ def save_image(
 ) -> tuple[str, int, int]:
     """按指定目录与文件名保存图片，返回 `(URL, 宽, 高)`。
 
-    题库证据截图需要固定命名（`q001_0_3.jpg`）和 `/study/...` 路径，
+    题库笔记截图需要固定命名（`q001_0_3.jpg`）和 `/study/...` 路径，
     与文章图床的年月分目录不同；校验逻辑仍复用 _inspect。
     """
     suffix, width, height = _inspect(content_type, data)

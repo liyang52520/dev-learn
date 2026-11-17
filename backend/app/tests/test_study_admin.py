@@ -12,8 +12,8 @@ from app.core.errors import AppError
 from app.features.study import admin_fields, admin_service, admin_views, repository
 from app.features.study.admin_schemas import (
     CreateQuestionRequest,
-    EvidenceFileInput,
-    EvidenceGroupInput,
+    NoteFileInput,
+    NoteInput,
     QuestionWrite,
 )
 
@@ -143,16 +143,13 @@ def _write_payload(**overrides: Any) -> dict[str, Any]:
         "aliases": ["别名"],
         "summary": ["新要点"],
         "note": "",
-        "pages": "p3",
-        "firstPage": 3,
         "answer": "<p>新答案正文</p>",
-        "evidence": [
+        "notes": [
             {
                 "label": "原文出处",
-                "from": 3,
-                "to": 3,
+                "kind": "images",
                 "files": [
-                    {"page": 3, "file": "/study/topic-01-demo/assets/ev/q001_0_3.jpg"},
+                    {"file": "/study/topic-01-demo/assets/ev/q001_0_3.jpg"},
                 ],
             }
         ],
@@ -185,19 +182,18 @@ def test_create_appends_continuous_qid(bank: tuple[Path, list[tuple[str, str]]])
         topicId="demo",
         **_write_payload(
             title="新增题",
-            evidence=[
+            notes=[
                 {
                     "label": "",
-                    "from": 6,
-                    "to": 6,
-                    "files": [{"page": 6, "file": "/study/topic-01-demo/assets/ev/q001_0_3.jpg"}],
+                    "kind": "images",
+                    "files": [{"file": "/study/topic-01-demo/assets/ev/q001_0_3.jpg"}],
                 }
             ],
         ),
     )
     created = admin_service.create_question(payload)
     assert created.question.id == "q004" and created.question.key == "demo/q004"
-    assert created.question.evidence[0].label == "原文出处"
+    assert created.question.notes[0].label == "笔记1"
     assert ("create", "demo/q004") in calls
 
     index = json.loads((study_dir / "index.json").read_text(encoding="utf-8"))
@@ -205,7 +201,7 @@ def test_create_appends_continuous_qid(bank: tuple[Path, list[tuple[str, str]]])
     assert index["meta"]["count"] == 4
 
 
-def test_delete_middle_renumbers_and_renames_evidence(
+def test_delete_middle_renumbers_and_renames_notes(
     bank: tuple[Path, list[tuple[str, str]]],
 ) -> None:
     study_dir, calls = bank
@@ -231,18 +227,38 @@ def test_delete_middle_renumbers_and_renames_evidence(
     assert index["meta"]["count"] == 2
 
 
-def test_allows_question_without_evidence(bank: tuple[Path, list[tuple[str, str]]]) -> None:
+def test_allows_question_without_notes(bank: tuple[Path, list[tuple[str, str]]]) -> None:
     result = admin_service.update_question(
         "demo",
         "q001",
-        QuestionWrite(**_write_payload(evidence=[], pages="", firstPage=None)),
+        QuestionWrite(**_write_payload(notes=[])),
     )
-    assert result.question.evidence == []
-    assert result.question.pages == ""
-    assert result.question.first_page == 1
+    assert result.question.notes == []
 
 
-def test_rejects_unsafe_answer_and_cross_topic_evidence(
+def test_saves_markdown_note_and_drops_legacy_evidence(
+    bank: tuple[Path, list[tuple[str, str]]],
+) -> None:
+    study_dir, _ = bank
+    result = admin_service.update_question(
+        "demo",
+        "q001",
+        QuestionWrite(
+            **_write_payload(
+                notes=[{"label": "", "kind": "markdown", "markdown": "## 手写笔记\n\n- 要点"}]
+            )
+        ),
+    )
+    assert result.question.notes[0].kind == "markdown"
+    assert result.question.notes[0].label == "笔记1"
+
+    topic = json.loads((study_dir / "demo.json").read_text(encoding="utf-8"))
+    question = topic["questions"][0]
+    assert "evidence" not in question
+    assert question["notes"][0]["markdown"].startswith("## 手写笔记")
+
+
+def test_rejects_unsafe_answer_and_cross_topic_note(
     bank: tuple[Path, list[tuple[str, str]]],
 ) -> None:
     with pytest.raises(AppError):
@@ -255,17 +271,24 @@ def test_rejects_unsafe_answer_and_cross_topic_evidence(
             "q001",
             QuestionWrite(
                 **_write_payload(
-                    evidence=[
-                        EvidenceGroupInput(
-                            from_page=3,
-                            to=3,
+                    notes=[
+                        NoteInput(
+                            kind="images",
                             files=[
-                                EvidenceFileInput(
-                                    page=3, file="/study/topic-02-other/assets/ev/q001_0_3.jpg"
-                                )
+                                NoteFileInput(file="/study/topic-02-other/assets/ev/q001_0_3.jpg")
                             ],
                         )
                     ]
+                )
+            ),
+        )
+    with pytest.raises(AppError):
+        admin_service.update_question(
+            "demo",
+            "q001",
+            QuestionWrite(
+                **_write_payload(
+                    notes=[{"kind": "markdown", "markdown": "<script>alert(1)</script>"}]
                 )
             ),
         )

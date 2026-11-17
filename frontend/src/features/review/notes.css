@@ -1,0 +1,160 @@
+/* 复习页笔记：按钮展开。
+   宽屏在题面右侧紧贴显示，窄屏与移动端改为底部弹层。 */
+
+.review-notes-toggle.is-open {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.review-notes-count {
+  margin-left: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--faint);
+}
+
+.review-notes-toggle.is-open .review-notes-count {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.review-notes-backdrop {
+  display: none;
+}
+
+/* ---------------- 宽屏：题面左移，笔记在右侧紧贴 ---------------- */
+
+.review-page.has-notes {
+  width: min(1180px, 100% - 40px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  column-gap: 12px;
+  align-items: start;
+}
+
+.review-page.has-notes > .review-top,
+.review-page.has-notes > .review-shortcuts,
+.review-page.has-notes > .review-toast {
+  grid-column: 1 / -1;
+}
+
+/* 答案态不需要垂直居中，顶部对齐才能和右侧笔记形成一条基线 */
+.review-page.has-notes > .review-panel {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.review-notes {
+  position: sticky;
+  top: 18px;
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  padding: 20px 18px 26px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  scrollbar-width: thin;
+  animation: review-notes-in 0.22s ease both;
+}
+
+.review-notes .note-head {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.review-notes .note-head h2 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.review-notes .note-group {
+  margin-top: 20px;
+}
+
+.review-notes .note-group:first-of-type {
+  margin-top: 16px;
+}
+
+.review-notes .note-shot {
+  margin-bottom: 12px;
+}
+
+@keyframes review-notes-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes review-notes-up {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ---------------- 窄屏与移动端：底部弹层 ---------------- */
+
+@media (max-width: 1024px) {
+  .review-page.has-notes {
+    width: min(880px, 100% - 40px);
+    display: block;
+  }
+
+  .review-notes-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    padding: 0;
+    border: none;
+    background: rgba(8, 10, 14, 0.42);
+    backdrop-filter: blur(2px);
+    cursor: pointer;
+    animation: fade 0.18s ease both;
+  }
+
+  .review-notes {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 120;
+    max-height: 96dvh;
+    margin: 0;
+    padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+    border: 1px solid var(--line-2);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -18px 48px rgba(8, 10, 14, 0.28);
+    overscroll-behavior: contain;
+    animation: review-notes-up 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+}
+
+@media (max-width: 720px) {
+  .review-page.has-notes {
+    width: calc(100% - 28px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .review-notes,
+  .review-notes-backdrop {
+    animation: none;
+  }
+}

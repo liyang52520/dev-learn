@@ -128,16 +128,16 @@ function studyMainSkeleton() {
   )
 }
 
-function studyEvidenceSkeleton() {
+function studyNoteSkeleton() {
   return (
-    <aside className="study-evidence">
-      <div className="sk-evidence-head">
-        <span className="skeleton sk-line sk-evidence-title" />
-        <span className="skeleton sk-line sk-evidence-count" />
+    <aside className="study-notes">
+      <div className="sk-note-head">
+        <span className="skeleton sk-line sk-note-title" />
+        <span className="skeleton sk-line sk-note-count" />
       </div>
-      <span className="skeleton sk-line sk-evidence-hint" />
-      <span className="skeleton sk-block sk-evidence-shot" />
-      <span className="skeleton sk-block sk-evidence-shot" />
+      <span className="skeleton sk-line sk-note-hint" />
+      <span className="skeleton sk-block sk-note-shot" />
+      <span className="skeleton sk-block sk-note-shot" />
     </aside>
   )
 }
@@ -148,17 +148,17 @@ export function StudySkeleton() {
     <div className="study-page sk-study" aria-busy="true" aria-label="题目加载中">
       {studySidebarSkeleton()}
       {studyMainSkeleton()}
-      {studyEvidenceSkeleton()}
+      {studyNoteSkeleton()}
     </div>
   )
 }
 
-/** 同一专题内切题：只替换右侧正文与证据，左侧列表保持挂载，滚动位置不丢。 */
+/** 同一专题内切题：只替换右侧正文与笔记，左侧列表保持挂载，滚动位置不丢。 */
 export function QuestionDetailSkeleton() {
   return (
     <>
       {studyMainSkeleton()}
-      {studyEvidenceSkeleton()}
+      {studyNoteSkeleton()}
     </>
   )
 }

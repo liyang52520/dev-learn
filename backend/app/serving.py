@@ -47,7 +47,7 @@ def _mount_spa(app: FastAPI) -> None:
 
     @app.get("/study/{path:path}", include_in_schema=False, response_model=None)
     def study_asset(path: str) -> FileResponse | JSONResponse:
-        """`/study/**` 既放证据截图，也放前端路由，只能按文件是否存在分流。"""
+        """`/study/**` 既放笔记截图，也放前端路由，只能按文件是否存在分流。"""
         target = _study_file(path)
         if target is not None:
             return FileResponse(target, headers={"cache-control": "public, max-age=604800"})

@@ -5,9 +5,10 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import unquote
 
+from app.features.study import notes as note_store
 from app.features.study.admin_schemas import (
-    AdminEvidenceFile,
-    AdminEvidenceGroup,
+    AdminNote,
+    AdminNoteFile,
     AdminQuestion,
     BankTopicOption,
 )
@@ -51,22 +52,24 @@ def refresh_index(index: dict[str, Any], topic: dict[str, Any]) -> None:
 
 
 def question_detail(topic: dict[str, Any], question: dict[str, Any]) -> AdminQuestion:
-    evidence: list[AdminEvidenceGroup] = []
-    for group in question.get("evidence", []):
+    notes: list[AdminNote] = []
+    for entry in note_store.note_entries(question):
         files = []
-        for file in group.get("files", []):
+        for file in entry["files"]:
             dims = dimensions_of_src(unquote(file["file"]))
             files.append(
-                AdminEvidenceFile(
-                    page=file["page"],
+                AdminNoteFile(
                     file=file["file"],
                     width=dims[0] if dims else None,
                     height=dims[1] if dims else None,
                 )
             )
-        evidence.append(
-            AdminEvidenceGroup.model_validate(
-                {"label": group["label"], "from": group["from"], "to": group["to"], "files": files}
+        notes.append(
+            AdminNote(
+                label=entry["label"],
+                kind=entry["kind"],
+                files=files,
+                markdown=entry["markdown"],
             )
         )
     return AdminQuestion(
@@ -83,5 +86,5 @@ def question_detail(topic: dict[str, Any], question: dict[str, Any]) -> AdminQue
         pages=question.get("pages", ""),
         first_page=question.get("firstPage", 1),
         answer=question.get("answer", ""),
-        evidence=evidence,
+        notes=notes,
     )

@@ -32,19 +32,29 @@ def test_topic_detail_nav_is_lightweight() -> None:
     assert "answer" not in item.model_dump(by_alias=True)
 
 
-def test_question_detail_has_answer_and_evidence() -> None:
+def test_question_detail_has_answer_and_notes() -> None:
     topic_id = service.list_topics().topics[0].id
     qid = service.first_question(topic_id)
     question = service.get_question(topic_id, qid)
     assert question.id == qid
     assert question.answer.strip()
-    assert question.evidence, "每题至少一组证据截图"
-    assert all(
-        file.file.startswith("/study/") for group in question.evidence for file in group.files
+    assert question.notes, "每题至少一条笔记（旧数据的截图组按图笔记读取）"
+    images = [note for note in question.notes if note.kind == "images"]
+    assert images, "旧 evidence 结构应被读成图片笔记"
+    assert all(file.file.startswith("/study/") for note in images for file in note.files)
+    assert all(file.width and file.height for note in images for file in note.files), (
+        "笔记截图必须带宽高，避免 CLS"
     )
-    assert all(file.width and file.height for group in question.evidence for file in group.files), (
-        "证据图必须带宽高，避免 CLS"
+
+
+def test_markdown_note_renders_to_html() -> None:
+    notes = service._notes(
+        {"notes": [{"label": "", "kind": "markdown", "markdown": "### 手写\n\n- 要点"}]}
     )
+    assert notes[0].label == "笔记1"
+    assert notes[0].kind == "markdown"
+    assert notes[0].files == []
+    assert "<h3" in notes[0].html and "<li>" in notes[0].html
 
 
 def test_question_prev_next_walk_all() -> None:

@@ -110,7 +110,7 @@ def _requires_login(path: str, method: str) -> bool:
     if path.startswith(("/assets/", "/images/")):
         return path.startswith("/images/")
     if path.startswith("/study/"):
-        # /study/** 既放证据截图，也放前端路由；只有图片需要登录。
+        # /study/** 既放笔记截图，也放前端路由；只有图片需要登录。
         return Path(path).suffix.lower() in _IMAGE_SUFFIXES
     return path.startswith("/api/")
 

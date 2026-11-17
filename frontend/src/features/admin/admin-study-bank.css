@@ -142,11 +142,6 @@
   color: var(--ink);
 }
 
-.bank-row-meta {
-  color: var(--faint);
-  font-size: 10.5px;
-}
-
 .bank-empty {
   margin: 18px 10px;
   color: var(--faint);

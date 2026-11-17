@@ -13,10 +13,13 @@ type Props = {
   revealing: boolean
   canUndo: boolean
   busy: boolean
+  notesCount: number
+  notesOpen: boolean
   onReveal: () => void
   onUndo: () => void
   onCardAction: (action: CardAction) => void
   onRate: (rating: number) => void
+  onToggleNotes: () => void
 }
 
 function questionLinks(card: ReviewCard): { origin: string; edit: string } | null {
@@ -33,15 +36,15 @@ function questionLinks(card: ReviewCard): { origin: string; edit: string } | nul
 }
 
 export function QuestionCard(props: Props) {
-  const { card, phase, answerHtml, revealing, canUndo, busy } = props
+  const { card, phase, answerHtml, revealing, canUndo, busy, notesCount, notesOpen } = props
   const links = questionLinks(card)
   const waiting = phase === 'loading' || !card
+  const canShowNotes = phase === 'answer' && notesCount > 0
 
   return (
     <div className={`review-panel review-card${phase === 'question' ? ' is-question' : ''}`} aria-busy={busy}>
       <div className="review-meta">
         <span>{card.question?.topic || card.qid}</span>
-        {card.question?.pages && <span>{card.question.pages}</span>}
         {links && (
           <>
             <Link className="review-origin" to={links.origin} target="_blank" rel="noreferrer">
@@ -56,6 +59,17 @@ export function QuestionCard(props: Props) {
             >
               编辑
             </Link>
+            {canShowNotes && (
+              <button
+                type="button"
+                className={`quick-edit review-notes-toggle${notesOpen ? ' is-open' : ''}`}
+                onClick={props.onToggleNotes}
+                aria-expanded={notesOpen}
+                title={notesOpen ? '收起笔记' : '在右侧查看这道题的笔记'}
+              >
+                笔记<span className="review-notes-count">{notesCount}</span>
+              </button>
+            )}
           </>
         )}
         <span className="review-state">{STATE_LABELS[card.state] || card.state}</span>
@@ -114,7 +128,7 @@ export function QuestionCard(props: Props) {
             </>
           )}
           <p className="review-section-title">
-            原文答案{card.question?.pages ? ` · ${card.question.pages}` : ''}
+            原文答案
           </p>
           <HtmlContent className="prose study-answer review-answer" html={answerHtml} />
 

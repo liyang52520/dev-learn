@@ -22,7 +22,7 @@
 }
 
 @media (max-width: 1024px) {
-  /* 1024 下仍保留三栏：把证据栏挤到正文下方会让右侧一片空白，
+  /* 1024 下仍保留三栏：把笔记栏挤到正文下方会让右侧一片空白，
      看起来像页面少了一块。窄一点也要并排，直到 940 才降成两栏。 */
   .study-page {
     grid-template-columns: 232px minmax(0, 1fr) 296px;
@@ -53,7 +53,7 @@
     grid-template-columns: 240px minmax(0, 1fr);
   }
 
-  .study-evidence {
+  .study-notes {
     grid-column: 1 / -1;
     position: static;
     height: auto;
@@ -65,13 +65,16 @@
     gap: 18px;
   }
 
-  .study-evidence > .evidence-head,
-  .study-evidence > .evidence-hint {
+  .study-notes > .note-head {
     grid-column: 1 / -1;
   }
 
-  .evidence-group {
+  .note-group {
     margin-top: 0;
+  }
+
+  .note-group-wide {
+    grid-column: 1 / -1;
   }
 }
 

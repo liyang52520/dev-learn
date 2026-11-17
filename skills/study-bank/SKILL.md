@@ -129,6 +129,19 @@ node skills/study-bank/scripts/extract-study.cjs   # 每个专题一行 + done: 
 - 文件命名 `q<题号>_<rangeIndex>_<page>.jpg`（rangeIndex 0 起）；共 5762 张、0 缺失；每题至少一组。
 - **`files[].width` / `files[].height` 不在 JSON 里**：`backend/app/features/study/service.py` 在内存中按文件头补（`rendering/images.py` 同时给 `answer` 里 `/study/` 图片注入 `width/height`），只用于 `<img>` 预留版面。别把它们写进 `backend/data/study/*.json`（抽取会覆盖），也别手动维护。
 
+### notes 结构（后台编辑写入）
+
+后台改名/新增的题目保存为 `notes`，一条笔记即一组截图或一段 Markdown：
+
+```json
+[{"label":"笔记1","kind":"images","files":[{"file":"/study/topic-01-jvm/assets/ev/q001_0_3.jpg"}]},
+ {"label":"笔记2","kind":"markdown","markdown":"### 手写笔记\n\n- 要点"}]
+```
+
+- 读取端 `backend/app/features/study/notes.py` 优先 `notes`，缺失时回退旧 `evidence`；重抽产生的 `evidence` 无需迁移。
+- `kind=images` 只用 `files[].file`；`kind=markdown` 只用 `markdown`，一条笔记不能混用。`markdown` 由 `render_answer()` 渲染。
+- 新笔记标题默认 `笔记1`、`笔记2` 递增，可手改；旧 `evidence` 的 `from`/`to`/`page` 只留在旧数据里，页面与后台不再显示页码。
+
 ### slug、id 与 URL
 
 | URL | 行为 |
@@ -207,7 +220,7 @@ backend/.venv/bin/python skills/study-bank/scripts/answer-to-markdown.py --write
 ### 页面手工与视觉验收
 
 - `/study`：42 张卡片、`42 专题 / 2,521 题目 / 4,120 页原文`、筛选可用；`/study/jvm` 前端跳到 `/study/jvm/q001`；`/study/topic-01-jvm` 与 `/study/jvm/q999` 应 404。
-- `/study/jvm/q001`：三栏、别名、要点卡、原文备注、答案、上下题；右栏截图组数/页码与 evidence 一致、可放大、`Esc` 关闭；侧栏 `/` 搜索、`↑↓` 切题、专题下拉切换；全局搜索（`/api/search?q=`）能命中答案正文。
+- `/study/jvm/q001`：三栏、别名、要点卡、原文备注、答案、上下题；右栏「笔记」条数与截图组一致、不显示页码、可放大、`Esc` 关闭；侧栏 `/` 搜索、`↑↓` 切题、专题下拉切换；全局搜索（`/api/search?q=`）能命中答案正文。
 - 视觉：`python backend/scripts/dev.py` 后逐张读图，确认三栏不塌、红框在题干、插图位置正确、答案结尾无下一题标题；截图命令：
   ```bash
   mkdir -p /tmp/study-shots

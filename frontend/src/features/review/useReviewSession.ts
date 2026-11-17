@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ApiError, errorMessage } from '@/shared/api/client'
-import type { ReviewCard, ReviewCounts } from '@/types/models'
+import type { ReviewCard, ReviewCounts, StudyNote } from '@/types/models'
 
 import * as reviewApi from './api'
 import { currentClientId } from './client-id'
@@ -18,6 +18,7 @@ export function useReviewSession() {
   const [phase, setPhase] = useState<Phase>('loading')
   const [card, setCard] = useState<ReviewCard | null>(null)
   const [answerHtml, setAnswerHtml] = useState('')
+  const [notes, setNotes] = useState<StudyNote[]>([])
   const [counts, setCounts] = useState<ReviewCounts>({ new: 0, learning: 0, review: 0 })
   const [dueTotal, setDueTotal] = useState(0)
   const [error, setError] = useState('')
@@ -57,6 +58,10 @@ export function useReviewSession() {
     const timer = window.setTimeout(() => setStuck(true), 4000)
     return () => window.clearTimeout(timer)
   }, [phase])
+  // 换卡后旧笔记必须立刻失效：题目没有答案时会直接进入 answer 态，不经过接口返回。
+  useEffect(() => {
+    setNotes([])
+  }, [card?.cardId])
   const finish = useCallback(() => {
     const spent = flushSegment()
     segmentRef.current = null
@@ -117,6 +122,7 @@ export function useReviewSession() {
     mounted,
     loadNext,
     setAnswerHtml,
+    setNotes,
     setPhase,
     setToast,
   })
@@ -255,6 +261,7 @@ export function useReviewSession() {
     phase,
     card,
     answerHtml,
+    notes,
     counts,
     dueTotal,
     stats,

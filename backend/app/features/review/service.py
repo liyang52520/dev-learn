@@ -52,7 +52,6 @@ def _enrich(raw: dict[str, Any]) -> ReviewCard:
                 aliases=found.get("aliases") or [],
                 summary=found.get("summary") or [],
                 note=found.get("note", ""),
-                pages=found.get("pages", ""),
                 topic=topic["label"],
                 topic_id=topic["id"],
                 has_answer=bool(found.get("answer")),
@@ -115,7 +114,7 @@ def card_action(payload: CardActionPayload) -> CardActionResult:
 def card_answer(qid: str) -> CardAnswer:
     topic_id, _, question_id = qid.partition("/")
     detail = study_service.get_question(topic_id, question_id)
-    return CardAnswer(answer_html=detail.answer)
+    return CardAnswer(answer_html=detail.answer, notes=detail.notes)
 
 
 def _marks(ids: list[int]) -> str:

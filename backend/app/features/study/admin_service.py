@@ -1,4 +1,4 @@
-"""后台题库编辑：题目增删改、题号重排、证据截图与 Anki 卡片同步。
+"""后台题库编辑：题目增删改、题号重排、笔记截图与 Anki 卡片同步。
 
 题目内容以 `backend/data/study/*.json` 为准；这里负责把专题 JSON、index.json、
 search 字段和 Anki note 一起改到一致状态。编辑只改 note 字段，不动调度状态；
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import logging
+import uuid
 from typing import Any
 
 from app.core.config import settings
@@ -18,6 +19,7 @@ from app.features.media import service as media_service
 from app.features.review import service as review_service
 from app.features.study import admin_fields as fields
 from app.features.study import admin_views as views
+from app.features.study import notes as note_store
 from app.features.study import repository
 from app.features.study.admin_schemas import (
     AdminQuestion,
@@ -25,7 +27,7 @@ from app.features.study.admin_schemas import (
     BankQuestionRow,
     CreateQuestionRequest,
     DeleteQuestionResponse,
-    EvidenceUploadResponse,
+    NoteUploadResponse,
     QuestionMutationResponse,
     QuestionWrite,
 )
@@ -72,7 +74,6 @@ def list_bank(topic_id: str = "", keyword: str = "", limit: int = _BANK_LIMIT) -
                     id=question["id"],
                     no=question["no"],
                     title=question["title"],
-                    pages=question.get("pages", ""),
                 )
             )
     capped = max(1, min(limit, _BANK_LIMIT))
@@ -135,6 +136,7 @@ def update_question(topic_id: str, qid: str, payload: QuestionWrite) -> Question
     topic = _topic_or_404(topic_id)
     _, question = _question_at(topic, qid)
     question.update(fields.validate_question(topic, payload))
+    question.pop("evidence", None)
     topic["count"] = len(topic["questions"])
     _save_topic_and_index(topic)
 
@@ -147,8 +149,8 @@ def update_question(topic_id: str, qid: str, payload: QuestionWrite) -> Question
 
 
 def _delete_files(topic: dict[str, Any], question: dict[str, Any]) -> None:
-    for group in question.get("evidence", []):
-        for file in group.get("files", []):
+    for note in note_store.note_entries(question):
+        for file in note["files"]:
             try:
                 path = fields.public_file(topic, file["file"])
             except AppError:
@@ -157,12 +159,12 @@ def _delete_files(topic: dict[str, Any], question: dict[str, Any]) -> None:
                 path.unlink(missing_ok=True)
 
 
-def _rename_evidence(
+def _rename_note_files(
     topic: dict[str, Any], question: dict[str, Any], old_no: int, new_no: int
 ) -> None:
     prefix = f"q{old_no:03d}_"
-    for group in question.get("evidence", []):
-        for file in group.get("files", []):
+    for note in note_store.note_entries(question):
+        for file in note["files"]:
             public = file["file"]
             name = public.rsplit("/", 1)[-1]
             if not name.startswith(prefix):
@@ -176,7 +178,7 @@ def _rename_evidence(
                         target.unlink()
                     source.replace(target)
             except (AppError, OSError):
-                log.warning("重命名证据截图失败：%s → %s", public, new_name)
+                log.warning("重命名笔记截图失败：%s → %s", public, new_name)
             file["file"] = f"{public[: -len(name)]}{new_name}"
 
 
@@ -208,7 +210,7 @@ def delete_question(topic_id: str, qid: str) -> DeleteQuestionResponse:
 
     _delete_files(topic, target)
     for _, _, moved, old_no, new_no in moves:
-        _rename_evidence(topic, moved, old_no, new_no)
+        _rename_note_files(topic, moved, old_no, new_no)
 
     topic["questions"] = questions[:position] + [moved for _, _, moved, _, _ in moves]
     topic["count"] = len(topic["questions"])
@@ -216,21 +218,18 @@ def delete_question(topic_id: str, qid: str) -> DeleteQuestionResponse:
     return DeleteQuestionResponse(card_deleted=card_deleted, reindexed=reindexed)
 
 
-def upload_evidence(
+def upload_note(
     topic_id: str,
     no: int,
     group: int,
-    page: int,
     content_type: str,
     data: bytes,
-) -> EvidenceUploadResponse:
+) -> NoteUploadResponse:
     topic = _topic_or_404(topic_id)
     if no < 1 or no > len(topic["questions"]) + 1:
         raise AppError("题目序号超出范围", code="invalid_params", status=400)
-    if group < 0 or group >= fields.EVIDENCE_LIMIT:
-        raise AppError("证据分组序号超出范围", code="invalid_params", status=400)
-    if page < 1 or page > 9999:
-        raise AppError("证据页码超出范围", code="invalid_params", status=400)
+    if group < 0 or group >= note_store.NOTE_LIMIT:
+        raise AppError("笔记序号超出范围", code="invalid_params", status=400)
     try:
         directory = safe_join(settings.study_dir, topic["slug"], "assets", "ev")
     except ValueError as exc:
@@ -238,8 +237,8 @@ def upload_evidence(
     file, width, height = media_service.save_image(
         directory,
         f"/study/{topic['slug']}/assets/ev",
-        f"q{no:03d}_{group}_{page}",
+        f"q{no:03d}_{group}_{uuid.uuid4().hex[:8]}",
         content_type,
         data,
     )
-    return EvidenceUploadResponse(file=file, width=width, height=height)
+    return NoteUploadResponse(file=file, width=width, height=height)

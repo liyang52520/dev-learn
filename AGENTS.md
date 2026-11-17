@@ -77,7 +77,7 @@ dev-learn/
 │   │   ├── features/
 │   │   │   ├── posts/              # 文章列表、详情、后台 CRUD、frontmatter
 │   │   │   ├── blog/               # archive / tags / categories
-│   │   │   ├── study/              # 专题、题目、导航、证据
+│   │   │   ├── study/              # 专题、题目、导航、笔记
 │   │   │   ├── search/             # 文章 + 题目混合检索
 │   │   │   ├── auth/               # 登录、登出、登录态
 │   │   │   ├── media/              # 图片上传
@@ -131,7 +131,10 @@ dev-learn/
 以 `StaticFiles(html=True)` 挂载，因此生产刷新仍停留在该页。左侧会话是假标题，中间是真实刷题会话：
 登录后打开会先拉 `/api/review/queue`，附件填入真实到期卡片的题面，发送时取 `/api/review/card-answer`
 渲染答案，四个评分按钮提交 `/api/review/answer`（写入 Anki）并自动换到下一张卡；评分后按钮保留选中态、
-附件才能切下一题。未登录或接口不可用时退回 `data.js` 的本地题目。点顶部分享按钮退出伪装回到 `/review`；
+附件才能切下一题。答案渲染完若该题有笔记，下方会出现官方引用胶囊「N 个网页」（随机站点图标），
+点击在右侧展开「搜索结果」侧栏（截图或 Markdown，接口为 `/api/review/card-answer` 的 `notes`）：
+宽屏把聊天区挤窄、侧栏紧贴右侧，<1024 与移动端改为底部弹层；点击侧栏外、关闭按钮或 Esc 收起，条目不做跳转。
+未登录或接口不可用时退回 `data.js` 的本地题目。点顶部分享按钮退出伪装回到 `/review`；
 顶部栏设置菜单里的「伪装学习页」可直接进入。
 该静态路径不受后端登录守卫拦截，但接口仍需要登录态。
 
@@ -149,7 +152,7 @@ dev-learn/
 | POST | `/api/admin/auth/login`、`/logout`；GET `/me` | 登录态 |
 | GET/POST | `/api/admin/posts`、`/api/admin/post`、`/preview`、`/publish`、`/upload` | 后台读写 |
 | GET/POST | `/api/admin/study/config` | 学习设置 |
-| GET/POST/PUT/DELETE | `/api/admin/study/bank/*` | 题库列表筛选、题目详情、新增/编辑/删除、证据截图上传 |
+| GET/POST/PUT/DELETE | `/api/admin/study/bank/*` | 题库列表筛选、题目详情、新增/编辑/删除、笔记截图上传 |
 | GET | `/api/admin/study/overview` | 统计页深度指标（成熟度、活跃天数、到期预测、专题进度） |
 | GET | `/api/health` | 存活检查 |
 
@@ -214,7 +217,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 3. 编辑器字段：`title`、`date`、`tags`（逗号分隔）、`categories`（逗号分隔）、`description`、`cover`；正文用 CodeMirror，`⌘/Ctrl+S` 保存，右侧实时预览。
 4. 「整页预览」复用同一渲染管线；「发布/撤回」只移动文件；「删除」移到 `backend/.trash/`。
 5. 上传仅支持 png/jpeg/webp/gif、≤ 20 MB，服务端会校验真实图片头，落 `backend/data/blog/assets/images/uploads/`，返回 `/images/uploads/YYYY/MM/…`；`frontend/public/images/` 只放头像、站点图标等固定资源。
-6. `/admin/study?tab=bank` 是题库后台：左栏按专题筛选 + 关键词搜索（服务端截断 400 题并提示），右侧编辑题目标题、要点、别名、备注、页码、答案 Markdown 与证据截图；新增按当前专题最大题号追加，删除会清理截图并前移后续题号。读写走 `features/study/admin_service.py`，卡片同步规则见 1.10。
+6. `/admin/study?tab=bank` 是题库后台：左栏按专题筛选 + 关键词搜索（服务端截断 400 题并提示），右侧编辑题目标题、要点、别名、备注、答案 Markdown 与笔记；笔记可传截图或写 Markdown（一条笔记二选一，标题默认「笔记1」「笔记2」递增），截图上传只落 `assets/ev/`；新增按当前专题最大题号追加，删除会清理截图并前移后续题号。读写走 `features/study/admin_service.py`，卡片同步规则见 1.10。
 
 后台只编辑已知字段；手写在 front matter 里的额外字段会被保留，但新增字段的完整支持需同时改
 `features/posts/frontmatter.py`、`features/posts/schemas.py`、`frontend/src/types/models.ts` 与编辑器组件。
@@ -240,7 +243,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 9. 重数据按 mtime + size 缓存；写/删/移文章后主动清缓存。题库优先读 `index.json` 的预计算检索字段。
 10. 代码块/表格在服务端包裹：`<div class="code-block"><span class="code-lang">…</span><button data-code-copy>…</button><pre class="pyg">…</pre></div>`、`<div class="table-wrap">`。前端只做事件委托，不在 hydration 后移动 DOM。
 11. 公式在服务端只输出占位：`<span class="math-inline" data-tex="…">` / `<div class="math-block" data-tex="…">`，由浏览器 KaTeX 渲染。
-12. 图片必须可预留尺寸：证据截图与答案配图的 `width/height` 从文件头读取注入；缺尺寸会造成 CLS。
+12. 图片必须可预留尺寸：笔记截图与答案配图的 `width/height` 从文件头读取注入；缺尺寸会造成 CLS。
 13. 时间：front matter 写 `YYYY-MM-DD HH:mm:ss`（Asia/Shanghai）；接口统一给 UTC ISO 与展示字符串。
 14. 中文文案：读者可见文案、错误提示、后台提示全部中文。
 15. URL 编码：slug / tag / category 含中文或空格，构造链接一律 `encodeURIComponent`，后端解码后再查。
@@ -251,7 +254,7 @@ npm run typecheck && npm run lint && npm run test && npm run build
 17. 服务端状态用 TanStack Query；UI 状态留在组件本地；不建全局 store，主题与登录态用 Context。
 18. 路由级 `React.lazy`；`Suspense` 统一用 `PageSkeleton`，避免切页白屏。
 19. 样式拆在 `shared/styles/*` 与 `features/*/styles/*`，单文件 ≤300 行；暗色只覆盖 CSS 变量。
-20. 大字段不要塞进列表组件的 props；题目侧栏只用 `id/no/title/aliases`，答案与证据留在页面层。
+20. 大字段不要塞进列表组件的 props；题目侧栏只用 `id/no/title/aliases`，答案与笔记留在页面层。
 
 ### 1.9 不要做的事
 
@@ -278,7 +281,9 @@ npm run typecheck && npm run lint && npm run test && npm run build
 
 约定：
 
-1. 内容归站点、状态归 Anki：复习页从 `/api/study` 渲染题面与答案，Anki 只负责「下一张卡 / 四个按钮文案 / 复习日志」。
+1. 内容归站点、状态归 Anki：复习页从 `/api/study` 渲染题面，显示答案时由 `/api/review/card-answer`
+   返回答案与该题笔记；题卡头部的「笔记」按钮控制展开，宽屏在题面右侧紧贴显示，<1024 与移动端
+   改为底部弹层；Anki 只负责「下一张卡 / 四个按钮文案 / 复习日志」。
    打开 collection 时会自动把全局 `fsrs` 开关置为开启（`collection.ensure_fsrs`），新机器部署无需手工设置。
 2. `backend/data` 是独立仓库（remote dev-anki，主仓已忽略）：每台机器只写自己的远端分支
    （默认 `machine/<主机名>`，可用 `DATA_SYNC_BRANCH` 覆盖）。服务每 10 分钟快照
@@ -390,7 +395,7 @@ grep -o '/dev-learn/assets/[^"]*\.js' frontend/dist/index.html | head -1
 - 源在上游 PDF + `questions.p*.json`；`backend/data/study/*.json` 是派生产物，整题增删走上游重抽，不要当源改。
 - `node skills/study-bank/scripts/extract-study.cjs` 会整体覆盖 `backend/data/study`，重抽后必须重跑 `skills/study-bank/scripts/enhance-answers/` 增强流水线。
 - 题干/答案逐字照录，不改写、不摘要替代、不删段落、不合并多题；格式只能改空白与块结构。
-- 截图即证据：`backend/data/study/**` 不手改、不 P 图、不裁红框；每题至少一组 evidence。
+- 截图即证据：`backend/data/study/**` 不手改、不 P 图、不裁红框；每题至少一组截图笔记（旧数据为 `evidence`，读取端自动兼容）。
 - 改完必须 `node skills/study-bank/scripts/enhance-answers/verify.cjs` 输出 `OK`，再做页面/视觉验收。
 
 ---
@@ -434,7 +439,7 @@ grep -o '/dev-learn/assets/[^"]*\.js' frontend/dist/index.html | head -1
 | 复习页 / 学习设置 | 实跑「入口 → 显示答案 → 评分 → 撤销 → 结束本轮 → 结算」；关掉服务看降级提示 |
 | 数据备份 / 多机同步 | 用 tmp 裸仓模拟两台机器：推送、合并、冲突选择、覆盖、安全引用；再打开 `/admin/backup` 走一遍 |
 | 搜索 | 任意页面按 `/` 或 `⌘K`，中英文关键词各搜一次 |
-| 渲染管线 / 图片尺寸 | 生产构建后看：代码块有复制按钮且无跳版；证据图加载前后不位移 |
+| 渲染管线 / 图片尺寸 | 生产构建后看：代码块有复制按钮且无跳版；笔记图加载前后不位移 |
 
 **在对话里汇报（不要写进文章/代码注释）**：① 改了什么（路径 + 一句话）；② 怎么验证的（命令 + 页面 + 结果）；③ 没验证/不确定的部分；④ 需要用户决策的事。
 

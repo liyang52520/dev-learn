@@ -1,5 +1,7 @@
-import { useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+
+import { NotePanel } from '@/features/study/components/NotePanel'
 
 import { QuestionCard } from '../components/QuestionCard'
 import { ReviewDone } from '../components/ReviewDone'
@@ -10,20 +12,31 @@ export default function ReviewPage() {
   const session = useReviewSession()
   const { phase, card, stats } = session
   const cardId = card?.cardId
+  const [notesOpen, setNotesOpen] = useState(false)
 
-  // 换卡时先回到顶部，避免新题停留在上一张答案的滚动位置；在绘制前执行，不会看到跳动
+  // 换卡时先回到顶部并收起笔记，避免上一张的笔记停留在新题旁边
   useLayoutEffect(() => {
     if (cardId) window.scrollTo(0, 0)
+    setNotesOpen(false)
   }, [cardId])
+
+  // 笔记打开时 Esc 只收起笔记，不触发「结束本轮」
+  useEffect(() => {
+    if (!notesOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      event.stopPropagation()
+      setNotesOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [notesOpen])
 
   if (phase === 'error') {
     const syncing = session.errorCode === 'sync_in_progress'
     const offline = !syncing && [0, 502, 503, 504].includes(session.errorStatus)
-    const title = syncing
-      ? '服务正在同步数据'
-      : offline
-        ? '连不上学习服务'
-        : '这次操作没成功'
+    const title = syncing ? '服务正在同步数据' : offline ? '连不上学习服务' : '这次操作没成功'
     return (
       <div className="focus-main review-page">
         <div className="review-panel review-error">
@@ -37,9 +50,7 @@ export default function ReviewPage() {
                 : '数据没有丢，重新取卡就能继续；连续失败请查看后端日志。'}
           </p>
           <div className="review-error-actions">
-            <button type="button" className="review-btn" onClick={session.retry}>
-              重试
-            </button>
+            <button type="button" className="review-btn" onClick={session.retry}>重试</button>
             <Link to="/study" className="review-btn ghost">返回学习</Link>
           </div>
         </div>
@@ -64,9 +75,12 @@ export default function ReviewPage() {
   }
 
   const waiting = phase === 'loading' || !card
+  // 笔记由按钮控制：宽屏在卡片右侧紧贴展开，窄屏与移动端改为底部弹层
+  const showNotes = notesOpen && phase === 'answer' && session.notes.length > 0
+  const closeNotes = () => setNotesOpen(false)
 
   return (
-    <div className="focus-main review-page">
+    <div className={`focus-main review-page${showNotes ? ' has-notes' : ''}`}>
       <ReviewTop
         loaded={phase !== 'loading' || card !== null}
         counts={session.counts}
@@ -100,11 +114,26 @@ export default function ReviewPage() {
           revealing={session.revealing}
           canUndo={session.canUndo}
           busy={session.busy}
+          notesCount={session.notes.length}
+          notesOpen={notesOpen}
           onReveal={() => void session.reveal()}
           onUndo={() => void session.undo()}
           onCardAction={(action) => void session.cardAction(action)}
           onRate={(rating) => void session.rate(rating)}
+          onToggleNotes={() => setNotesOpen((open) => !open)}
         />
+      )}
+
+      {showNotes && (
+        <>
+          <button
+            type="button"
+            className="review-notes-backdrop"
+            aria-label="关闭笔记"
+            onClick={closeNotes}
+          />
+          <NotePanel className="review-notes" notes={session.notes} onClose={closeNotes} />
+        </>
       )}
 
       {(phase === 'question' || phase === 'answer') && (

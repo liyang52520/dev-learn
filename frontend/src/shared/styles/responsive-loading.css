@@ -62,7 +62,7 @@
     padding-top: 28px;
   }
 
-  .sk-study-evidence {
+  .study-notes {
     display: block;
     position: static;
     height: auto;
@@ -71,7 +71,7 @@
     padding: 24px max(24px, 6vw) 60px;
   }
 
-  .sk-study-evidence .sk-evidence-shot {
+  .study-notes .sk-note-shot {
     max-width: 360px;
   }
 
