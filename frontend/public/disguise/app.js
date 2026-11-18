@@ -582,14 +582,14 @@
       });
     }
     if (buttons[5] && card && card.qid) {
-      var editTip = '编辑这道题';
+      var editTip = '编辑这道题（新标签页打开）';
       buttons[5].setAttribute('data-tip', editTip);
       buttons[5].setAttribute('aria-label', editTip);
       buttons[5].style.cursor = 'pointer';
       buttons[5].addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        window.location.href = editUrl(card.qid);
+        window.open(editUrl(card.qid), '_blank', 'noopener');
       });
     }
     return node;
