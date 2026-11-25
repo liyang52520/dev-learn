@@ -43,9 +43,21 @@ export default function AdminLoginPage() {
         await login(password)
       }
       client.setQueryData(['admin', 'me'], { authenticated: true, needsSetup: false })
-      const from = (location.state as LoginState | null)?.from
+      const params = new URLSearchParams(location.search)
+      const raw = params.get('redirect') ?? (location.state as LoginState | null)?.from
       const target =
-        from && from.startsWith('/') && !from.startsWith('/admin/login') ? from : '/'
+        raw &&
+        raw.startsWith('/') &&
+        !raw.startsWith('//') &&
+        !raw.includes('\\') &&
+        !raw.includes('/admin/login')
+          ? raw
+          : '/'
+      // 伪装学习页不属于 React 路由，必须整页跳转，否则会落到 404
+      if (target.includes('/disguise')) {
+        window.location.assign(target)
+        return
+      }
       navigate(target, { replace: true })
     } catch (err) {
       setError(errorMessage(err))

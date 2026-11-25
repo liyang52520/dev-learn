@@ -75,10 +75,21 @@
     return BASE + url.replace(/^\//, '');
   }
 
+  // 未登录时不展示任何本地假数据：直接去登录页，并把伪装学习页地址带回去
+  var redirectingToLogin = false;
+
+  function redirectToLogin() {
+    if (redirectingToLogin) return;
+    redirectingToLogin = true;
+    var back = location.pathname + location.search + location.hash;
+    location.replace(BASE + 'admin/login?redirect=' + encodeURIComponent(back));
+  }
+
   // 失败时带上 status 与后端错误码，评分 409（卡片排队过期）需要单独处理
   function apiRequest(url, options) {
     return fetch(apiUrl(url), options).then(function (r) {
       if (r.ok) return r.json();
+      if (r.status === 401) redirectToLogin();
       return r.json().catch(function () { return {}; }).then(function (data) {
         var info = (data && data.error) || {};
         var err = new Error(info.message || 'http ' + r.status);
