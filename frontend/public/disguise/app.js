@@ -113,6 +113,15 @@
     });
   }
 
+  // 页面打开后登录态仍可能过期；交互前先确认登录态，避免继续用缓存或本地假题
+  function ensureAuth() {
+    return apiGet('/api/admin/auth/me').then(function (data) {
+      if (data && data.authenticated) return true;
+      redirectToLogin();
+      return false;
+    });
+  }
+
   function loadQueue() {
     if (review.loading) return review.pending;
     review.loading = true;
@@ -706,6 +715,12 @@
       b.classList.toggle('is-rated', i === index);
     });
     if (!card) {
+      // 只有自测模式会走到本地题；正常页面没有卡片时不能假装评分成功
+      if (!SELFTEST) {
+        resetRateBar(bar);
+        notice('这张卡已经失效，请点输入框左边的附件重新抽题。');
+        return;
+      }
       bar.setAttribute('data-rated', '1');
       bar.setAttribute('data-rating', 'local');
       state.phase = 'idle';
@@ -1107,8 +1122,14 @@
       var card = review.ready ? review.card : null;
       state.phase = 'answered';
       if (!card) {
-        var q = QS[state.qIndex];
-        streamAppend(q.html, true);
+        if (SELFTEST) {
+          var q = QS[state.qIndex];
+          streamAppend(q.html, true);
+        } else {
+          state.phase = 'idle';
+          syncSend();
+          notice('暂时没有可复习的题目，请稍后再试。');
+        }
       } else {
         apiGet('/api/review/card-answer?qid=' + encodeURIComponent(card.qid)).then(function (data) {
           streamAppend(data.answerHtml, true, card.labels, card, data.notes);
@@ -1134,28 +1155,41 @@
     e.preventDefault();
     e.stopPropagation();
     if (state.session !== 0 || state.phase !== 'idle') return;
-    if (!SELFTEST && !review.ready && review.pending) {
-      review.pending.then(fillQuestion);
+    if (SELFTEST) {
+      fillQuestion();
       return;
     }
-    if (!SELFTEST && !review.ready) {
-      loadQueue().then(fillQuestion);
-      return;
-    }
-    fillQuestion();
+    // 先确认登录态：会话过期时立即去登录页，不能拿缓存或本地假题继续答题
+    ensureAuth().then(function (authenticated) {
+      if (!authenticated) return;
+      if (review.ready) {
+        fillQuestion();
+        return;
+      }
+      loadQueue().then(function () {
+        if (review.ready) {
+          fillQuestion();
+        } else if (!redirectingToLogin) {
+          notice('题目暂时取不到，请稍后再试。');
+        }
+      });
+    }).catch(function () {
+      notice('网络不可用，请稍后再试。');
+    });
   }
 
   function fillQuestion() {
     if (state.session !== 0 || state.phase !== 'idle') return;
-    if (review.ready) {
+    if (SELFTEST) {
+      if (!QS.length) return;
+      input.value = QS[state.qIndex].title;
+    } else {
+      if (!review.ready) return;
       if (!review.card) {
         notifyEmpty();
         return;
       }
       input.value = cardTitle(review.card);
-    } else {
-      if (!QS.length) return;
-      input.value = QS[state.qIndex].title;
     }
     state.phase = 'filled';
     syncSend();
